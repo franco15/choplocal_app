@@ -2,7 +2,7 @@
   "expo": {
     "name": "choplocal",
     "slug": "choplocal",
-    "version": "1.0.0",
+    "version": "0.0.1",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "choplocal",
@@ -12,6 +12,10 @@
       "supportsTablet": true,
       "runtimeVersion": {
         "policy": "appVersion"
+      },
+      "bundleIdentifier": "com.choplocal",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
@@ -54,12 +58,12 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "8bb09961-d29d-45d1-b3d2-6851d6e83d76"
+        "projectId": "5163469b-a7c7-4433-9e65-0f5d86283be2"
       }
     },
-    "owner": "wichox",
+    "owner": "xipe",
     "updates": {
-      "url": "https://u.expo.dev/8bb09961-d29d-45d1-b3d2-6851d6e83d76"
+      "url": "https://u.expo.dev/5163469b-a7c7-4433-9e65-0f5d86283be2"
     }
   }
 }
