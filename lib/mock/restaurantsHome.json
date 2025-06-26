@@ -1,0 +1,22 @@
+[
+  { "id": 1, "name": "El Taco Loco", "checkIns": 12, "status": 1 },
+  { "id": 2, "name": "Bella Pasta", "checkIns": 0, "status": 0 },
+  { "id": 3, "name": "Sushi Heaven", "checkIns": 0, "status": 2 },
+  { "id": 4, "name": "Burger Town", "checkIns": 30, "status": 1 },
+  { "id": 5, "name": "Curry House", "checkIns": 5, "status": 0 },
+  { "id": 6, "name": "Green Garden", "checkIns": 0, "status": 2 },
+  { "id": 7, "name": "The Noodle Bar", "checkIns": 20, "status": 1 },
+  { "id": 8, "name": "Pizza Plaza", "checkIns": 14, "status": 1 },
+  { "id": 9, "name": "BBQ Nation", "checkIns": 0, "status": 0 },
+  { "id": 10, "name": "Veggie Delight", "checkIns": 0, "status": 2 },
+  { "id": 11, "name": "La Parrilla", "checkIns": 18, "status": 1 },
+  { "id": 12, "name": "Seafood Shack", "checkIns": 1, "status": 0 },
+  { "id": 13, "name": "The Dumpling Spot", "checkIns": 0, "status": 2 },
+  { "id": 14, "name": "Grill Master", "checkIns": 25, "status": 1 },
+  { "id": 15, "name": "Tandoori Treats", "checkIns": 0, "status": 0 },
+  { "id": 16, "name": "Ramen Republic", "checkIns": 0, "status": 2 },
+  { "id": 17, "name": "The Breakfast Club", "checkIns": 11, "status": 1 },
+  { "id": 18, "name": "Tapas y Vinos", "checkIns": 0, "status": 2 },
+  { "id": 19, "name": "Pho Palace", "checkIns": 9, "status": 0 },
+  { "id": 20, "name": "Bistro Noir", "checkIns": 27, "status": 1 }
+]

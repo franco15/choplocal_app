@@ -1,4 +1,11 @@
-import { Home, HomeSolid, User, UserSolid } from "@/constants/svgs";
+import {
+	Home,
+	HomeSolid,
+	SearchIcon,
+	Star,
+	User,
+	UserSolid,
+} from "@/constants/svgs";
 import { Tabs } from "expo-router";
 import React from "react";
 
@@ -8,14 +15,17 @@ const TabsLayout = () => {
 	return (
 		<Tabs
 			screenOptions={{
-				// tabBarShowLabel: false,
+				tabBarShowLabel: false,
 				tabBarHideOnKeyboard: true,
 				tabBarLabelStyle: {
 					color: "black",
 				},
 				headerShown: false,
 				tabBarStyle: {
-					// position: "absolute",
+					position: "absolute",
+				},
+				tabBarIconStyle: {
+					flex: 1,
 				},
 			}}
 		>
@@ -29,6 +39,32 @@ const TabsLayout = () => {
 								<HomeSolid width={ICONSIZE} height={ICONSIZE} fill="#000000" />
 							);
 						return <Home width={ICONSIZE} height={ICONSIZE} fill="#000000" />;
+					},
+				}}
+			/>
+			<Tabs.Screen
+				name="search"
+				options={{
+					title: "Search",
+					tabBarIcon: ({ focused }) => {
+						if (focused)
+							return (
+								<SearchIcon width={ICONSIZE} height={ICONSIZE} fill="#000000" />
+							);
+						return (
+							<SearchIcon width={ICONSIZE} height={ICONSIZE} fill="#000000" />
+						);
+					},
+				}}
+			/>
+			<Tabs.Screen
+				name="favorites"
+				options={{
+					title: "Favorites",
+					tabBarIcon: ({ focused }) => {
+						if (focused)
+							return <Star width={ICONSIZE} height={ICONSIZE} fill="#000000" />;
+						return <Star width={ICONSIZE} height={ICONSIZE} fill="#000000" />;
 					},
 				}}
 			/>

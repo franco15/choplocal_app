@@ -8,6 +8,7 @@ module.exports = {
       colors: {
         primary: "#030014",
         secondary: "#151312",
+        background: "#FFFFFF",
         // choplocal
         'cl': {
           '50': '#f4f9f9',
