@@ -4,6 +4,7 @@ import { Text, TextBold } from "@/components";
 import { Bell, Stamp, TriangleLeft, TriangleRight } from "@/constants/svgs";
 import { default as rawRestaurants } from "@/lib/mock/restaurantsHome.json";
 import { ERestaurantStatus, IRestaurant } from "@/lib/types/restaurant";
+import { Link } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function Index() {
@@ -62,7 +63,8 @@ export default function Index() {
 								? "#DF7740"
 								: "#FFFFFF";
 						return (
-							<View
+							<Link
+								href="/restaurant"
 								className={`h-[113px] justify-between w-auto rounded-md mx-[2px] my-1 p-1`}
 								style={[
 									{
@@ -84,7 +86,7 @@ export default function Index() {
 										{item.checkIns}
 									</Text>
 								</View>
-							</View>
+							</Link>
 						);
 					}}
 					key={"_"}
