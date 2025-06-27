@@ -4,7 +4,7 @@ export const CustomText = ({ children, style, ...props }: any) => {
 	return (
 		<Text
 			{...props}
-			style={[{ fontFamily: "", color: "black" }, style]}
+			style={[{ fontFamily: "Inter_400Regular", color: "black" }, style]}
 			allowFontScaling={false}
 		>
 			{children}
@@ -16,7 +16,7 @@ export const CustomTextBold = ({ children, style, ...props }: any) => {
 	return (
 		<Text
 			{...props}
-			style={[{ fontFamily: "", color: "black", fontWeight: 900 }, style]}
+			style={[{ fontFamily: "Inter_700Bold ", color: "black", fontWeight: 700 }, style]}
 			allowFontScaling={false}
 		>
 			{children}
