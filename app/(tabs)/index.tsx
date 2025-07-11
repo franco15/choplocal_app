@@ -1,16 +1,51 @@
-import { ScrollView, View } from "react-native";
+import { ScrollView, TouchableOpacity, View } from "react-native";
 
 import { Container, Text, TextBold } from "@/components";
 import { Bell, Stamp, TriangleLeft, TriangleRight } from "@/constants/svgs";
 import { default as rawRestaurants } from "@/lib/mock/restaurantsHome.json";
 import { ERestaurantStatus, IRestaurant } from "@/lib/types/restaurant";
 import { Link } from "expo-router";
+import { useEffect, useState } from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function Index() {
 	const insets = useSafeAreaInsets();
 	const restaurants: IRestaurant[] = rawRestaurants as IRestaurant[];
-	const checkedIn = restaurants.filter((x) => x.checkIns > 0).length;
+	const [filteredRestaurants, setFilteredRestaurants] = useState<IRestaurant[]>(
+		[]
+	);
+	const [total, setTotal] = useState(0);
+	// const checkedIn = filteredRestaurants.filter((x) => x.checkIns > 0).length;
+	const [tab, setTab] = useState<ERestaurantStatus | null>(null);
+
+	useEffect(() => {
+		let rests: IRestaurant[] = [];
+		switch (tab) {
+			case ERestaurantStatus.Visited:
+				rests = restaurants.filter(
+					(x) => x.status === ERestaurantStatus.Visited
+				);
+				break;
+			case ERestaurantStatus.NotVisited:
+				rests = restaurants.filter(
+					(x) => x.status === ERestaurantStatus.NotVisited
+				);
+				break;
+			case ERestaurantStatus.Recommended:
+				rests = restaurants.filter(
+					(x) => x.status === ERestaurantStatus.Recommended
+				);
+				break;
+			default:
+				rests = restaurants;
+				break;
+		}
+		setFilteredRestaurants(rests);
+		setTotal(
+			tab === null ? rests.filter((x) => x.checkIns > 0).length : rests.length
+		);
+	}, [tab]);
+
 	return (
 		<Container style={{}}>
 			<ScrollView
@@ -32,13 +67,63 @@ export default function Index() {
 						</View>
 					</View>
 					<View className="flex flex-row justify-between px-[15px] mt-5">
-						<Text>My passport</Text>
-						<Text>Visited</Text>
-						<Text>Not Visited</Text>
-						<Text>Recommended</Text>
+						<TouchableOpacity activeOpacity={0.8} onPress={() => setTab(null)}>
+							<Text
+								style={{
+									color: tab === null ? "#000000" : "rgba(0, 0, 0, 0.22)",
+								}}
+							>
+								My passport
+							</Text>
+						</TouchableOpacity>
+						<TouchableOpacity
+							activeOpacity={0.8}
+							onPress={() => setTab(ERestaurantStatus.Visited)}
+						>
+							<Text
+								style={{
+									color:
+										tab === ERestaurantStatus.Visited
+											? "#000000"
+											: "rgba(0, 0, 0, 0.22)",
+								}}
+							>
+								Visited
+							</Text>
+						</TouchableOpacity>
+						<TouchableOpacity
+							activeOpacity={0.8}
+							onPress={() => setTab(ERestaurantStatus.NotVisited)}
+						>
+							<Text
+								style={{
+									color:
+										tab === ERestaurantStatus.NotVisited
+											? "#000000"
+											: "rgba(0, 0, 0, 0.22)",
+								}}
+							>
+								Not Visited
+							</Text>
+						</TouchableOpacity>
+						<TouchableOpacity
+							activeOpacity={0.8}
+							onPress={() => setTab(ERestaurantStatus.Recommended)}
+						>
+							<Text
+								style={{
+									color:
+										tab === ERestaurantStatus.Recommended
+											? "#000000"
+											: "rgba(0, 0, 0, 0.22)",
+								}}
+							>
+								Recommended
+							</Text>
+						</TouchableOpacity>
 					</View>
 					<Text className="flex self-end mx-[15px] mt-1 mb-5">
-						{checkedIn} / {restaurants.length}
+						{total} / {restaurants.length}
 					</Text>
 				</View>
 
@@ -56,9 +141,10 @@ export default function Index() {
 						shadowOffset: { width: 0, height: 2 },
 						shadowOpacity: 0.18,
 						shadowRadius: 3.5,
+						minHeight: "75%",
 					}}
 				>
-					{restaurants.map((item, index) => {
+					{filteredRestaurants.map((item, index) => {
 						const bgColor =
 							item.status === ERestaurantStatus.Visited
 								? "#CCE6E7"
