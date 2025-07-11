@@ -6,16 +6,13 @@ import { default as rawRestaurants } from "@/lib/mock/restaurantsHome.json";
 import { ERestaurantStatus, IRestaurant } from "@/lib/types/restaurant";
 import { Link } from "expo-router";
 import { useEffect, useState } from "react";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function Index() {
-	const insets = useSafeAreaInsets();
 	const restaurants: IRestaurant[] = rawRestaurants as IRestaurant[];
 	const [filteredRestaurants, setFilteredRestaurants] = useState<IRestaurant[]>(
 		[]
 	);
 	const [total, setTotal] = useState(0);
-	// const checkedIn = filteredRestaurants.filter((x) => x.checkIns > 0).length;
 	const [tab, setTab] = useState<ERestaurantStatus | null>(null);
 
 	useEffect(() => {
@@ -180,72 +177,6 @@ export default function Index() {
 							</Link>
 						);
 					})}
-					{/* <FlatList
-						showsVerticalScrollIndicator={true}
-						initialNumToRender={20}
-						numColumns={4}
-						bounces={false}
-						data={restaurants}
-						renderItem={({ item, index }) => {
-							const bgColor =
-								item.status === ERestaurantStatus.Visited
-									? "#CCE6E7"
-									: item.status === ERestaurantStatus.Recommended
-									? "#DF7740"
-									: "#FFFFFF";
-							return (
-								<Link
-									href="/restaurant"
-									className={`h-[113px] w-auto rounded-md mx-[2px] my-1 p-2`}
-									style={[
-										{
-											backgroundColor: bgColor,
-											flex: 1 / 4,
-											maxWidth: "25%",
-											borderStyle: "dashed",
-										},
-										{
-											borderWidth:
-												item.status === ERestaurantStatus.NotVisited ? 1 : 0,
-										},
-									]}
-									key={`_${index}_${item.id}`}
-								>
-									<View className="flex h-full w-full justify-between">
-										<Text className="text-sm" numberOfLines={2}>
-											{item.name}
-										</Text>
-										<View className="flex-row items-end">
-											<Stamp width={27} height={27} />
-											<Text className="justify-start ml-1">
-												{item.checkIns}
-											</Text>
-										</View>
-									</View>
-								</Link>
-							);
-						}}
-						key={"_"}
-						keyExtractor={(item, index) => `_${index}_${item.id}`}
-						columnWrapperStyle={{ justifyContent: "space-between" }}
-						contentContainerStyle={{
-							marginTop: 5,
-							marginRight: 5,
-							marginLeft: 5,
-							marginBottom: 75,
-							// paddingBottom: 50,
-							padding: 15,
-							borderRadius: 20,
-							borderWidth: 1,
-							borderColor: "#FFFFFF",
-							backgroundColor: "#FFFFFF",
-							elevation: 3,
-							shadowColor: "#000000",
-							shadowOffset: { width: 0, height: 2 },
-							shadowOpacity: 0.18,
-							shadowRadius: 3.5,
-						}}
-					/> */}
 				</View>
 			</ScrollView>
 		</Container>
