@@ -18,5 +18,15 @@
   { "id": 17, "name": "The Breakfast Club", "checkIns": 11, "status": 1 },
   { "id": 18, "name": "Tapas y Vinos", "checkIns": 0, "status": 2 },
   { "id": 19, "name": "Pho Palace", "checkIns": 9, "status": 0 },
-  { "id": 20, "name": "Bistro Noir", "checkIns": 27, "status": 1 }
+  { "id": 20, "name": "Bistro Noir", "checkIns": 27, "status": 1 },
+  { "id": 21, "name": "La Parrilla", "checkIns": 18, "status": 1 },
+  { "id": 22, "name": "Seafood Shack", "checkIns": 1, "status": 0 },
+  { "id": 23, "name": "The Dumpling Spot", "checkIns": 0, "status": 2 },
+  { "id": 24, "name": "Grill Master", "checkIns": 25, "status": 1 },
+  { "id": 25, "name": "Tandoori Treats", "checkIns": 0, "status": 0 },
+  { "id": 26, "name": "Ramen Republic", "checkIns": 0, "status": 2 },
+  { "id": 27, "name": "The Breakfast Club", "checkIns": 11, "status": 1 },
+  { "id": 28, "name": "Tapas y Vinos", "checkIns": 0, "status": 2 },
+  { "id": 29, "name": "Pho Palace", "checkIns": 9, "status": 0 },
+  { "id": 30, "name": "Bistro Noir", "checkIns": 27, "status": 1 }
 ]

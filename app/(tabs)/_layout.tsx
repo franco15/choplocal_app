@@ -22,10 +22,16 @@ const TabsLayout = () => {
 				},
 				headerShown: false,
 				tabBarStyle: {
-					position: "absolute",
+					// flex: 1,
+					// position: "absolute",
+					// height: "auto",
+					// alignItems: "center",
+					// justifyContent: "center",
 				},
 				tabBarIconStyle: {
-					flex: 1,
+					// flex: 1,
+					// borderWidth: 1,
+					marginVertical: 5,
 				},
 			}}
 		>
