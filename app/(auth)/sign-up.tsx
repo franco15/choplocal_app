@@ -22,7 +22,6 @@ export default function SignUpScreen() {
 					countryCode={countryCode}
 					withCallingCodeButton
 					onSelect={(country) => {
-						// console.log(country);
 						setCountryCode(country.cca2);
 						setCallingCode(country.callingCode[0]);
 					}}
@@ -54,7 +53,8 @@ export default function SignUpScreen() {
 			<Link
 				className="mt-6 items-center justify-center"
 				// activeOpacity={0.8}
-				href="/sign-in"
+				// href="/sign-in"
+				href="/login"
 			>
 				<TextBold className="text-[14px] underline" style={{}}>
 					Already have an account? Log in

@@ -1,3 +1,6 @@
+import { clsx, type ClassValue } from "clsx";
+import { twMerge } from "tailwind-merge";
+
 export const isNullOrWhitespace = (str: string | null) => {
 	if (!str) return true;
 	str = str.trim();
@@ -19,4 +22,8 @@ export function formatPhoneNumber(phone: string): string {
 	if (part2.length === 3 && part3) formatted += `-${part3}`;
 
 	return formatted;
+}
+
+export function cn(...inputs: ClassValue[]) {
+	return twMerge(clsx(inputs));
 }

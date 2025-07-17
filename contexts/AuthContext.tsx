@@ -8,7 +8,7 @@ interface IAuthContext {
 	};
 	register: (userReference: string) => Promise<boolean>;
 	login: (userReference: string) => Promise<boolean>;
-	sendCode: (userReference: string) => Promise<boolean>;
+	sendCode: (code: string) => Promise<boolean>;
 	logout: () => Promise<void>;
 }
 
@@ -44,9 +44,9 @@ const AuthProvider = ({ children }: any) => {
 		await SecureStore.deleteItemAsync(TOKEN_KEY);
 	};
 
-	const sendCode = async (userReference: string) => {
+	const sendCode = async (code: string) => {
 		try {
-			const jwt = "asdfasdfasdfadsfsadfsa"; // pegarle a la api para el login aqui o donde sea que me regrese el token
+			const jwt = "asdfasdfasdfadsfsadfsa"; // pegarle a la api con el codigo para hacer el login
 			setAuthState({ token: jwt, authenticated: true });
 			await SecureStore.setItemAsync(TOKEN_KEY, jwt);
 			return true;

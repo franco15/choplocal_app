@@ -1,10 +1,13 @@
+import { cn } from "@/lib/utils";
+import clsx from "clsx";
 import { Text } from "react-native";
 
-export const CustomText = ({ children, style, ...props }: any) => {
+export const CustomText = ({ children, className, style, ...props }: any) => {
 	return (
 		<Text
+			className={cn("text-black", clsx(className))}
 			{...props}
-			style={[{ fontFamily: "Inter_400Regular", color: "black" }, style]}
+			style={[{ fontFamily: "Inter_400Regular" }, style]}
 			allowFontScaling={false}
 		>
 			{children}
@@ -12,12 +15,18 @@ export const CustomText = ({ children, style, ...props }: any) => {
 	);
 };
 
-export const CustomTextBold = ({ children, style, ...props }: any) => {
+export const CustomTextBold = ({
+	children,
+	className,
+	style,
+	...props
+}: any) => {
 	return (
 		<Text
-			{...props}
-			style={[{ fontFamily: "Inter_700Bold ", color: "black", fontWeight: 700 }, style]}
+			className={cn("text-black", clsx(className))}
+			style={[{ fontFamily: "Inter_700Bold ", fontWeight: 700 }, style]}
 			allowFontScaling={false}
+			{...props}
 		>
 			{children}
 		</Text>

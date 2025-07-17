@@ -36,7 +36,7 @@ const RootComponent = () => {
 
 	useEffect(() => {
 		if (!authState.authenticated && utils.isNullOrWhitespace(authState.token)) {
-			router.replace("/sign-in");
+			router.replace("/login");
 		} else if (
 			authState.authenticated &&
 			!utils.isNullOrWhitespace(authState.token)

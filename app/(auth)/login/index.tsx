@@ -1,12 +1,13 @@
 import { Container, Text } from "@/components";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { formatPhoneNumber } from "@/lib/utils";
-import { Link } from "expo-router";
+import { Link, useRouter } from "expo-router";
 import { useState } from "react";
 import { TextInput, TouchableOpacity, View } from "react-native";
 import CountryPicker, { CountryCode } from "react-native-country-picker-modal";
 
-export default function SignInScreen() {
+export default function LoginScreen() {
+	const router = useRouter();
 	const { login } = useAuthContext();
 	const [phone, setPhone] = useState("");
 	const [countryCode, setCountryCode] = useState<CountryCode>("US");
@@ -14,7 +15,9 @@ export default function SignInScreen() {
 
 	const onSend = async () => {
 		const rawPhone = phone.replace(/\D/g, "");
-		await login(rawPhone);
+		// await login(rawPhone);
+		// send code
+		router.navigate("/login/verify");
 	};
 
 	return (
