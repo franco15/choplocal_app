@@ -69,7 +69,7 @@ export default function LoginScreen() {
 				<Link
 					className="mt-10 items-center justify-center"
 					// activeOpacity={0.8}
-					href="/sign-up"
+					href="/register"
 				>
 					<Text className="text-[14px] underline" style={{}}>
 						Create an account

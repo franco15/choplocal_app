@@ -1,0 +1,59 @@
+import { SegmentedInput, Text, TextBold } from "@/components";
+import { useAuthContext } from "@/contexts/AuthContext";
+import { isNullOrWhitespace } from "@/lib/utils";
+import { useRouter } from "expo-router";
+import { useState } from "react";
+import { TouchableOpacity, View } from "react-native";
+
+export default function VerifyScreen() {
+	const router = useRouter();
+	const { sendCode } = useAuthContext();
+	const [code, setCode] = useState("");
+	const [error, setError] = useState(false);
+
+	const handleCodeChange = (text: string) => {
+		// Remove any non-numeric characters
+		const numericValue = text.replace(/[^0-9]/g, "");
+		setCode(numericValue);
+	};
+
+	const resendCode = () => {
+		// console.log("resend code");
+	};
+
+	const onSendCode = async () => {
+		if (isNullOrWhitespace(code)) return setError(true);
+		router.navigate("/register/user-info");
+	};
+
+	return (
+		<View className="flex h-full px-4 bg-background">
+			<TextBold className="text-[35px] mb-3 mx-1" style={{ color: "#1A1C20" }}>
+				6 - digit code
+			</TextBold>
+			<Text className="text-[14px] mb-10 mr-16" style={{ color: "#93969E" }}>
+				A message with a verification code has been sent to *** *** **12. Please
+				enter the code to continue.
+			</Text>
+
+			<SegmentedInput length={6} onChange={setCode} error={error} />
+			<TouchableOpacity
+				className="bg-[#B91E18] mt-40 w-1/2 h-[54px] self-center items-center justify-center rounded-[30px]"
+				activeOpacity={0.8}
+				onPress={onSendCode}
+			>
+				<Text className="text-[14px]" style={{ color: "#FFFFFF" }}>
+					Continue
+				</Text>
+			</TouchableOpacity>
+			<View className="mt-6 flex flex-row self-center">
+				<TextBold className="text-[14px]" style={{}}>
+					Didn't get the code?{" "}
+				</TextBold>
+				<TouchableOpacity className="" onPress={resendCode}>
+					<TextBold className="text-[14px] text-blue-400">Send code</TextBold>
+				</TouchableOpacity>
+			</View>
+		</View>
+	);
+}

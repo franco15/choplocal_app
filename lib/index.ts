@@ -1,3 +1,4 @@
+import regex from "./regex";
 import * as utils from "./utils";
 
-export { utils };
+export { regex, utils };

@@ -67,7 +67,7 @@ const SegmentedInput = ({ length, onChange, error }: IProps) => {
 				const isFocused = i === focusedIndex;
 				return (
 					<TextInput
-						className="h-16 justify-center items-center text-center text-black2 rounded-[8px] bg-[#EEEEEE]"
+						className="h-16 justify-center items-center text-center text-black rounded-[8px] bg-[#EEEEEE]"
 						value={code[i]}
 						onChangeText={(text) => {
 							handleChange(text, i);
