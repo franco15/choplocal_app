@@ -1,7 +1,7 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
-export const isNullOrWhitespace = (str: string | null) => {
+export const isNullOrWhitespace = (str: string | null | undefined) => {
 	if (!str) return true;
 	str = str.trim();
 	return str === "" || str.match(/^ *$/) !== null;

@@ -7,7 +7,6 @@ const password =
 
 const phone = /^(\+\d{1,2}\s)?\(?\d{3}\)?[\s.-]\d{3}[\s.-]\d{4}$/;
 
-// const onlyLettersAndSpaces = /^[a-zA-Z\s\w\W]*$/;
 const onlyLettersAndSpaces = /^[A-zÀ-ú\s]*$/;
 
 const onlyNumbers = /^\d+$/;

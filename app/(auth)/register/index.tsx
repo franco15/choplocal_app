@@ -25,7 +25,7 @@ export default function SignUpScreen() {
 			<Text className="text-[14px] mb-10" style={{ color: "#93969E" }}>
 				Enter your phone number.We will send you a confirmation code there
 			</Text>
-			<View className="flex flex-row justify-between h-[62px] items-center">
+			<View className="flex flex-row justify-between h-[62px] items-start">
 				<CountryPicker
 					countryCode={countryCode}
 					withCallingCodeButton
@@ -47,19 +47,31 @@ export default function SignUpScreen() {
 						paddingHorizontal: 15,
 					}}
 				/>
-				<TextInput
-					className="flex-[4] outline text-xl text-black h-full p-5 px-8 text-start bg-[#EEEEEE] mx-2"
-					placeholder="(123) 456-7890"
-					placeholderTextColor={"rgba(0, 0, 0, 0.3)"}
-					value={phone}
-					onChangeText={(text) => setPhone(formatPhoneNumber(text))}
-					keyboardType="phone-pad"
-					maxLength={14}
-					style={[{ borderRadius: 10 }, phoneError ? styles.phoneError : null]}
-				/>
+				<View className="flex-[4] ">
+					<TextInput
+						className="outline text-xl text-black h-full p-5 px-8 text-start bg-[#EEEEEE] mx-2"
+						placeholder="(123) 456-7890"
+						placeholderTextColor={"rgba(0, 0, 0, 0.3)"}
+						value={phone}
+						onChangeText={(text) => setPhone(formatPhoneNumber(text))}
+						keyboardType="phone-pad"
+						maxLength={14}
+						style={[
+							{ borderRadius: 10 },
+							phoneError ? styles.phoneError : null,
+						]}
+					/>
+					{phoneError && (
+						<Text className="text-red-600 my-2 mx-3">
+							{"Phone number is not valid"}
+						</Text>
+					)}
+				</View>
 			</View>
 			<Link
-				className="mt-6 items-center justify-center"
+				className={`${
+					phoneError ? "mt-14" : "mt-6"
+				} items-center justify-center`}
 				// activeOpacity={0.8}
 				// href="/sign-in"
 				href="/login"

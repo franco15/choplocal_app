@@ -1,21 +1,25 @@
 import { Text, TextBold } from "@/components";
 import { useAuthContext } from "@/contexts/AuthContext";
+import { isNullOrWhitespace } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
+import DateTimePicker from "@react-native-community/datetimepicker";
+import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { StyleSheet, TextInput, TouchableOpacity, View } from "react-native";
 import { z } from "zod";
 
 interface IForm {
-	name: string;
+	firstName: string;
 	lastName: string;
 	email: string;
-	birthDate: Date;
+	birthdate: Date;
 }
 
 const schema = z.object({
-	name: z.string({ error: "Name cannot be empty" }),
+	firstName: z.string({ error: "Name cannot be empty" }),
 	lastName: z.string({ error: "Last name cannot be empty" }),
 	email: z.email({ error: "Invalid email address" }),
+	birthdate: z.date({ error: "Birthdate cannot be empty" }),
 });
 
 const INPUT_CLASS =
@@ -28,6 +32,7 @@ export default function UserInfoScreen() {
 		handleSubmit,
 		formState: { errors },
 	} = useForm({ resolver: zodResolver(schema) });
+	const [showDateSelector, setShowDateSelector] = useState(false);
 
 	const onSubmit = async (data: any) => {
 		console.log(data);
@@ -46,7 +51,7 @@ export default function UserInfoScreen() {
 			<Controller
 				control={control}
 				rules={{ required: "Name cannot be empty" }}
-				name="name"
+				name="firstName"
 				render={({ field: { onChange, onBlur, value } }) => (
 					<TextInput
 						className={INPUT_CLASS}
@@ -55,12 +60,12 @@ export default function UserInfoScreen() {
 						onBlur={onBlur}
 						onChangeText={onChange}
 						value={value}
-						style={[errors.name && style.inputError]}
+						style={[errors.firstName && style.inputError]}
 					/>
 				)}
 			/>
-			{errors.name && (
-				<Text className="text-red-600">{errors.name.message}</Text>
+			{errors.firstName && (
+				<Text className="text-red-600">{errors.firstName.message}</Text>
 			)}
 			<TextBold className="text-black text-lg mx-1 mt-5">Last name</TextBold>
 			<Controller
@@ -75,7 +80,7 @@ export default function UserInfoScreen() {
 						onBlur={onBlur}
 						onChangeText={onChange}
 						value={value}
-						style={[errors.name && style.inputError]}
+						style={[errors.lastName && style.inputError]}
 					/>
 				)}
 			/>
@@ -95,12 +100,57 @@ export default function UserInfoScreen() {
 						onBlur={onBlur}
 						onChangeText={onChange}
 						value={value}
-						style={[errors.name && style.inputError]}
+						style={[errors.email && style.inputError]}
 					/>
 				)}
 			/>
 			{errors.email && (
 				<Text className="text-red-600">{errors.email.message}</Text>
+			)}
+			<TextBold className="text-black text-lg mx-1 mt-5">Birthdate</TextBold>
+			<TouchableOpacity
+				className="h-16 justify-center rounded-[8px] bg-[#EEEEEE] mt-1 px-3 text-lg"
+				activeOpacity={0.8}
+				onPress={() => setShowDateSelector(true)}
+				style={[errors.birthdate && style.inputError]}
+			>
+				<Text
+					style={{
+						color: isNullOrWhitespace(
+							control._formValues.birthdate?.toLocaleDateString()
+						)
+							? "text-[rgba(0, 0, 0, 0.3)]"
+							: "",
+					}}
+				>
+					{isNullOrWhitespace(
+						control._formValues.birthdate?.toLocaleDateString()
+					)
+						? "MM/DD/YYYY"
+						: control._formValues.birthdate.toLocaleDateString()}
+				</Text>
+			</TouchableOpacity>
+			{errors.birthdate && (
+				<Text className="text-red-600">{errors.birthdate.message}</Text>
+			)}
+			{showDateSelector && (
+				<Controller
+					control={control}
+					rules={{ required: "Date cannot be empty" }}
+					name="birthdate"
+					render={({ field: { onChange, onBlur, value } }) => (
+						<DateTimePicker
+							testID="dateTimePicker"
+							value={value ?? new Date()}
+							mode={"date"}
+							onChange={(event, date) => {
+								onChange(date);
+								setShowDateSelector(false);
+							}}
+							style={[errors.birthdate && style.inputError]}
+						/>
+					)}
+				/>
 			)}
 			<TouchableOpacity
 				className="bg-[#B91E18] mt-40 w-1/2 h-[54px] self-center items-center justify-center rounded-[30px]"
