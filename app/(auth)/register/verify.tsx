@@ -1,21 +1,13 @@
 import { SegmentedInput, Text, TextBold } from "@/components";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { isNullOrWhitespace } from "@/lib/utils";
-import { useRouter } from "expo-router";
 import { useState } from "react";
 import { TouchableOpacity, View } from "react-native";
 
 export default function VerifyScreen() {
-	const router = useRouter();
-	const { sendCode } = useAuthContext();
+	const { registerWithCode } = useAuthContext();
 	const [code, setCode] = useState("");
 	const [error, setError] = useState(false);
-
-	const handleCodeChange = (text: string) => {
-		// Remove any non-numeric characters
-		const numericValue = text.replace(/[^0-9]/g, "");
-		setCode(numericValue);
-	};
 
 	const resendCode = () => {
 		// console.log("resend code");
@@ -23,7 +15,7 @@ export default function VerifyScreen() {
 
 	const onSendCode = async () => {
 		if (isNullOrWhitespace(code)) return setError(true);
-		router.navigate("/register/user-info");
+		await registerWithCode(code);
 	};
 
 	return (

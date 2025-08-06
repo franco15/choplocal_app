@@ -2,18 +2,24 @@ import { ScrollView, TouchableOpacity, View } from "react-native";
 
 import { Container, Text, TextBold } from "@/components";
 import { Bell, Stamp, TriangleLeft, TriangleRight } from "@/constants/svgs";
+import { useUserContext } from "@/contexts/UserContext";
 import { default as rawRestaurants } from "@/lib/mock/restaurantsHome.json";
 import { ERestaurantStatus, IRestaurant } from "@/lib/types/restaurant";
-import { Link } from "expo-router";
+import { Link, router } from "expo-router";
 import { useEffect, useState } from "react";
 
 export default function Index() {
+	const { profileCompleted } = useUserContext();
 	const restaurants: IRestaurant[] = rawRestaurants as IRestaurant[];
 	const [filteredRestaurants, setFilteredRestaurants] = useState<IRestaurant[]>(
 		[]
 	);
 	const [total, setTotal] = useState(0);
 	const [tab, setTab] = useState<ERestaurantStatus | null>(null);
+
+	useEffect(() => {
+		if (!profileCompleted) router.replace("/complete-profile");
+	}, [profileCompleted]);
 
 	useEffect(() => {
 		let rests: IRestaurant[] = [];

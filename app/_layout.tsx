@@ -1,4 +1,5 @@
 import { AuthProvider, useAuthContext } from "@/contexts/AuthContext";
+import { UserProvider, useUserContext } from "@/contexts/UserContext";
 import { utils } from "@/lib";
 import {
 	Inter_400Regular,
@@ -25,7 +26,9 @@ export default function RootLayout() {
 
 	return (
 		<AuthProvider>
-			<RootComponent />
+			<UserProvider>
+				<RootComponent />
+			</UserProvider>
 		</AuthProvider>
 	);
 }
@@ -33,6 +36,7 @@ export default function RootLayout() {
 const RootComponent = () => {
 	const router = useRouter();
 	const { authState } = useAuthContext();
+	const { profileCompleted } = useUserContext();
 
 	useEffect(() => {
 		if (!authState.authenticated && utils.isNullOrWhitespace(authState.token)) {
@@ -40,9 +44,10 @@ const RootComponent = () => {
 		} else if (
 			authState.authenticated &&
 			!utils.isNullOrWhitespace(authState.token)
-		)
+		) {
 			router.replace("/");
-	}, [authState]);
+		}
+	}, [profileCompleted, authState]);
 
 	return <Slot />;
 };

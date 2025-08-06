@@ -1,8 +1,10 @@
 import { Text, TextBold } from "@/components";
-import { useAuthContext } from "@/contexts/AuthContext";
+import { useUserContext } from "@/contexts/UserContext";
+import { IUser } from "@/lib/types/user";
 import { isNullOrWhitespace } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import { useRouter } from "expo-router";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { StyleSheet, TextInput, TouchableOpacity, View } from "react-native";
@@ -12,21 +14,22 @@ interface IForm {
 	firstName: string;
 	lastName: string;
 	email: string;
-	birthdate: Date;
+	birthDate: Date;
 }
 
 const schema = z.object({
 	firstName: z.string({ error: "Name cannot be empty" }),
 	lastName: z.string({ error: "Last name cannot be empty" }),
 	email: z.email({ error: "Invalid email address" }),
-	birthdate: z.date({ error: "Birthdate cannot be empty" }),
+	birthDate: z.date({ error: "Birthdate cannot be empty" }),
 });
 
 const INPUT_CLASS =
 	"h-16 justify-center items-center text-black rounded-[8px] bg-[#EEEEEE] mt-1 px-3 text-lg";
 
-export default function UserInfoScreen() {
-	const { login } = useAuthContext();
+export default function CompleteProfile() {
+	const router = useRouter();
+	const { updateUser } = useUserContext();
 	const {
 		control,
 		handleSubmit,
@@ -36,7 +39,8 @@ export default function UserInfoScreen() {
 
 	const onSubmit = async (data: any) => {
 		console.log(data);
-		await login("");
+		const res = await updateUser(data as IUser);
+		if (res) router.replace("/");
 	};
 
 	return (
@@ -112,32 +116,32 @@ export default function UserInfoScreen() {
 				className="h-16 justify-center rounded-[8px] bg-[#EEEEEE] mt-1 px-3 text-lg"
 				activeOpacity={0.8}
 				onPress={() => setShowDateSelector(true)}
-				style={[errors.birthdate && style.inputError]}
+				style={[errors.birthDate && style.inputError]}
 			>
 				<Text
 					style={{
 						color: isNullOrWhitespace(
-							control._formValues.birthdate?.toLocaleDateString()
+							control._formValues.birthDate?.toLocaleDateString()
 						)
 							? "text-[rgba(0, 0, 0, 0.3)]"
 							: "",
 					}}
 				>
 					{isNullOrWhitespace(
-						control._formValues.birthdate?.toLocaleDateString()
+						control._formValues.birthDate?.toLocaleDateString()
 					)
 						? "MM/DD/YYYY"
-						: control._formValues.birthdate.toLocaleDateString()}
+						: control._formValues.birthDate.toLocaleDateString()}
 				</Text>
 			</TouchableOpacity>
-			{errors.birthdate && (
-				<Text className="text-red-600">{errors.birthdate.message}</Text>
+			{errors.birthDate && (
+				<Text className="text-red-600">{errors.birthDate.message}</Text>
 			)}
 			{showDateSelector && (
 				<Controller
 					control={control}
 					rules={{ required: "Date cannot be empty" }}
-					name="birthdate"
+					name="birthDate"
 					render={({ field: { onChange, onBlur, value } }) => (
 						<DateTimePicker
 							testID="dateTimePicker"
@@ -147,7 +151,9 @@ export default function UserInfoScreen() {
 								onChange(date);
 								setShowDateSelector(false);
 							}}
-							style={[errors.birthdate && style.inputError]}
+							style={[errors.birthDate && style.inputError]}
+							maximumDate={new Date()}
+							minimumDate={new Date(1940, 0, 1)}
 						/>
 					)}
 				/>

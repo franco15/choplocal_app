@@ -1,4 +1,5 @@
 import { Text, TextBold } from "@/components";
+import { useAuthContext } from "@/contexts/AuthContext";
 import { regex } from "@/lib";
 import { formatPhoneNumber } from "@/lib/utils";
 import { Link, useRouter } from "expo-router";
@@ -8,13 +9,18 @@ import CountryPicker, { CountryCode } from "react-native-country-picker-modal";
 
 export default function SignUpScreen() {
 	const router = useRouter();
-	const [phone, setPhone] = useState("");
+	const { requestVerificationCode, setPhone } = useAuthContext();
+	const [phoneNumber, setPhoneNumber] = useState("");
 	const [countryCode, setCountryCode] = useState<CountryCode>("US");
 	const [callingCode, setCallingCode] = useState("+1");
 	const [phoneError, setPhoneError] = useState(false);
 
-	const onSend = () => {
-		if (!regex.phone.test(phone)) return setPhoneError(true);
+	const onSend = async () => {
+		if (!regex.phone.test(phoneNumber)) return setPhoneError(true);
+		const fullPhone =
+			"+" + callingCode + phoneNumber.replace(/\D/g, "").slice(0, 10);
+		setPhone(fullPhone);
+		await requestVerificationCode(fullPhone);
 		router.navigate("/register/verify");
 	};
 	return (
@@ -52,8 +58,8 @@ export default function SignUpScreen() {
 						className="outline text-xl text-black h-full p-5 px-8 text-start bg-[#EEEEEE] mx-2"
 						placeholder="(123) 456-7890"
 						placeholderTextColor={"rgba(0, 0, 0, 0.3)"}
-						value={phone}
-						onChangeText={(text) => setPhone(formatPhoneNumber(text))}
+						value={phoneNumber}
+						onChangeText={(text) => setPhoneNumber(formatPhoneNumber(text))}
 						keyboardType="phone-pad"
 						maxLength={14}
 						style={[
@@ -72,8 +78,6 @@ export default function SignUpScreen() {
 				className={`${
 					phoneError ? "mt-14" : "mt-6"
 				} items-center justify-center`}
-				// activeOpacity={0.8}
-				// href="/sign-in"
 				href="/login"
 			>
 				<TextBold className="text-[14px] underline" style={{}}>

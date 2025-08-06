@@ -21,16 +21,8 @@ const TabsLayout = () => {
 					color: "black",
 				},
 				headerShown: false,
-				tabBarStyle: {
-					// flex: 1,
-					// position: "absolute",
-					// height: "auto",
-					// alignItems: "center",
-					// justifyContent: "center",
-				},
+				tabBarStyle: {},
 				tabBarIconStyle: {
-					// flex: 1,
-					// borderWidth: 1,
 					marginVertical: 5,
 				},
 			}}

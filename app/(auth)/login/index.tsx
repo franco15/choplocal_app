@@ -9,7 +9,7 @@ import CountryPicker, { CountryCode } from "react-native-country-picker-modal";
 
 export default function LoginScreen() {
 	const router = useRouter();
-	const { login } = useAuthContext();
+	const { requestVerificationCode } = useAuthContext();
 	const [phone, setPhone] = useState("");
 	const [countryCode, setCountryCode] = useState<CountryCode>("US");
 	const [callingCode, setCallingCode] = useState("+1");
@@ -17,9 +17,8 @@ export default function LoginScreen() {
 
 	const onSend = async () => {
 		if (!regex.phone.test(phone)) return setPhoneError(true);
-		const rawPhone = phone.replace(/\D/g, "");
-		// await login(rawPhone);
-		// send code
+		const fullPhone = "+" + callingCode + phone.replace(/\D/g, "").slice(0, 10);
+		await requestVerificationCode(fullPhone);
 		router.navigate("/login/verify");
 	};
 
@@ -81,11 +80,7 @@ export default function LoginScreen() {
 						Send Code
 					</Text>
 				</TouchableOpacity>
-				<Link
-					className="mt-10 items-center justify-center"
-					// activeOpacity={0.8}
-					href="/register"
-				>
+				<Link className="mt-10 items-center justify-center" href="/register">
 					<Text className="text-[14px] underline" style={{}}>
 						Create an account
 					</Text>

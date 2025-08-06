@@ -5,15 +5,9 @@ import { useState } from "react";
 import { TouchableOpacity, View } from "react-native";
 
 export default function VerifyScreen() {
-	const { sendCode } = useAuthContext();
+	const { verifyCode } = useAuthContext();
 	const [code, setCode] = useState("");
 	const [error, setError] = useState(false);
-
-	const handleCodeChange = (text: string) => {
-		// Remove any non-numeric characters
-		const numericValue = text.replace(/[^0-9]/g, "");
-		setCode(numericValue);
-	};
 
 	const resendCode = () => {
 		// console.log("resend code");
@@ -21,7 +15,7 @@ export default function VerifyScreen() {
 
 	const onSendCode = async () => {
 		if (isNullOrWhitespace(code)) return setError(true);
-		await sendCode(code);
+		await verifyCode(code);
 	};
 
 	return (
