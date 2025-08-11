@@ -8,7 +8,7 @@ import {
 	Inter_700Bold,
 	useFonts,
 } from "@expo-google-fonts/inter";
-import { Slot, useRouter } from "expo-router";
+import { Stack, useRouter } from "expo-router";
 import { useEffect } from "react";
 import "./global.css";
 
@@ -49,5 +49,18 @@ const RootComponent = () => {
 		}
 	}, [profileCompleted, authState]);
 
-	return <Slot />;
+	// return <Slot />;
+	if (!authState.authenticated && utils.isNullOrWhitespace(authState.token))
+		return (
+			<Stack>
+				<Stack.Screen name="(auth)" />
+			</Stack>
+		);
+
+	return (
+		<Stack screenOptions={{ headerShown: false }}>
+			<Stack.Screen name="(tabs)" />
+			<Stack.Screen name="restaurants" />
+		</Stack>
+	);
 };

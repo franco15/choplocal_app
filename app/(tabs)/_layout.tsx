@@ -43,6 +43,7 @@ const TabsLayout = () => {
 			<Tabs.Screen
 				name="search"
 				options={{
+					href: null,
 					title: "Search",
 					tabBarIcon: ({ focused }) => {
 						if (focused)
@@ -58,6 +59,7 @@ const TabsLayout = () => {
 			<Tabs.Screen
 				name="favorites"
 				options={{
+					href: null,
 					title: "Favorites",
 					tabBarIcon: ({ focused }) => {
 						if (focused)

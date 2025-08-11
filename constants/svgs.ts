@@ -1,3 +1,4 @@
+import ArrowFortyFive from "@/assets/svg/arrow-45.svg";
 import Bell from "@/assets/svg/bell.svg";
 import HomeSolid from "@/assets/svg/home-solid.svg";
 import Home from "@/assets/svg/home.svg";
@@ -10,6 +11,7 @@ import UserSolid from "@/assets/svg/user-solid.svg";
 import User from "@/assets/svg/user.svg";
 
 export {
+	ArrowFortyFive,
 	Bell,
 	Home,
 	HomeSolid,
