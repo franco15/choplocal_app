@@ -1,5 +1,6 @@
 import { Text, TextBold } from "@/components";
 import { images } from "@/constants/images";
+import { Link } from "expo-router";
 import { FlatList, Image, View } from "react-native";
 
 const rests = [
@@ -83,7 +84,11 @@ export default function Restaurants() {
 				data={rests}
 				initialNumToRender={10}
 				renderItem={({ item, index }) => (
-					<View
+					<Link
+						href={{
+							pathname: "/restaurants/[id]",
+							params: { id: item.id },
+						}}
 						key={index}
 						className="flex-row bg-[#DDDDDD] mb-5 p-7 rounded-[11px] items-center"
 					>
@@ -98,7 +103,7 @@ export default function Restaurants() {
 							<Text className="text-[15px]">{item.checkIns} VISITS</Text>
 						</View>
 						<Text className="flex-[1] text-[10px]">${item.balance}</Text>
-					</View>
+					</Link>
 				)}
 			/>
 		</View>

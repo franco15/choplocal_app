@@ -61,6 +61,7 @@ const RootComponent = () => {
 		<Stack screenOptions={{ headerShown: false }}>
 			<Stack.Screen name="(tabs)" />
 			<Stack.Screen name="restaurants" />
+			<Stack.Screen name="transactions" />
 		</Stack>
 	);
 };

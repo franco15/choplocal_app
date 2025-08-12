@@ -1,8 +1,8 @@
 import { Container, Text, TextBold } from "@/components";
 import { images } from "@/constants/images";
 import { ArrowFortyFive } from "@/constants/svgs";
-import { useRouter } from "expo-router";
-import { Image, ScrollView, TouchableOpacity, View } from "react-native";
+import { Link, useRouter } from "expo-router";
+import { Image, ScrollView, View } from "react-native";
 
 export default function Index() {
 	const router = useRouter();
@@ -45,7 +45,7 @@ export default function Index() {
 				>
 					<View className="flex-[3]">
 						<TextBold className="text-[13px]">Recomend this app</TextBold>
-						<Text className="text-[11px] max-w-[250px]">
+						<Text className="text-[11px] w-[250px]">
 							Tell your friends why you love this restaurant and get benefits
 						</Text>
 					</View>
@@ -53,9 +53,8 @@ export default function Index() {
 						<ArrowFortyFive width={19} height={19} />
 					</View>
 				</View>
-				<TouchableOpacity
-					onPress={() => router.push("/restaurants")}
-					activeOpacity={0.8}
+				<Link
+					href="/restaurants"
 					className="mt-10 rounded-[41px] flex flex-row px-10 py-5 justify-between items-center"
 					style={{
 						borderColor: "#FFFFFF",
@@ -71,14 +70,14 @@ export default function Index() {
 						<TextBold className="text-[13px]">
 							Restaurants i have visted
 						</TextBold>
-						<Text className="text-[11px] max-w-[250px]">
+						<Text className="text-[11px] w-[250px]">
 							Upload the ticket and validate your check in
 						</Text>
 					</View>
 					<View className="rounded-full bg-black w-[45px] h-[45px] justify-center items-center">
 						<ArrowFortyFive width={19} height={19} />
 					</View>
-				</TouchableOpacity>
+				</Link>
 			</ScrollView>
 		</Container>
 	);
