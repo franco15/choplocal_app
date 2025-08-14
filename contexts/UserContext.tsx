@@ -16,7 +16,7 @@ const UserContext = createContext<IUserContext>({} as IUserContext);
 
 const UserProvider = ({ children }: { children: React.ReactNode }) => {
 	const api = useApiService();
-	const { authState, phone } = useAuthContext();
+	const { authenticated, phone } = useAuthContext();
 	const [user, setUser] = useState<IUser>();
 	const [profileCompleted, setProfileCompleted] = useState(true);
 
@@ -28,8 +28,8 @@ const UserProvider = ({ children }: { children: React.ReactNode }) => {
 				setProfileCompleted(false);
 			}
 		};
-		if (authState.authenticated && !isNullOrWhitespace(phone)) retrieveUser();
-	}, [authState, phone]);
+		if (authenticated && !isNullOrWhitespace(phone)) retrieveUser();
+	}, [authenticated, phone]);
 
 	const updateUser = async (model: IUser) => {
 		try {

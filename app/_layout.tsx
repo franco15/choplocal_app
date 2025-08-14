@@ -1,6 +1,5 @@
 import { AuthProvider, useAuthContext } from "@/contexts/AuthContext";
 import { UserProvider, useUserContext } from "@/contexts/UserContext";
-import { utils } from "@/lib";
 import {
 	Inter_400Regular,
 	Inter_500Medium,
@@ -35,24 +34,20 @@ export default function RootLayout() {
 
 const RootComponent = () => {
 	const router = useRouter();
-	const { authState } = useAuthContext();
+	const { authenticated } = useAuthContext();
 	const { profileCompleted } = useUserContext();
 
 	useEffect(() => {
-		if (!authState.authenticated && utils.isNullOrWhitespace(authState.token)) {
+		if (!authenticated) {
 			router.replace("/login");
-		} else if (
-			authState.authenticated &&
-			!utils.isNullOrWhitespace(authState.token)
-		) {
+		} else {
 			router.replace("/");
 		}
-	}, [profileCompleted, authState]);
+	}, [profileCompleted, authenticated]);
 
-	// return <Slot />;
-	if (!authState.authenticated && utils.isNullOrWhitespace(authState.token))
+	if (!authenticated)
 		return (
-			<Stack>
+			<Stack screenOptions={{ headerShown: false }}>
 				<Stack.Screen name="(auth)" />
 			</Stack>
 		);

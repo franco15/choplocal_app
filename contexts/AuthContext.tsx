@@ -2,14 +2,12 @@ import * as SecureStore from "expo-secure-store";
 import { jwtDecode } from "jwt-decode";
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 
-import useApiService from "@/lib/axiosInstance";
+import { TOKEN_KEY } from "@/constants/keys";
+import useApiService, { setAuthToken } from "@/lib/axiosInstance";
 import { isNullOrWhitespace } from "@/lib/utils";
 
 interface IAuthContext {
-	authState: {
-		token: string | null;
-		authenticated: boolean;
-	};
+	authenticated: boolean;
 	phone: string;
 	setPhone: (phone: string) => void;
 	login: (userReference: string) => Promise<void>;
@@ -19,23 +17,18 @@ interface IAuthContext {
 	logout: () => Promise<void>;
 }
 
-const TOKEN_KEY = "choplocal-jwt";
-
 const AuthContext = createContext<IAuthContext>({} as IAuthContext);
 
 const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 	const api = useApiService();
-	const [authState, setAuthState] = useState<{
-		token: string | null;
-		authenticated: boolean;
-	}>({ token: null, authenticated: false });
+	const [authenticated, setAuthenticated] = useState(false);
 	const [phone, setPhone] = useState<string>("");
 
 	useEffect(() => {
 		const getToken = async () => {
 			const jwt = await SecureStore.getItemAsync(TOKEN_KEY);
 			if (!isNullOrWhitespace(jwt)) {
-				setAuthState({ token: jwt, authenticated: true });
+				setAuthenticated(true);
 				const decoded = jwtDecode(jwt!);
 				if (!isNullOrWhitespace(decoded.sub)) setPhone(decoded.sub!);
 			}
@@ -46,19 +39,22 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 	const login = async (userReference: string) => {
 		try {
 			await requestVerificationCode(userReference);
-		} catch (error) {}
+		} catch (error) {
+			console.log("login", error);
+		}
 	};
 
 	const logout = async () => {
-		setAuthState({ token: null, authenticated: false });
-		await SecureStore.deleteItemAsync(TOKEN_KEY);
+		setAuthenticated(false);
+		await setAuthToken(null);
 	};
 
-	const requestVerificationCode = async (phone: string) => {
+	const requestVerificationCode = async (phoneNumber: string) => {
 		try {
 			await api.post("api/auth/request-verification-code", {
-				phoneNumber: phone,
+				phoneNumber: phoneNumber,
 			});
+			setPhone(phoneNumber);
 		} catch (error) {
 			console.log("error", error);
 		}
@@ -72,11 +68,12 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 			});
 			const jwt = res.jwt;
 			if (jwt) {
-				setAuthState({ token: jwt, authenticated: true });
-				await SecureStore.setItemAsync(TOKEN_KEY, jwt);
+				setAuthenticated(true);
+				await setAuthToken(jwt);
 			}
 			return true;
 		} catch (error) {
+			console.log("verify", error);
 			return false;
 		}
 	};
@@ -92,8 +89,8 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 			);
 			const jwt = response.jwt;
 			if (jwt) {
-				setAuthState({ token: jwt, authenticated: true });
-				await SecureStore.setItemAsync(TOKEN_KEY, jwt);
+				setAuthenticated(true);
+				await setAuthToken(jwt);
 			}
 			return true;
 		} catch (error) {
@@ -104,7 +101,7 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
 	const data = useMemo(() => {
 		return {
-			authState,
+			authenticated,
 			login,
 			logout,
 			requestVerificationCode,
@@ -113,7 +110,7 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 			phone,
 			setPhone,
 		} as IAuthContext;
-	}, [authState, phone]);
+	}, [authenticated, phone]);
 
 	return <AuthContext.Provider value={data}>{children}</AuthContext.Provider>;
 };

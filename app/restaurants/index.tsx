@@ -7,70 +7,70 @@ const rests = [
 	{
 		id: 1,
 		icon: images.logo,
-		name: "Blue Whale Cafe",
+		name: "Blue Whale Cafe 1",
 		checkIns: 4,
 		balance: 200,
 	},
 	{
 		id: 2,
 		icon: images.logo,
-		name: "Blue Whale Cafe",
+		name: "Blue Whale Cafe 2",
 		checkIns: 4,
 		balance: 200,
 	},
 	{
 		id: 3,
 		icon: images.logo,
-		name: "Blue Whale Cafe",
+		name: "Blue Whale Cafe 3",
 		checkIns: 4,
 		balance: 200,
 	},
 	{
 		id: 4,
 		icon: images.logo,
-		name: "Blue Whale Cafe",
+		name: "Blue Whale Cafe 4",
 		checkIns: 4,
 		balance: 200,
 	},
 	{
 		id: 5,
 		icon: images.logo,
-		name: "Blue Whale Cafe",
+		name: "Blue Whale Cafe 5",
 		checkIns: 4,
 		balance: 200,
 	},
 	{
 		id: 6,
 		icon: images.logo,
-		name: "Blue Whale Cafe",
+		name: "Blue Whale Cafe 6",
 		checkIns: 4,
 		balance: 200,
 	},
 	{
 		id: 7,
 		icon: images.logo,
-		name: "Blue Whale Cafe",
+		name: "Blue Whale Cafe 7",
 		checkIns: 4,
 		balance: 200,
 	},
 	{
 		id: 8,
 		icon: images.logo,
-		name: "Blue Whale Cafe",
+		name: "Blue Whale Cafe 8",
 		checkIns: 4,
 		balance: 200,
 	},
 	{
 		id: 9,
 		icon: images.logo,
-		name: "Blue Whale Cafe",
+		name: "Blue Whale Cafe 9",
 		checkIns: 4,
 		balance: 200,
 	},
 	{
 		id: 10,
 		icon: images.logo,
-		name: "Blue Whale Cafe",
+		name: "Blue Whale Cafe 10",
 		checkIns: 4,
 		balance: 200,
 	},
@@ -83,6 +83,7 @@ export default function Restaurants() {
 			<FlatList
 				data={rests}
 				initialNumToRender={10}
+				contentContainerStyle={{ marginBottom: 50 }}
 				renderItem={({ item, index }) => (
 					<Link
 						href={{
@@ -90,19 +91,21 @@ export default function Restaurants() {
 							params: { id: item.id },
 						}}
 						key={index}
-						className="flex-row bg-[#DDDDDD] mb-5 p-7 rounded-[11px] items-center"
+						className="  bg-[#DDDDDD] mb-5 p-7 rounded-[11px]"
 					>
-						<View className="rounded-full flex-[1]">
-							<Image
-								className="w-[37px] h-[37px] rounded-full"
-								source={item.icon}
-							/>
+						<View className="flex flex-row items-center">
+							<View className="rounded-full flex-[1]">
+								<Image
+									className="w-[37px] h-[37px] rounded-full"
+									source={item.icon}
+								/>
+							</View>
+							<View className="flex-[4]">
+								<Text className="text-[10px]">{item.name}</Text>
+								<Text className="text-[15px]">{item.checkIns} VISITS</Text>
+							</View>
+							<Text className="flex-[1] text-[10px]">${item.balance}</Text>
 						</View>
-						<View className="flex-[4]">
-							<Text className="text-[10px]">{item.name}</Text>
-							<Text className="text-[15px]">{item.checkIns} VISITS</Text>
-						</View>
-						<Text className="flex-[1] text-[10px]">${item.balance}</Text>
 					</Link>
 				)}
 			/>

@@ -12,7 +12,7 @@ const RestaurantsLayout = () => {
 			/>
 			<Stack.Screen
 				options={{
-					headerTitle: "Back to home",
+					headerTitle: "",
 					headerShadowVisible: false,
 				}}
 				name="[id]"

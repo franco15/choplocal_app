@@ -1,14 +1,30 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
+import * as SecureStore from "expo-secure-store";
 
+import { TOKEN_KEY } from "@/constants/keys";
 import { useRouter } from "expo-router";
-import { useAuthContext } from "../contexts/AuthContext";
 import { isNullOrWhitespace } from "./utils";
+
+let cachedToken: string | null = null;
 
 // const API_URL = "https://localhost:44339/"; ///TODO set up env variables
 const API_URL = "http://10.0.2.2:5264/"; ///TODO set up env variables
 
+const loadToken = async () => {
+	if (!cachedToken) cachedToken = await SecureStore.getItemAsync(TOKEN_KEY);
+	return cachedToken;
+};
+
+const saveToken = async (token: string | null) => {
+	cachedToken = token;
+	if (token) {
+		await SecureStore.setItemAsync(TOKEN_KEY, token);
+	} else {
+		await SecureStore.deleteItemAsync(TOKEN_KEY);
+	}
+};
+
 const useApiService = () => {
-	const { authState } = useAuthContext();
 	const router = useRouter();
 
 	const axiosInstance = axios.create({
@@ -20,10 +36,11 @@ const useApiService = () => {
 	});
 
 	axiosInstance.interceptors.request.use(
-		(config: InternalAxiosRequestConfig) => {
-			if (!isNullOrWhitespace(authState?.token)) {
-				console.log(authState.token);
-				config.headers.Authorization = `Bearer ${authState.token}`;
+		async (config: InternalAxiosRequestConfig) => {
+			const token = await loadToken();
+			if (!isNullOrWhitespace(token)) {
+				console.log(token);
+				config.headers.Authorization = `Bearer ${token}`;
 			}
 			return config;
 		},
@@ -58,3 +75,5 @@ const useApiService = () => {
 };
 
 export default useApiService;
+
+export const setAuthToken = saveToken;
