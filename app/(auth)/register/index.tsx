@@ -9,7 +9,7 @@ import CountryPicker, { CountryCode } from "react-native-country-picker-modal";
 
 export default function SignUpScreen() {
 	const router = useRouter();
-	const { requestVerificationCode, setPhone } = useAuthContext();
+	const { requestVerificationCode } = useAuthContext();
 	const [phoneNumber, setPhoneNumber] = useState("");
 	const [countryCode, setCountryCode] = useState<CountryCode>("US");
 	const [callingCode, setCallingCode] = useState("+1");
@@ -19,7 +19,6 @@ export default function SignUpScreen() {
 		if (!regex.phone.test(phoneNumber)) return setPhoneError(true);
 		const fullPhone =
 			"+" + callingCode + phoneNumber.replace(/\D/g, "").slice(0, 10);
-		setPhone(fullPhone);
 		await requestVerificationCode(fullPhone);
 		router.navigate("/register/verify");
 	};

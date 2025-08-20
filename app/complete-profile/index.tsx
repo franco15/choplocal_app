@@ -1,6 +1,6 @@
 import { Text, TextBold } from "@/components";
 import { useUserContext } from "@/contexts/UserContext";
-import { IUser } from "@/lib/types/user";
+import { useUpdateUser } from "@/lib/api/queries/userQueries";
 import { isNullOrWhitespace } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import DateTimePicker from "@react-native-community/datetimepicker";
@@ -29,7 +29,8 @@ const INPUT_CLASS =
 
 export default function CompleteProfile() {
 	const router = useRouter();
-	const { updateUser } = useUserContext();
+	const updateUser = useUpdateUser();
+	const { user, refetch } = useUserContext();
 	const {
 		control,
 		handleSubmit,
@@ -38,9 +39,11 @@ export default function CompleteProfile() {
 	const [showDateSelector, setShowDateSelector] = useState(false);
 
 	const onSubmit = async (data: any) => {
-		console.log(data);
-		const res = await updateUser(data as IUser);
-		if (res) router.replace("/");
+		const res = await updateUser.mutateAsync({ id: user.id as string, data });
+		await refetch();
+		if (!isNullOrWhitespace(res.id)) {
+			router.replace("/");
+		}
 	};
 
 	return (

@@ -1,10 +1,21 @@
 import { Container, Text, TextBold } from "@/components";
 import { images } from "@/constants/images";
 import { ArrowFortyFive } from "@/constants/svgs";
-import { Link } from "expo-router";
+import { useUserContext } from "@/contexts/UserContext";
+import { isNullOrWhitespace } from "@/lib/utils";
+import { Link, router } from "expo-router";
+import { useEffect } from "react";
 import { Image, ScrollView, View } from "react-native";
 
 export default function HomeScreen() {
+	const { isUserLoading, isUserFetching, user } = useUserContext();
+
+	useEffect(() => {
+		if (!isUserLoading && !isUserFetching)
+			if (isNullOrWhitespace(user?.firstName))
+				router.replace("/complete-profile");
+	}, [isUserLoading, user]);
+
 	return (
 		<Container>
 			<ScrollView showsVerticalScrollIndicator={false} className="px-3 pt-5">

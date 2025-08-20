@@ -1,56 +1,58 @@
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useContext, useMemo } from "react";
 
-import useApiService from "@/lib/axiosInstance";
+// import useApiService from "@/lib/axiosInstance";
+import useApiService from "@/lib/api/axiosInstance";
+import { UserEndpoints } from "@/lib/api/endpoints";
+import { queryKeys } from "@/lib/api/queryClient";
 import { IUser } from "@/lib/types/user";
-import { isNullOrWhitespace } from "@/lib/utils";
+import {
+	QueryObserverResult,
+	RefetchOptions,
+	UseMutationResult,
+	useQuery,
+} from "@tanstack/react-query";
 import { useAuthContext } from "./AuthContext";
 
 interface IUserContext {
 	user: IUser;
-	setUser: (user: IUser) => void;
-	updateUser: (user: IUser) => Promise<boolean>;
-	profileCompleted: boolean;
+	isUserLoading: boolean;
+	isUserFetching: boolean;
+	updateUser: UseMutationResult<IUser, Error, IUser, unknown>;
+	refetch: (
+		options?: RefetchOptions
+	) => Promise<QueryObserverResult<IUser, Error>>;
 }
 
 const UserContext = createContext<IUserContext>({} as IUserContext);
 
 const UserProvider = ({ children }: { children: React.ReactNode }) => {
 	const api = useApiService();
-	const { authenticated, phone } = useAuthContext();
-	const [user, setUser] = useState<IUser>();
-	const [profileCompleted, setProfileCompleted] = useState(true);
+	const { userAuth } = useAuthContext();
 
-	useEffect(() => {
-		const retrieveUser = async () => {
-			const res: IUser = await api.get(`api/app/user/${phone}`);
-			setUser(res);
-			if (isNullOrWhitespace(res?.firstName)) {
-				setProfileCompleted(false);
-			}
-		};
-		if (authenticated && !isNullOrWhitespace(phone)) retrieveUser();
-	}, [authenticated, phone]);
-
-	const updateUser = async (model: IUser) => {
-		try {
-			const res: IUser = await api.put(`api/app/user/${user?.id}`, {
-				firstName: model.firstName,
-				lastName: model.lastName,
-				birthDate: model.birthDate,
-				email: model.email,
-			});
-			setUser(res);
-			setProfileCompleted(true);
-			return true;
-		} catch (error) {
-			console.log(error);
-			return false;
-		}
-	};
+	const {
+		data: user,
+		isPending: isUserLoading,
+		isFetching: isUserFetching,
+		isError,
+		error,
+		refetch,
+	} = useQuery({
+		queryKey: [queryKeys.user],
+		queryFn: async () => {
+			const data: IUser = await api.get(UserEndpoints.byId(userAuth!.phone));
+			return data;
+		},
+		enabled: !!userAuth,
+	});
 
 	const data = useMemo(() => {
-		return { user, setUser, updateUser, profileCompleted } as IUserContext;
-	}, [user]);
+		return {
+			user,
+			isUserLoading,
+			isUserFetching,
+			refetch,
+		} as IUserContext;
+	}, [user, isUserLoading]);
 
 	return <UserContext.Provider value={data}>{children}</UserContext.Provider>;
 };

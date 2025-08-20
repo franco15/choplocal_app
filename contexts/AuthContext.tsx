@@ -3,13 +3,18 @@ import { jwtDecode } from "jwt-decode";
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 
 import { TOKEN_KEY } from "@/constants/keys";
-import useApiService, { setAuthToken } from "@/lib/axiosInstance";
+import useApiService, { setAuthToken } from "@/lib/api/axiosInstance";
 import { isNullOrWhitespace } from "@/lib/utils";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface IAuthContext {
 	authenticated: boolean;
-	phone: string;
-	setPhone: (phone: string) => void;
+	userAuth: {
+		phone: string;
+		id: string;
+	} | null;
+	phoneNumber: string;
+	setPhoneNumber: (phone: string) => void;
 	login: (userReference: string) => Promise<void>;
 	requestVerificationCode: (phone: string) => Promise<void>;
 	verifyCode: (code: string) => Promise<boolean>;
@@ -21,8 +26,13 @@ const AuthContext = createContext<IAuthContext>({} as IAuthContext);
 
 const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 	const api = useApiService();
+	const queryClient = useQueryClient();
 	const [authenticated, setAuthenticated] = useState(false);
-	const [phone, setPhone] = useState<string>("");
+	const [phoneNumber, setPhoneNumber] = useState<string>("");
+	const [userAuth, setUserAuth] = useState<{
+		phone: string;
+		id: string;
+	} | null>(null);
 
 	useEffect(() => {
 		const getToken = async () => {
@@ -30,11 +40,15 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 			if (!isNullOrWhitespace(jwt)) {
 				setAuthenticated(true);
 				const decoded = jwtDecode(jwt!);
-				if (!isNullOrWhitespace(decoded.sub)) setPhone(decoded.sub!);
+				let phone = "";
+				let id = "";
+				if (!isNullOrWhitespace(decoded.sub)) phone = decoded.sub!;
+				if (!isNullOrWhitespace(decoded.jti)) id = decoded.jti!;
+				setUserAuth({ phone, id });
 			}
 		};
 		getToken();
-	}, []);
+	}, [authenticated]);
 
 	const login = async (userReference: string) => {
 		try {
@@ -45,7 +59,9 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 	};
 
 	const logout = async () => {
+		queryClient.clear();
 		setAuthenticated(false);
+		setUserAuth(null);
 		await setAuthToken(null);
 	};
 
@@ -54,7 +70,7 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 			await api.post("api/auth/request-verification-code", {
 				phoneNumber: phoneNumber,
 			});
-			setPhone(phoneNumber);
+			setPhoneNumber(phoneNumber);
 		} catch (error) {
 			console.log("error", error);
 		}
@@ -63,7 +79,7 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 	const verifyCode = async (code: string) => {
 		try {
 			const res: { jwt: string } = await api.post("api/auth/login-with-code", {
-				phoneNumber: phone,
+				phoneNumber,
 				code: code,
 			});
 			const jwt = res.jwt;
@@ -83,7 +99,7 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 			const response: { jwt: string } = await api.post(
 				"api/auth/register-with-code",
 				{
-					phoneNumber: phone,
+					phoneNumber,
 					code: code,
 				}
 			);
@@ -107,10 +123,11 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 			requestVerificationCode,
 			verifyCode,
 			registerWithCode,
-			phone,
-			setPhone,
+			phoneNumber,
+			setPhoneNumber,
+			userAuth,
 		} as IAuthContext;
-	}, [authenticated, phone]);
+	}, [authenticated, phoneNumber, userAuth]);
 
 	return <AuthContext.Provider value={data}>{children}</AuthContext.Provider>;
 };

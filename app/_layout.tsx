@@ -1,5 +1,6 @@
 import { AuthProvider, useAuthContext } from "@/contexts/AuthContext";
-import { UserProvider, useUserContext } from "@/contexts/UserContext";
+import { UserProvider } from "@/contexts/UserContext";
+import { queryClient } from "@/lib/api/queryClient";
 import {
 	Inter_400Regular,
 	Inter_500Medium,
@@ -7,6 +8,7 @@ import {
 	Inter_700Bold,
 	useFonts,
 } from "@expo-google-fonts/inter";
+import { QueryClientProvider } from "@tanstack/react-query";
 import { Stack, useRouter } from "expo-router";
 import { useEffect } from "react";
 import "./global.css";
@@ -24,18 +26,19 @@ export default function RootLayout() {
 	}
 
 	return (
-		<AuthProvider>
-			<UserProvider>
-				<RootComponent />
-			</UserProvider>
-		</AuthProvider>
+		<QueryClientProvider client={queryClient}>
+			<AuthProvider>
+				<UserProvider>
+					<RootComponent />
+				</UserProvider>
+			</AuthProvider>
+		</QueryClientProvider>
 	);
 }
 
 const RootComponent = () => {
 	const router = useRouter();
 	const { authenticated } = useAuthContext();
-	const { profileCompleted } = useUserContext();
 
 	useEffect(() => {
 		if (!authenticated) {
@@ -43,7 +46,7 @@ const RootComponent = () => {
 		} else {
 			router.replace("/");
 		}
-	}, [profileCompleted, authenticated]);
+	}, [authenticated]);
 
 	if (!authenticated)
 		return (

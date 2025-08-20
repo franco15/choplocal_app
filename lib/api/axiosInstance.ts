@@ -3,7 +3,7 @@ import * as SecureStore from "expo-secure-store";
 
 import { TOKEN_KEY } from "@/constants/keys";
 import { useRouter } from "expo-router";
-import { isNullOrWhitespace } from "./utils";
+import { isNullOrWhitespace } from "../utils";
 
 let cachedToken: string | null = null;
 
