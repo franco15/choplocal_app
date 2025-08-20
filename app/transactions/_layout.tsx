@@ -2,7 +2,7 @@ import { Stack } from "expo-router";
 
 const TransactionsLayout = () => {
 	return (
-		<Stack>
+		<Stack screenOptions={{ headerTransparent: true }}>
 			<Stack.Screen
 				options={{
 					headerTitle: "Back to home",

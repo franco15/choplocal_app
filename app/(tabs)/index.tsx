@@ -1,11 +1,10 @@
 import { Container, Text, TextBold } from "@/components";
 import { images } from "@/constants/images";
 import { ArrowFortyFive } from "@/constants/svgs";
-import { Link, useRouter } from "expo-router";
+import { Link } from "expo-router";
 import { Image, ScrollView, View } from "react-native";
 
-export default function Index() {
-	const router = useRouter();
+export default function HomeScreen() {
 	return (
 		<Container>
 			<ScrollView showsVerticalScrollIndicator={false} className="px-3 pt-5">

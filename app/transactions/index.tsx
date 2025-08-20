@@ -1,7 +1,6 @@
-import { Text, TextBold } from "@/components";
+import { Container, Text, TextBold } from "@/components";
 import { images } from "@/constants/images";
 import { FlatList, Image, View } from "react-native";
-
 const transactions = [
 	{
 		id: 1,
@@ -77,30 +76,37 @@ const transactions = [
 
 export default function Transactions() {
 	return (
-		<View className="flex h-full px-4 bg-background">
-			<TextBold className="text-[25px] mb-5">Transactions</TextBold>
-			<FlatList
-				data={transactions}
-				initialNumToRender={10}
-				contentContainerStyle={{ marginBottom: 50 }}
-				renderItem={({ item, index }) => (
-					<View key={index} className="  bg-[#DDDDDD] mb-5 p-7 rounded-[11px]">
-						<View className="flex flex-row items-center">
-							<View className="rounded-full flex-[1]">
-								<Image
-									className="w-[37px] h-[37px] rounded-full"
-									source={item.icon}
-								/>
+		<Container useGradient={false}>
+			<View className="px-4 mt-20">
+				<TextBold className="text-[25px] mb-5">Transactions</TextBold>
+				<FlatList
+					data={transactions}
+					initialNumToRender={10}
+					contentContainerStyle={{ marginBottom: 50 }}
+					renderItem={({ item, index }) => (
+						<View
+							key={index}
+							className="  bg-[#DDDDDD] mb-5 p-7 rounded-[11px]"
+						>
+							<View className="flex flex-row items-center">
+								<View className="rounded-full flex-[1]">
+									<Image
+										className="w-[37px] h-[37px] rounded-full"
+										source={item.icon}
+									/>
+								</View>
+								<View className="flex-[4]">
+									<Text className="text-[10px]">{item.name}</Text>
+									<Text className="text-[15px]">{item.checkIns} VISITS</Text>
+								</View>
+								<Text className="flex-[1] text-[10px]">${item.balance}</Text>
 							</View>
-							<View className="flex-[4]">
-								<Text className="text-[10px]">{item.name}</Text>
-								<Text className="text-[15px]">{item.checkIns} VISITS</Text>
-							</View>
-							<Text className="flex-[1] text-[10px]">${item.balance}</Text>
 						</View>
-					</View>
-				)}
-			/>
-		</View>
+					)}
+				/>
+			</View>
+		</Container>
 	);
+	// return (
+	// );
 }

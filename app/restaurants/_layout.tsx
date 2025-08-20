@@ -2,7 +2,7 @@ import { Stack } from "expo-router";
 
 const RestaurantsLayout = () => {
 	return (
-		<Stack>
+		<Stack screenOptions={{ headerTransparent: true }}>
 			<Stack.Screen
 				options={{
 					headerTitle: "Back to home",
@@ -12,7 +12,7 @@ const RestaurantsLayout = () => {
 			/>
 			<Stack.Screen
 				options={{
-					headerTitle: "",
+					headerTitle: "Back",
 					headerShadowVisible: false,
 				}}
 				name="[id]"

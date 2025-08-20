@@ -23,7 +23,7 @@ export default function LoginScreen() {
 	};
 
 	return (
-		<Container>
+		<Container useGradient={false}>
 			<View className="flex items-center justify-center h-full px-5">
 				<Text className="text-5xl mb-10">Welcome Back!</Text>
 				<View className="flex flex-row justify-between h-[62px] items-start">
