@@ -30,7 +30,7 @@ const INPUT_CLASS =
 export default function CompleteProfile() {
 	const router = useRouter();
 	const updateUser = useUpdateUser();
-	const { user, refetch } = useUserContext();
+	const { user, refetch, setProfileComplete } = useUserContext();
 	const {
 		control,
 		handleSubmit,
@@ -40,10 +40,9 @@ export default function CompleteProfile() {
 
 	const onSubmit = async (data: any) => {
 		const res = await updateUser.mutateAsync({ id: user.id as string, data });
+		setProfileComplete(true);
 		await refetch();
-		if (!isNullOrWhitespace(res.id)) {
-			router.replace("/");
-		}
+		router.replace("/");
 	};
 
 	return (

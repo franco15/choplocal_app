@@ -6,6 +6,7 @@ import { useRouter } from "expo-router";
 import { isNullOrWhitespace } from "../utils";
 
 let cachedToken: string | null = null;
+let onLogout = () => {};
 
 // const API_URL = "https://localhost:44339/"; ///TODO set up env variables
 const API_URL = "http://10.0.2.2:5264/"; ///TODO set up env variables
@@ -24,7 +25,11 @@ const saveToken = async (token: string | null) => {
 	}
 };
 
-const useApiService = () => {
+export const setOnLogout = (callback: () => void) => {
+	onLogout = callback;
+};
+
+const useAxios = () => {
 	const router = useRouter();
 
 	const axiosInstance = axios.create({
@@ -52,21 +57,32 @@ const useApiService = () => {
 
 	axiosInstance.interceptors.response.use(
 		(response) => {
-			// console.log(response);
 			return response.data;
 		},
-		(error: AxiosError) => {
+		async (error: AxiosError) => {
 			if (error.response) {
 				switch (error.response.status) {
 					case 401:
-						return router.replace("/login");
+						await saveToken(null);
+						onLogout();
+						// if (onLogout) {
+						// }
+						router.replace("/login");
+					// return error;
 					// break;
-
+					case 404:
+						console.log(
+							"error who",
+							error.config?.url,
+							"    |    ",
+							error.config?.params
+						);
 					default:
 						break;
 				}
 			}
-			console.log("error response", error.response);
+			console.log("error response", error.message);
+
 			return Promise.reject(error);
 		}
 	);
@@ -74,6 +90,6 @@ const useApiService = () => {
 	return axiosInstance;
 };
 
-export default useApiService;
+export default useAxios;
 
 export const setAuthToken = saveToken;

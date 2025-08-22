@@ -28,9 +28,7 @@ export default function RootLayout() {
 	return (
 		<QueryClientProvider client={queryClient}>
 			<AuthProvider>
-				<UserProvider>
-					<RootComponent />
-				</UserProvider>
+				<RootComponent />
 			</AuthProvider>
 		</QueryClientProvider>
 	);
@@ -56,10 +54,12 @@ const RootComponent = () => {
 		);
 
 	return (
-		<Stack screenOptions={{ headerShown: false }}>
-			<Stack.Screen name="(tabs)" />
-			<Stack.Screen name="restaurants" />
-			<Stack.Screen name="transactions" />
-		</Stack>
+		<UserProvider>
+			<Stack screenOptions={{ headerShown: false }}>
+				<Stack.Screen name="(tabs)" />
+				<Stack.Screen name="restaurants" />
+				<Stack.Screen name="transactions" />
+			</Stack>
+		</UserProvider>
 	);
 };

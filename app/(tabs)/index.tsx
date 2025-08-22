@@ -2,19 +2,16 @@ import { Container, Text, TextBold } from "@/components";
 import { images } from "@/constants/images";
 import { ArrowFortyFive } from "@/constants/svgs";
 import { useUserContext } from "@/contexts/UserContext";
-import { isNullOrWhitespace } from "@/lib/utils";
 import { Link, router } from "expo-router";
 import { useEffect } from "react";
 import { Image, ScrollView, View } from "react-native";
 
 export default function HomeScreen() {
-	const { isUserLoading, isUserFetching, user } = useUserContext();
+	const { profileComplete } = useUserContext();
 
 	useEffect(() => {
-		if (!isUserLoading && !isUserFetching)
-			if (isNullOrWhitespace(user?.firstName))
-				router.replace("/complete-profile");
-	}, [isUserLoading, user]);
+		if (!profileComplete) router.replace("/complete-profile");
+	}, [profileComplete]);
 
 	return (
 		<Container>

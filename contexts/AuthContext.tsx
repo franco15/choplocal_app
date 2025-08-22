@@ -3,16 +3,20 @@ import { jwtDecode } from "jwt-decode";
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 
 import { TOKEN_KEY } from "@/constants/keys";
-import useApiService, { setAuthToken } from "@/lib/api/axiosInstance";
+import { setAuthToken, setOnLogout } from "@/lib/api/axiosInstance";
+import { useAuthApi } from "@/lib/api/useApi";
 import { isNullOrWhitespace } from "@/lib/utils";
 import { useQueryClient } from "@tanstack/react-query";
 
 interface IAuthContext {
 	authenticated: boolean;
+	setAuthenticated: (authenticated: boolean) => void;
+	token: string | null;
+	setToken: (token: string | null) => void;
 	userAuth: {
 		phone: string;
 		id: string;
-	} | null;
+	};
 	phoneNumber: string;
 	setPhoneNumber: (phone: string) => void;
 	login: (userReference: string) => Promise<void>;
@@ -25,19 +29,21 @@ interface IAuthContext {
 const AuthContext = createContext<IAuthContext>({} as IAuthContext);
 
 const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-	const api = useApiService();
+	const authApi = useAuthApi();
 	const queryClient = useQueryClient();
 	const [authenticated, setAuthenticated] = useState(false);
+	const [token, setToken] = useState<string | null>(null);
 	const [phoneNumber, setPhoneNumber] = useState<string>("");
 	const [userAuth, setUserAuth] = useState<{
 		phone: string;
 		id: string;
-	} | null>(null);
+	}>({ phone: "", id: "" });
 
 	useEffect(() => {
 		const getToken = async () => {
 			const jwt = await SecureStore.getItemAsync(TOKEN_KEY);
 			if (!isNullOrWhitespace(jwt)) {
+				setToken(jwt);
 				setAuthenticated(true);
 				const decoded = jwtDecode(jwt!);
 				let phone = "";
@@ -48,6 +54,7 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 			}
 		};
 		getToken();
+		setOnLogout(logout);
 	}, [authenticated]);
 
 	const login = async (userReference: string) => {
@@ -61,15 +68,13 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 	const logout = async () => {
 		queryClient.clear();
 		setAuthenticated(false);
-		setUserAuth(null);
+		setUserAuth({ phone: "", id: "" });
 		await setAuthToken(null);
 	};
 
 	const requestVerificationCode = async (phoneNumber: string) => {
 		try {
-			await api.post("api/auth/request-verification-code", {
-				phoneNumber: phoneNumber,
-			});
+			await authApi.requestCode(phoneNumber);
 			setPhoneNumber(phoneNumber);
 		} catch (error) {
 			console.log("error", error);
@@ -78,10 +83,10 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
 	const verifyCode = async (code: string) => {
 		try {
-			const res: { jwt: string } = await api.post("api/auth/login-with-code", {
+			const res: { jwt: string } = await authApi.loginWithCode(
 				phoneNumber,
-				code: code,
-			});
+				code
+			);
 			const jwt = res.jwt;
 			if (jwt) {
 				setAuthenticated(true);
@@ -96,14 +101,11 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
 	const registerWithCode = async (code: string) => {
 		try {
-			const response: { jwt: string } = await api.post(
-				"api/auth/register-with-code",
-				{
-					phoneNumber,
-					code: code,
-				}
+			const res: { jwt: string } = await authApi.registerWithCode(
+				phoneNumber,
+				code
 			);
-			const jwt = response.jwt;
+			const jwt = res.jwt;
 			if (jwt) {
 				setAuthenticated(true);
 				await setAuthToken(jwt);
@@ -118,6 +120,9 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 	const data = useMemo(() => {
 		return {
 			authenticated,
+			setAuthenticated,
+			token,
+			setToken,
 			login,
 			logout,
 			requestVerificationCode,
@@ -127,7 +132,7 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 			setPhoneNumber,
 			userAuth,
 		} as IAuthContext;
-	}, [authenticated, phoneNumber, userAuth]);
+	}, [authenticated, phoneNumber, userAuth, token]);
 
 	return <AuthContext.Provider value={data}>{children}</AuthContext.Provider>;
 };

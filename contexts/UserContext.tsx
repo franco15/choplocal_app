@@ -1,10 +1,9 @@
-import { createContext, useContext, useMemo } from "react";
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
 
-// import useApiService from "@/lib/axiosInstance";
-import useApiService from "@/lib/api/axiosInstance";
-import { UserEndpoints } from "@/lib/api/endpoints";
 import { queryKeys } from "@/lib/api/queryClient";
+import { useUserApi } from "@/lib/api/useApi";
 import { IUser } from "@/lib/types/user";
+import { isNullOrWhitespace } from "@/lib/utils";
 import {
 	QueryObserverResult,
 	RefetchOptions,
@@ -17,6 +16,8 @@ interface IUserContext {
 	user: IUser;
 	isUserLoading: boolean;
 	isUserFetching: boolean;
+	profileComplete: boolean;
+	setProfileComplete: (complete: boolean) => void;
 	updateUser: UseMutationResult<IUser, Error, IUser, unknown>;
 	refetch: (
 		options?: RefetchOptions
@@ -26,8 +27,9 @@ interface IUserContext {
 const UserContext = createContext<IUserContext>({} as IUserContext);
 
 const UserProvider = ({ children }: { children: React.ReactNode }) => {
-	const api = useApiService();
-	const { userAuth } = useAuthContext();
+	const userApi = useUserApi();
+	const { authenticated, userAuth } = useAuthContext();
+	const [profileComplete, setProfileComplete] = useState(true);
 
 	const {
 		data: user,
@@ -37,22 +39,28 @@ const UserProvider = ({ children }: { children: React.ReactNode }) => {
 		error,
 		refetch,
 	} = useQuery({
-		queryKey: [queryKeys.user],
+		queryKey: [queryKeys.users.byId(userAuth.id)],
 		queryFn: async () => {
-			const data: IUser = await api.get(UserEndpoints.byId(userAuth!.phone));
+			const data = await userApi.byId(userAuth.phone);
 			return data;
 		},
-		enabled: !!userAuth,
+		enabled: !!authenticated && !isNullOrWhitespace(userAuth.phone),
 	});
+
+	useEffect(() => {
+		if (user && isNullOrWhitespace(user.firstName)) setProfileComplete(false);
+	}, [user]);
 
 	const data = useMemo(() => {
 		return {
 			user,
 			isUserLoading,
 			isUserFetching,
+			profileComplete,
+			setProfileComplete,
 			refetch,
 		} as IUserContext;
-	}, [user, isUserLoading]);
+	}, [user, isUserLoading, isUserFetching, profileComplete]);
 
 	return <UserContext.Provider value={data}>{children}</UserContext.Provider>;
 };
