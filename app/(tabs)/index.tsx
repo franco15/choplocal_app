@@ -1,17 +1,19 @@
 import { Container, Text, TextBold } from "@/components";
-import { images } from "@/constants/images";
 import { ArrowFortyFive } from "@/constants/svgs";
 import { useUserContext } from "@/contexts/UserContext";
 import { Link, router } from "expo-router";
 import { useEffect } from "react";
-import { Image, ScrollView, View } from "react-native";
+import { ScrollView, View } from "react-native";
+import QRCode from "react-native-qrcode-svg";
 
 export default function HomeScreen() {
-	const { profileComplete } = useUserContext();
+	const { profileComplete, user, isUserLoading } = useUserContext();
 
 	useEffect(() => {
 		if (!profileComplete) router.replace("/complete-profile");
 	}, [profileComplete]);
+
+	if (!user) return null;
 
 	return (
 		<Container>
@@ -19,7 +21,7 @@ export default function HomeScreen() {
 				<View className="flex justify-center">
 					<View className="self-center absolute bottom-[90px] z-20">
 						<TextBold className="text-[45px] self-center">Chop Local</TextBold>
-						<Text className="text-3xl self-center">36752</Text>
+						<Text className="text-3xl self-center">{user.code}</Text>
 					</View>
 					<View className="h-[150px] rounded-[26px] bg-[#9EA3BB] z-10" />
 					<View className="h-[150px] rounded-[26px] bg-[#D02B2B] bottom-20" />
@@ -36,7 +38,7 @@ export default function HomeScreen() {
 						shadowRadius: 3.5,
 					}}
 				>
-					<Image className="w-[124px] h-[130px]" source={images.qrExample} />
+					<QRCode value={user.code} size={135} />
 				</View>
 				<View
 					className="mt-10 rounded-[41px] flex flex-row px-10 py-5 justify-between items-center"

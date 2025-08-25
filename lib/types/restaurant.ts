@@ -9,4 +9,6 @@ export interface IRestaurant {
 	name: string;
 	checkIns: number;
 	status: ERestaurantStatus;
+	balance: number;
+	image: string;
 }

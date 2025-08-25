@@ -65,11 +65,7 @@ const useAxios = () => {
 					case 401:
 						await saveToken(null);
 						onLogout();
-						// if (onLogout) {
-						// }
-						router.replace("/login");
-					// return error;
-					// break;
+						break;
 					case 404:
 						console.log(
 							"error who",

@@ -39,7 +39,7 @@ export default function CompleteProfile() {
 	const [showDateSelector, setShowDateSelector] = useState(false);
 
 	const onSubmit = async (data: any) => {
-		const res = await updateUser.mutateAsync({ id: user.id as string, data });
+		await updateUser.mutateAsync({ id: user.id as string, data });
 		setProfileComplete(true);
 		await refetch();
 		router.replace("/");

@@ -1,16 +1,36 @@
 import { Container, Text, TextBold } from "@/components";
 import { ArrowFortyFive } from "@/constants/svgs";
+import { useUserContext } from "@/contexts/UserContext";
+import { queryKeys } from "@/lib/api/queryClient";
+import { useRestaurantApi } from "@/lib/api/useApi";
+import { useQuery } from "@tanstack/react-query";
 import { Link, useLocalSearchParams } from "expo-router";
 import { View } from "react-native";
 
 export default function Restaurant() {
 	const { id } = useLocalSearchParams();
+	const { user } = useUserContext();
+	const restaurantApi = useRestaurantApi();
+
+	const { data: restaurant, isPending } = useQuery({
+		queryKey: [queryKeys.restaurants.byId(id as string)],
+		queryFn: async () => {
+			const data = await restaurantApi.byId(id as string, user.id);
+			return data;
+		},
+		enabled: !!id && !!user,
+	});
+
+	if (isPending) return null;
+
 	return (
 		<Container>
 			<View className="px-3 mt-20">
-				<TextBold className="text-[45px] text-center">
-					Nombre del restaurante
-				</TextBold>
+				<View className="min-h-[100px] justify-center">
+					<TextBold className="text-[45px] text-center">
+						{restaurant?.name}
+					</TextBold>
+				</View>
 				<View
 					className="items-center mx-7 mt-14 py-10 rounded-[26px] h-[150px] justify-between"
 					style={{
@@ -23,8 +43,10 @@ export default function Restaurant() {
 						shadowRadius: 3.5,
 					}}
 				>
-					<Text className="text-[15px]">Your balance $200 USD</Text>
-					<Text className="text-[30px]">36752</Text>
+					<Text className="text-[18px]">
+						Your balance ${restaurant?.balance.toFixed(2)}
+					</Text>
+					<Text className="text-[30px]">{user.code}</Text>
 				</View>
 				<Link
 					href="/transactions"

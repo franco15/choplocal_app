@@ -5,6 +5,7 @@ export interface IUser {
 	birthDate: Date;
 	email: string;
 	phoneNumber: string;
+	code: string;
 }
 
 export interface IUserPut {
