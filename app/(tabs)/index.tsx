@@ -3,7 +3,7 @@ import { ArrowFortyFive } from "@/constants/svgs";
 import { useUserContext } from "@/contexts/UserContext";
 import { Link, router } from "expo-router";
 import { useEffect } from "react";
-import { ScrollView, View } from "react-native";
+import { ScrollView, Share, TouchableOpacity, View } from "react-native";
 import QRCode from "react-native-qrcode-svg";
 
 export default function HomeScreen() {
@@ -12,6 +12,21 @@ export default function HomeScreen() {
 	useEffect(() => {
 		if (!profileComplete) router.replace("/complete-profile");
 	}, [profileComplete]);
+
+	const onShare = async () => {
+		const result = await Share.share({
+			message: "Share Chop Local app with your friends!",
+		});
+		if (result.action === Share.sharedAction) {
+			if (result.activityType) {
+				//action type
+			} else {
+				// shared
+			}
+		} else {
+			// dismissed
+		}
+	};
 
 	if (!user) return null;
 
@@ -40,7 +55,9 @@ export default function HomeScreen() {
 				>
 					<QRCode value={user.code} size={135} />
 				</View>
-				<View
+				<TouchableOpacity
+					activeOpacity={0.9}
+					onPress={onShare}
 					className="mt-10 rounded-[41px] flex flex-row px-10 py-5 justify-between items-center"
 					style={{
 						borderColor: "#FFFFFF",
@@ -61,7 +78,7 @@ export default function HomeScreen() {
 					<View className="rounded-full bg-black w-[45px] h-[45px] justify-center items-center">
 						<ArrowFortyFive width={19} height={19} />
 					</View>
-				</View>
+				</TouchableOpacity>
 				<Link
 					href="/restaurants"
 					className="mt-10 rounded-[41px] flex flex-row px-10 py-5 justify-between items-center"

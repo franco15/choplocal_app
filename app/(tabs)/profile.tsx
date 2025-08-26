@@ -1,4 +1,3 @@
-//import { User } from "@/constants/svgs";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { useUserContext } from "@/contexts/UserContext";
 import React from "react";
@@ -17,7 +16,7 @@ const Profile = () => {
 	return (
 		<View className="flex-1 justify-center items-center">
 			<Text className="text-5xl">Profile</Text>
-			<Text className="text-xl">{user.id}</Text>
+			<Text className="text-xl">{user.code}</Text>
 			<Text className="text-xl">{user.firstName + " " + user.lastName}</Text>
 			<Text className="text-xl">{user.phoneNumber}</Text>
 			<Text className="text-xl">{user.email}</Text>

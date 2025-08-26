@@ -1,11 +1,11 @@
 import { Container, Text, TextBold } from "@/components";
-import { ArrowFortyFive } from "@/constants/svgs";
 import { useUserContext } from "@/contexts/UserContext";
 import { queryKeys } from "@/lib/api/queryClient";
 import { useRestaurantApi } from "@/lib/api/useApi";
 import { useQuery } from "@tanstack/react-query";
-import { Link, useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams } from "expo-router";
 import { View } from "react-native";
+import QRCode from "react-native-qrcode-svg";
 
 export default function Restaurant() {
 	const { id } = useLocalSearchParams();
@@ -26,13 +26,13 @@ export default function Restaurant() {
 	return (
 		<Container>
 			<View className="px-3 mt-20">
-				<View className="min-h-[100px] justify-center">
+				<View className="min-h-[200px] justify-center">
 					<TextBold className="text-[45px] text-center">
 						{restaurant?.name}
 					</TextBold>
 				</View>
 				<View
-					className="items-center mx-7 mt-14 py-10 rounded-[26px] h-[150px] justify-between"
+					className="items-center mx-7 mt-14 py-10 rounded-[26px] justify-between"
 					style={{
 						borderColor: "#FFFFFF",
 						backgroundColor: "#FFFFFF",
@@ -43,12 +43,16 @@ export default function Restaurant() {
 						shadowRadius: 3.5,
 					}}
 				>
-					<Text className="text-[18px]">
-						Your balance ${restaurant?.balance.toFixed(2)}
-					</Text>
-					<Text className="text-[30px]">{user.code}</Text>
+					<View className="flex flex-row justify-between w-full px-20 mb-7">
+						<Text className="text-[18px]">Your balance</Text>
+						<Text className="text-[18px]">
+							${restaurant?.balance.toFixed(2)}
+						</Text>
+					</View>
+					<QRCode value={user.code} size={175} />
+					<Text className="text-[30px] mt-7">{user.code}</Text>
 				</View>
-				<Link
+				{/* <Link
 					href="/transactions"
 					className="mt-16  rounded-[41px] flex flex-row px-10 py-5 justify-between items-center"
 					style={{
@@ -70,7 +74,7 @@ export default function Restaurant() {
 					<View className="rounded-full bg-black w-[45px] h-[45px] justify-center items-center">
 						<ArrowFortyFive width={19} height={19} />
 					</View>
-				</Link>
+				</Link> */}
 			</View>
 		</Container>
 	);

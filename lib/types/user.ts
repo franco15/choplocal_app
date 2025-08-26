@@ -6,6 +6,7 @@ export interface IUser {
 	email: string;
 	phoneNumber: string;
 	code: string;
+	image: string;
 }
 
 export interface IUserPut {
