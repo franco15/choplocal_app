@@ -1,3 +1,4 @@
+import { isNullOrWhitespace } from "@/lib/utils";
 import React, { Dispatch, useRef, useState } from "react";
 import { Dimensions, StyleSheet, TextInput, View } from "react-native";
 
@@ -47,17 +48,20 @@ const SegmentedInput = ({ length, onChange, error }: IProps) => {
 		// moves to next  or previuos input
 		if (!hasDeleted && index < length - 1) {
 			refs.current[index + 1]?.focus();
-		} else if (hasDeleted && index > 0) refs.current[index - 1]?.focus();
+		} else if (hasDeleted && index > 0) {
+			refs.current[index - 1]?.focus();
+		}
 		setCode(currentCode);
 		onChange(currentCode.join(""));
 	};
 
 	const handleChange = async (text: string, index: number) => {
-		if (!code.includes("")) return;
+		if (!code.includes("") && !isNullOrWhitespace(text)) return;
 		if (text.length > 1) {
 			await handlePaste(text);
 			return;
 		}
+
 		const numericValue = text.replace(/[^0-9]/g, "");
 		handleType(numericValue, index);
 	};

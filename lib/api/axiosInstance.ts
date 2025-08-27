@@ -38,7 +38,7 @@ const useAxios = () => {
 		async (config: InternalAxiosRequestConfig) => {
 			const token = await loadToken();
 			if (!isNullOrWhitespace(token)) {
-				console.log(token);
+				// console.log(token);
 				config.headers.Authorization = `Bearer ${token}`;
 			}
 			return config;

@@ -18,14 +18,14 @@ export default function LoginScreen() {
 	const onSend = async () => {
 		if (!regex.phone.test(phone)) return setPhoneError(true);
 		const fullPhone = "+" + callingCode + phone.replace(/\D/g, "").slice(0, 10);
-		await requestVerificationCode(fullPhone);
+		requestVerificationCode(fullPhone);
 		router.navigate("/login/verify");
 	};
 
 	return (
 		<Container useGradient={false}>
 			<View className="flex items-center justify-center h-full px-5">
-				<Text className="text-5xl mb-10">Welcome Back!</Text>
+				<Text className="text-5xl mb-10 text-center">Welcome Back!</Text>
 				<View className="flex flex-row justify-between h-[62px] items-start">
 					<CountryPicker
 						countryCode={countryCode}
