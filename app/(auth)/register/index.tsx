@@ -18,8 +18,9 @@ export default function SignUpScreen() {
 	const onSend = async () => {
 		if (!regex.phone.test(phoneNumber)) return setPhoneError(true);
 		const fullPhone =
-			"+" + callingCode + phoneNumber.replace(/\D/g, "").slice(0, 10);
-		await requestVerificationCode(fullPhone);
+			callingCode.replace(/\D/g, "") +
+			phoneNumber.replace(/\D/g, "").slice(0, 10);
+		requestVerificationCode(fullPhone);
 		router.navigate("/register/verify");
 	};
 	return (

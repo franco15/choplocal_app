@@ -17,7 +17,8 @@ export default function LoginScreen() {
 
 	const onSend = async () => {
 		if (!regex.phone.test(phone)) return setPhoneError(true);
-		const fullPhone = "+" + callingCode + phone.replace(/\D/g, "").slice(0, 10);
+		const fullPhone =
+			callingCode.replace(/\D/g, "") + phone.replace(/\D/g, "").slice(0, 10);
 		requestVerificationCode(fullPhone);
 		router.navigate("/login/verify");
 	};

@@ -57,16 +57,29 @@ const useAxios = () => {
 			if (error.response) {
 				switch (error.response.status) {
 					case 401:
+						// console.log(
+						// 	"error who",
+						// 	error.config?.url,
+						// 	"    |    ",
+						// 	error.config?.params
+						// );
 						await saveToken(null);
 						onLogout();
 						break;
 					case 404:
-						console.log(
-							"error who",
-							error.config?.url,
-							"    |    ",
-							error.config?.params
-						);
+					// console.log(
+					// 	"error who",
+					// 	error.config?.url,
+					// 	"    |    ",
+					// 	error.config?.params
+					// );
+					case 500:
+					// console.log(
+					// 	"error who",
+					// 	error.config?.url,
+					// 	"    |    ",
+					// 	error.config?.params
+					// );
 					default:
 						break;
 				}

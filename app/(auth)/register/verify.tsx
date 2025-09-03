@@ -1,16 +1,31 @@
 import { SegmentedInput, Text, TextBold } from "@/components";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { isNullOrWhitespace } from "@/lib/utils";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { TouchableOpacity, View } from "react-native";
 
+const RESEND_TIME = 45;
+
 export default function VerifyScreen() {
-	const { registerWithCode } = useAuthContext();
+	const { registerWithCode, phoneNumber, requestVerificationCode } =
+		useAuthContext();
 	const [code, setCode] = useState("");
 	const [error, setError] = useState(false);
+	const [timer, setTimer] = useState(RESEND_TIME);
 
-	const resendCode = () => {
-		// console.log("resend code");
+	useEffect(() => {
+		let interval: NodeJS.Timeout;
+		if (timer > 0) {
+			interval = setInterval(() => {
+				setTimer((prev) => prev - 1);
+			}, 1000);
+			return () => clearInterval(interval);
+		}
+	}, [timer]);
+
+	const resendCode = async () => {
+		await requestVerificationCode(phoneNumber);
+		setTimer(RESEND_TIME);
 	};
 
 	const onSendCode = async () => {
@@ -43,7 +58,13 @@ export default function VerifyScreen() {
 					Didn't get the code?{" "}
 				</TextBold>
 				<TouchableOpacity className="" onPress={resendCode}>
-					<TextBold className="text-[14px] text-blue-400">Send code</TextBold>
+					<TextBold
+						className={`text-[14px] ${
+							timer > 0 ? "text-gray-400" : "text-blue-400"
+						}`}
+					>
+						Send code {timer > 0 && `(${timer})`}
+					</TextBold>
 				</TouchableOpacity>
 			</View>
 		</View>

@@ -1,20 +1,35 @@
 import { SegmentedInput, Text, TextBold } from "@/components";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { isNullOrWhitespace } from "@/lib/utils";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { TouchableOpacity, View } from "react-native";
 
+const RESEND_TIME = 45;
+
 export default function VerifyScreen() {
-	const { verifyCode } = useAuthContext();
+	const { verifyCode, phoneNumber, requestVerificationCode } = useAuthContext();
 	const [code, setCode] = useState("");
 	const [error, setError] = useState(false);
+	const [timer, setTimer] = useState(RESEND_TIME);
 
-	const resendCode = () => {
-		// console.log("resend code");
+	useEffect(() => {
+		let interval: NodeJS.Timeout;
+		if (timer > 0) {
+			interval = setInterval(() => {
+				setTimer((prev) => prev - 1);
+			}, 1000);
+			return () => clearInterval(interval);
+		}
+	}, [timer]);
+
+	const resendCode = async () => {
+		await requestVerificationCode(phoneNumber);
+		setTimer(RESEND_TIME);
 	};
 
 	const onSendCode = async () => {
 		if (isNullOrWhitespace(code)) return setError(true);
+		setTimer(RESEND_TIME);
 		await verifyCode(code);
 	};
 
@@ -24,8 +39,9 @@ export default function VerifyScreen() {
 				6 - digit code
 			</TextBold>
 			<Text className="text-[14px] mb-10 mr-16" style={{ color: "#93969E" }}>
-				A message with a verification code has been sent to *** *** **12. Please
-				enter the code to continue.
+				A message with a verification code has been sent to{" "}
+				{phoneNumber.replace(/.(?=.{4})/g, "*")}. Please enter the code to
+				continue.
 			</Text>
 
 			<SegmentedInput length={6} onChange={setCode} error={error} />
@@ -42,8 +58,18 @@ export default function VerifyScreen() {
 				<TextBold className="text-[14px]" style={{}}>
 					Didn't get the code?{" "}
 				</TextBold>
-				<TouchableOpacity className="" onPress={resendCode}>
-					<TextBold className="text-[14px] text-blue-400">Send code</TextBold>
+				<TouchableOpacity
+					className=""
+					onPress={resendCode}
+					disabled={timer > 0}
+				>
+					<TextBold
+						className={`text-[14px] ${
+							timer > 0 ? "text-gray-400" : "text-blue-400"
+						}`}
+					>
+						Send code {timer > 0 && `(${timer})`}
+					</TextBold>
 				</TouchableOpacity>
 			</View>
 		</View>
