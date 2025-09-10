@@ -7,7 +7,8 @@ import {
 } from "@shopify/react-native-skia";
 import { Dimensions, StyleSheet } from "react-native";
 
-const { width, height } = Dimensions.get("window");
+// const { width, height } = Dimensions.get("window");
+const { width, height } = Dimensions.get("screen");
 
 export default function GradientBackground() {
 	return (

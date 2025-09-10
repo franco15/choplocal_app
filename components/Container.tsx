@@ -16,13 +16,14 @@ const Container = ({
 }: containerProps) => {
 	const insets = useSafeAreaInsets();
 	return (
-		<View className="flex-1">
+		<View className="flex-[1]">
 			{useGradient && <GradientBackground />}
 			<View
-				className="flex-1 px-3"
+				className="flex-[1] px-3"
 				style={[
 					{
 						paddingTop: insets.top,
+						// paddingBottom: insets.bottom,
 						backgroundColor: useGradient ? "transparent" : "#FFFFFF",
 					},
 					style,

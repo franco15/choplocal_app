@@ -47,11 +47,11 @@ export default function Restaurants() {
 											source={logo}
 										/>
 									</View>
-									<View className="flex-[4]">
+									<View className="flex-[3]">
 										<Text className="text-[15px]">{item.name}</Text>
 										<Text className="text-[18px]">{item.checkIns} VISITS</Text>
 									</View>
-									<View className="flex-[1]">
+									<View className="flex-[1.5]">
 										<Text className="text-[13px]">Balance</Text>
 										<Text className="text-[15px]">
 											${item.balance.toFixed(2)}

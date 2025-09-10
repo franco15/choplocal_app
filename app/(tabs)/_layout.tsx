@@ -21,7 +21,6 @@ const TabsLayout = () => {
 					color: "black",
 				},
 				headerShown: false,
-				// headerTransparent: true,
 				tabBarStyle: {
 					backgroundColor: "transparent",
 					position: "absolute",

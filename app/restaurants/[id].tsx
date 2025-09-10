@@ -25,14 +25,14 @@ export default function Restaurant() {
 
 	return (
 		<Container>
-			<View className="px-3 mt-20">
-				<View className="min-h-[200px] justify-center">
+			<View className="px-3 mt-10">
+				<View className="min-h-[175px] justify-center">
 					<TextBold className="text-[45px] text-center">
 						{restaurant?.name}
 					</TextBold>
 				</View>
 				<View
-					className="items-center mx-7 mt-14 py-10 rounded-[26px] justify-between"
+					className="items-center mx-7 mt-5 py-10 rounded-[26px] justify-between"
 					style={{
 						borderColor: "#FFFFFF",
 						backgroundColor: "#FFFFFF",
