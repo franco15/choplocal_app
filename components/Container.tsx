@@ -23,7 +23,7 @@ const Container = ({
 				style={[
 					{
 						paddingTop: insets.top,
-						// paddingBottom: insets.bottom,
+						paddingBottom: insets.bottom,
 						backgroundColor: useGradient ? "transparent" : "#FFFFFF",
 					},
 					style,

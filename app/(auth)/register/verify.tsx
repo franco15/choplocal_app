@@ -39,17 +39,18 @@ export default function VerifyScreen() {
 				6 - digit code
 			</TextBold>
 			<Text className="text-[14px] mb-10 mr-16" style={{ color: "#93969E" }}>
-				A message with a verification code has been sent to *** *** **12. Please
-				enter the code to continue.
+				A message with a verification code has been sent to{" "}
+				{phoneNumber.replace(/.(?=.{4})/g, "*")}. Please enter the code to
+				continue.
 			</Text>
 
 			<SegmentedInput length={6} onChange={setCode} error={error} />
 			<TouchableOpacity
-				className="bg-[#B91E18] mt-40 w-1/2 h-[54px] self-center items-center justify-center rounded-[30px]"
+				className="bg-[#E3C6FB] mt-40 w-1/2 h-[54px] self-center items-center justify-center rounded-[30px]"
 				activeOpacity={0.8}
 				onPress={onSendCode}
 			>
-				<Text className="text-[14px]" style={{ color: "#FFFFFF" }}>
+				<Text className="text-[14px]" style={{ color: "#000000" }}>
 					Continue
 				</Text>
 			</TouchableOpacity>

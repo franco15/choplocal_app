@@ -80,16 +80,16 @@ export default function SignUpScreen() {
 				} items-center justify-center`}
 				href="/login"
 			>
-				<TextBold className="text-[14px] underline" style={{}}>
+				<Text className="text-[14px] text-[#B91E18] underline" style={{}}>
 					Already have an account? Log in
-				</TextBold>
+				</Text>
 			</Link>
 			<TouchableOpacity
-				className="bg-[#B91E18] mt-40 w-1/2 h-[54px] self-center items-center justify-center rounded-[30px]"
+				className="bg-[#E3C6FB] mt-52 w-1/2 h-[54px] self-center items-center justify-center rounded-[30px]"
 				activeOpacity={0.8}
 				onPress={onSend}
 			>
-				<Text className="text-[14px]" style={{ color: "#FFFFFF" }}>
+				<Text className="text-[14px]" style={{ color: "#000000" }}>
 					Send code
 				</Text>
 			</TouchableOpacity>

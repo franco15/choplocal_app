@@ -1,4 +1,5 @@
 import { AuthProvider, useAuthContext } from "@/contexts/AuthContext";
+import { SuggestionProvider } from "@/contexts/SuggestionsContext";
 import { UserProvider } from "@/contexts/UserContext";
 import { queryClient } from "@/lib/api/queryClient";
 import {
@@ -57,11 +58,15 @@ const RootComponent = () => {
 
 	return (
 		<UserProvider>
-			<Stack screenOptions={{ headerShown: false }}>
-				<Stack.Screen name="(tabs)" />
-				<Stack.Screen name="restaurants" />
-				<Stack.Screen name="transactions" />
-			</Stack>
+			<SuggestionProvider>
+				<Stack screenOptions={{ headerShown: false }}>
+					<Stack.Screen name="(tabs)" />
+					<Stack.Screen name="restaurants" />
+					<Stack.Screen name="transactions" />
+					<Stack.Screen name="qr" />
+					<Stack.Screen name="suggestions" />
+				</Stack>
+			</SuggestionProvider>
 		</UserProvider>
 	);
 };

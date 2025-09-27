@@ -1,10 +1,12 @@
 import { Container, Text, TextBold } from "@/components";
+import { ArrowFortyFive, Export } from "@/constants/svgs";
 import { useUserContext } from "@/contexts/UserContext";
 import { queryKeys } from "@/lib/api/queryClient";
 import { useRestaurantApi } from "@/lib/api/useApi";
+import { shadowStyle } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
-import { useLocalSearchParams } from "expo-router";
-import { View } from "react-native";
+import { Link, useLocalSearchParams } from "expo-router";
+import { Share, TouchableOpacity, View } from "react-native";
 import QRCode from "react-native-qrcode-svg";
 
 export default function Restaurant() {
@@ -21,60 +23,98 @@ export default function Restaurant() {
 		enabled: !!id && !!user,
 	});
 
+	const onShare = async () => {
+		const result = await Share.share({
+			message: "Share Chop Local app with your friends!",
+		});
+		if (result.action === Share.sharedAction) {
+			if (result.activityType) {
+				//action type
+			} else {
+				// shared
+			}
+		} else {
+			// dismissed
+		}
+	};
+
 	if (isPending) return null;
 
 	return (
 		<Container>
-			<View className="px-3 mt-10">
-				<View className="min-h-[175px] justify-center">
+			<View className="px-2 mt-20 h-[88%]">
+				<View className="justify-center">
 					<TextBold className="text-[45px] text-center">
 						{restaurant?.name}
 					</TextBold>
 				</View>
-				<View
-					className="items-center mx-7 mt-5 py-10 rounded-[26px] justify-between"
-					style={{
-						borderColor: "#FFFFFF",
-						backgroundColor: "#FFFFFF",
-						elevation: 3,
-						shadowColor: "#000000",
-						shadowOffset: { width: 0, height: 2 },
-						shadowOpacity: 0.18,
-						shadowRadius: 3.5,
-					}}
-				>
-					<View className="flex flex-row justify-between w-full px-20 mb-7">
-						<Text className="text-[18px]">Your balance</Text>
-						<Text className="text-[18px]">
-							${restaurant?.balance.toFixed(2)}
+				<View className="flex w-full h-64 bg-[#96190F] rounded-[24px] p-5 justify-between mt-10">
+					<View className="flex flex-row justify-between items-center">
+						<Text className="text-white text-[13px]">
+							{restaurant?.checkIns} visits
 						</Text>
+						<TextBold className="text-white text-[30px]">$400</TextBold>
 					</View>
-					<QRCode value={user.code} size={175} />
-					<Text className="text-[30px] mt-7">{user.code}</Text>
+					<View className="flex items-start justify-end">
+						<Text className="text-[13px] text-white">Card ID: {user.code}</Text>
+						<Text className="text-[13px] text-white">
+							{user.firstName + " " + user.lastName}
+						</Text>
+						<TextBold className="text-[45px] text-white">Chop Local</TextBold>
+					</View>
 				</View>
-				{/* <Link
-					href="/transactions"
-					className="mt-16  rounded-[41px] flex flex-row px-10 py-5 justify-between items-center"
-					style={{
-						borderColor: "#FFFFFF",
-						backgroundColor: "#FFFFFF",
-						elevation: 3,
-						shadowColor: "#000000",
-						shadowOffset: { width: 0, height: 2 },
-						shadowOpacity: 0.18,
-						shadowRadius: 3.5,
-					}}
-				>
-					<View className="flex-[3]">
-						<TextBold className="text-[13px]">Transactions</TextBold>
-						<Text className="text-[11px] w-[250px]">
-							Tell your friends why you love this restaurant and get benefits
+				<View className="mt-10 flex-row justify-between px-20">
+					<Link href="/qr">
+						<View className="flex items-center">
+							<View
+								className="h-[64px] w-[64px] rounded-full flex justify-center items-center"
+								style={[shadowStyle]}
+							>
+								<QRCode value={user.code} size={30} />
+							</View>
+							<Text className="text-[13px] text-center mt-2">{"QR\ncode"}</Text>
+						</View>
+					</Link>
+					<TouchableOpacity
+						activeOpacity={0.8}
+						className="flex items-center"
+						onPress={onShare}
+					>
+						<View
+							className="h-[64px] w-[64px] rounded-full flex justify-center items-center"
+							style={[shadowStyle]}
+						>
+							<Export width={30} height={30} />
+						</View>
+						<Text className="text-[13px] text-center mt-2">
+							{"Share with\nfriends"}
 						</Text>
-					</View>
-					<View className="rounded-full bg-black w-[45px] h-[45px] justify-center items-center">
-						<ArrowFortyFive width={19} height={19} />
-					</View>
-				</Link> */}
+					</TouchableOpacity>
+				</View>
+
+				<View className="absolute bottom-0 w-full flex self-center">
+					<Link
+						href="/suggestions"
+						className="rounded-[41px]"
+						style={[{ backgroundColor: "rgba(255,255,255, 0.5)" }]}
+					>
+						<View className="flex flex-row px-10 py-5 items-center">
+							<View className="flex-[3]">
+								<TextBold className="text-[13px]">
+									Help chop local grow
+								</TextBold>
+								<Text className="text-[11px]">
+									{
+										"Tell us which restaurants you would\nlike to be part of chop local"
+									}
+								</Text>
+							</View>
+							<View className="rounded-full bg-black max-w-[40px] h-[40px] justify-center items-center flex-[1]">
+								<ArrowFortyFive width={19} height={19} />
+							</View>
+						</View>
+					</Link>
+				</View>
 			</View>
 		</Container>
 	);

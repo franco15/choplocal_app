@@ -12,9 +12,13 @@ export const queryClient = new QueryClient({
 export const queryKeys = {
 	users: {
 		byId: (id: string) => ["users", id] as const,
+		restaurants: ["restaurants"] as const,
 	},
 	restaurants: {
 		all: ["restaurants"] as const,
 		byId: (id: string) => ["restaurant", id] as const,
+	},
+	suggestions: {
+		create: ["new suggestion"] as const,
 	},
 };
