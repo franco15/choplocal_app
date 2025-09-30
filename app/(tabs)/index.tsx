@@ -1,5 +1,10 @@
 import { Container, Text, TextBold } from "@/components";
-import { ArrowFortyFive, Export, Forknife, Gear } from "@/constants/svgs";
+import {
+	ArrowFortyFive,
+	Forknife,
+	Gear,
+	Share as ShareIcon,
+} from "@/constants/svgs";
 import { useUserContext } from "@/contexts/UserContext";
 import { Link, router } from "expo-router";
 import { useEffect } from "react";
@@ -42,9 +47,9 @@ export default function HomeScreen() {
 							{/* <TouchableOpacity activeOpacity={0.8} className="mr-5">
 								<Bell width={21} height={21} />
 							</TouchableOpacity> */}
-							<TouchableOpacity activeOpacity={0.8}>
+							<Link href="/settings">
 								<Gear width={21} height={21} />
-							</TouchableOpacity>
+							</Link>
 						</View>
 					</View>
 					<Text className="text-[13px] mt-3 ml-5">
@@ -97,7 +102,7 @@ export default function HomeScreen() {
 							className="h-[64px] w-[64px] rounded-full flex justify-center items-center"
 							style={[styles.shadow]}
 						>
-							<Export width={30} height={30} />
+							<ShareIcon width={30} height={30} />
 						</View>
 						<Text className="text-[13px] text-center mt-2">
 							{"Share with\nfriends"}

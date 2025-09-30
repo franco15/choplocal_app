@@ -65,6 +65,7 @@ const RootComponent = () => {
 					<Stack.Screen name="transactions" />
 					<Stack.Screen name="qr" />
 					<Stack.Screen name="suggestions" />
+					<Stack.Screen name="settings" />
 				</Stack>
 			</SuggestionProvider>
 		</UserProvider>
