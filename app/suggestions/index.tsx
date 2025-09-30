@@ -17,7 +17,7 @@ import {
 import { z } from "zod";
 
 const INPUT_CLASS =
-	"text-black rounded-[8px] bg-transparent border border-[#1A1C20] mt-1 px-5 text-lg rounded-[27px]";
+	"text-black rounded-[27.5px] bg-transparent border-[0.5px] border-[#1A1C20] mt-1 px-5 text-[13px]";
 
 const schema = z.object({
 	name: z.string({ error: "Name cannot be empty" }),
@@ -58,7 +58,7 @@ export default function SuggestionsScreen() {
 								</Text>
 							</View>
 							<View className="flex mt-20 w-full self-center mb-10">
-								<Text className="text-black text-lg mx-1 ml-5">
+								<Text className="text-black text-[13px] mx-1 ml-5">
 									Restaurant name
 								</Text>
 								<Controller
@@ -67,7 +67,7 @@ export default function SuggestionsScreen() {
 									name="name"
 									render={({ field: { onChange, onBlur, value } }) => (
 										<TextInput
-											className={INPUT_CLASS + " h-16"}
+											className={INPUT_CLASS + " h-12"}
 											// placeholder="Restaurant name"
 											placeholderTextColor={"rgba(0, 0, 0, 0.3)"}
 											onBlur={onBlur}
@@ -82,7 +82,7 @@ export default function SuggestionsScreen() {
 										{errors.name.message}
 									</Text>
 								)}
-								<Text className="text-black text-lg mx-1 mt-5 ml-5">
+								<Text className="text-black text-[13px] mx-1 mt-5 ml-5">
 									{"Tell us why (optional)"}
 								</Text>
 								<Controller

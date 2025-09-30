@@ -35,7 +35,7 @@ const schema = z.object({
 });
 
 const INPUT_CLASS =
-	"h-16 justify-center items-center text-black rounded-[8px] bg-[#EEEEEE] mt-1 px-3 text-lg";
+	"h-12 justify-center items-center text-black rounded-[27.5px] border-[0.5px] border-[#1A1C20] mt-1 px-5 text-[13px]";
 
 export default function CompleteProfile() {
 	const router = useRouter();
@@ -70,10 +70,10 @@ export default function CompleteProfile() {
 							>
 								WELCOME TO{"\n"}CHOP LOCAL
 							</TextBold>
-							<Text className="text-[13px] mb-10" style={{ color: "#000000" }}>
+							<Text className="text-[13px] mb-24" style={{ color: "#000000" }}>
 								Just a few last steps before everything is set up
 							</Text>
-							<TextBold className="text-black text-lg mx-1">Name</TextBold>
+							<Text className="text-black text-[13px] ml-5">Name</Text>
 							<Controller
 								control={control}
 								rules={{ required: "Name cannot be empty" }}
@@ -81,7 +81,6 @@ export default function CompleteProfile() {
 								render={({ field: { onChange, onBlur, value } }) => (
 									<TextInput
 										className={INPUT_CLASS}
-										placeholder="Name"
 										placeholderTextColor={"rgba(0, 0, 0, 0.3)"}
 										onBlur={onBlur}
 										onChangeText={onChange}
@@ -93,9 +92,9 @@ export default function CompleteProfile() {
 							{errors.firstName && (
 								<Text className="text-red-600">{errors.firstName.message}</Text>
 							)}
-							<TextBold className="text-black text-lg mx-1 mt-5">
+							<Text className="text-black text-[13px] mt-5 ml-5">
 								Last name
-							</TextBold>
+							</Text>
 							<Controller
 								control={control}
 								rules={{ required: "Last name cannot be empty" }}
@@ -103,7 +102,6 @@ export default function CompleteProfile() {
 								render={({ field: { onChange, onBlur, value } }) => (
 									<TextInput
 										className={INPUT_CLASS}
-										placeholder="Last name"
 										placeholderTextColor={"rgba(0, 0, 0, 0.3)"}
 										onBlur={onBlur}
 										onChangeText={onChange}
@@ -115,9 +113,7 @@ export default function CompleteProfile() {
 							{errors.lastName && (
 								<Text className="text-red-600">{errors.lastName.message}</Text>
 							)}
-							<TextBold className="text-black text-lg mx-1 mt-5">
-								Email
-							</TextBold>
+							<Text className="text-black text-[13px] ml-5 mt-5">Email</Text>
 							<Controller
 								control={control}
 								rules={{ required: "Not a valid email" }}
@@ -125,7 +121,6 @@ export default function CompleteProfile() {
 								render={({ field: { onChange, onBlur, value } }) => (
 									<TextInput
 										className={INPUT_CLASS}
-										placeholder="Email"
 										placeholderTextColor={"rgba(0, 0, 0, 0.3)"}
 										onBlur={onBlur}
 										onChangeText={onChange}
@@ -137,16 +132,17 @@ export default function CompleteProfile() {
 							{errors.email && (
 								<Text className="text-red-600">{errors.email.message}</Text>
 							)}
-							<TextBold className="text-black text-lg mx-1 mt-5">
+							<Text className="text-black text-[13px] ml-5 mt-5">
 								Birthdate
-							</TextBold>
+							</Text>
 							<TouchableOpacity
-								className="h-16 justify-center rounded-[8px] bg-[#EEEEEE] mt-1 px-3 text-lg"
+								className="h-12 justify-center rounded-[27.5px] border-[0.5px] border-[#1A1C20] mt-1 px-5 text-[13px]"
 								activeOpacity={0.8}
 								onPress={() => setShowDateSelector(true)}
 								style={[errors.birthDate && style.inputError]}
 							>
 								<Text
+									className="text-[13px]"
 									style={{
 										color: isNullOrWhitespace(
 											control._formValues.birthDate?.toLocaleDateString()

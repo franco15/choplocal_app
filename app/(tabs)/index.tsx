@@ -1,5 +1,5 @@
 import { Container, Text, TextBold } from "@/components";
-import { ArrowFortyFive, Bell, Export, Forknife, Gear } from "@/constants/svgs";
+import { ArrowFortyFive, Export, Forknife, Gear } from "@/constants/svgs";
 import { useUserContext } from "@/contexts/UserContext";
 import { Link, router } from "expo-router";
 import { useEffect } from "react";
@@ -38,10 +38,10 @@ export default function HomeScreen() {
 						<TextBold className="text-[25px] ml-5">
 							Hi {user.firstName}!
 						</TextBold>
-						<View className="flex-row items-center justify-between">
-							<TouchableOpacity activeOpacity={0.8} className="mr-5">
+						<View className="flex-row items-center justify-between mr-3">
+							{/* <TouchableOpacity activeOpacity={0.8} className="mr-5">
 								<Bell width={21} height={21} />
-							</TouchableOpacity>
+							</TouchableOpacity> */}
 							<TouchableOpacity activeOpacity={0.8}>
 								<Gear width={21} height={21} />
 							</TouchableOpacity>
