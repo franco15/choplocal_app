@@ -1,4 +1,5 @@
 import { Container, Text, TextBold } from "@/components";
+import { ChefTwo } from "@/constants/svgs";
 import { useSuggestionContext } from "@/contexts/SuggestionsContext";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "expo-router";
@@ -7,7 +8,6 @@ import {
 	Keyboard,
 	KeyboardAvoidingView,
 	Platform,
-	ScrollView,
 	StyleSheet,
 	TextInput,
 	TouchableOpacity,
@@ -34,30 +34,30 @@ export default function SuggestionsScreen() {
 	} = useForm({ resolver: zodResolver(schema) });
 
 	const onSubmit = async (data: any) => {
-		craeteSuggestion(data.name, data.description);
+		// craeteSuggestion(data.name);
 		router.push("/suggestions/thanks");
 	};
 
 	return (
-		<Container>
+		<Container style={{ backgroundColor: "#E3C6FB" }}>
 			<KeyboardAvoidingView
 				behavior={Platform.OS == "ios" ? "padding" : "height"}
 				style={{}}
 			>
-				<ScrollView>
-					<TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-						<View className="flex px-3 mt-20">
-							<View className="flex mb-10">
+				<TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+					<View className="flex justify-between h-full">
+						<View className="flex px-10 mt-20">
+							<View className="flex mb-5">
 								<TextBold className="text-[35px] text-center">
-									{"Help Chop Local\ngrow"}
+									{"We’re growing\ntogether"}
 								</TextBold>
-								<Text className="text-[13px] text-center mt-5">
+								<TextBold className="text-[13px] text-center mt-5">
 									{
-										"Tell us which restaurants you\nwould like to be part of our community"
+										"Tell us—which restaurants \nshould be part of our community?"
 									}
-								</Text>
+								</TextBold>
 							</View>
-							<View className="flex mt-20 w-full self-center mb-10">
+							<View className="flex mt-5 w-full self-center mb-10">
 								<Text className="text-black text-[13px] mx-1 ml-5">
 									Restaurant name
 								</Text>
@@ -68,8 +68,6 @@ export default function SuggestionsScreen() {
 									render={({ field: { onChange, onBlur, value } }) => (
 										<TextInput
 											className={INPUT_CLASS + " h-12"}
-											// placeholder="Restaurant name"
-											placeholderTextColor={"rgba(0, 0, 0, 0.3)"}
 											onBlur={onBlur}
 											onChangeText={onChange}
 											value={value}
@@ -82,40 +80,22 @@ export default function SuggestionsScreen() {
 										{errors.name.message}
 									</Text>
 								)}
-								<Text className="text-black text-[13px] mx-1 mt-5 ml-5">
-									{"Tell us why (optional)"}
-								</Text>
-								<Controller
-									control={control}
-									name="description"
-									render={({ field: { onChange, onBlur, value } }) => (
-										<TextInput
-											className={INPUT_CLASS + " h-[150px] py-3"}
-											placeholder=""
-											placeholderTextColor={"rgba(0, 0, 0, 0.3)"}
-											onBlur={onBlur}
-											onChangeText={onChange}
-											value={value}
-											style={[
-												errors.description && style.inputError,
-												{ textAlignVertical: "top" },
-											]}
-										/>
-									)}
-								/>
 								<TouchableOpacity
-									className="bg-[#E3C6FB] mt-12 w-1/2 h-[54px] self-center items-center justify-center rounded-[30px]"
+									className="bg-white mt-12 w-1/2 h-[54px] self-center items-center justify-center rounded-[30px]"
 									activeOpacity={0.8}
 									onPress={handleSubmit(onSubmit)}
 								>
 									<Text className="text-[14px]" style={{ color: "#000000" }}>
-										Done
+										Send
 									</Text>
 								</TouchableOpacity>
 							</View>
 						</View>
-					</TouchableWithoutFeedback>
-				</ScrollView>
+						<View className="flex items-center top-12">
+							<ChefTwo width={300} height={400} />
+						</View>
+					</View>
+				</TouchableWithoutFeedback>
 			</KeyboardAvoidingView>
 		</Container>
 	);

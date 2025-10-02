@@ -1,0 +1,92 @@
+[
+  {
+    "id": 1,
+    "title": "Evento hoy !!",
+    "description": "Hoy hay banda en vivo a partir de las 7 de la tarde, acompañanos ",
+    "date": "02-10-25"
+  },
+  {
+    "id": 2,
+    "title": "Taller de pintura",
+    "description": "Aprende técnicas básicas de acuarela, materiales incluidos.",
+    "date": "02-10-25"
+  },
+  {
+    "id": 3,
+    "title": "Noche de cine",
+    "description": "Proyección gratuita en el parque central, trae tus palomitas.",
+    "date": "28-03-25"
+  },
+  {
+    "id": 4,
+    "title": "Clase de yoga",
+    "description": "Sesión matutina para todos los niveles en la playa.",
+    "date": "30-03-25"
+  },
+  {
+    "id": 5,
+    "title": "Mercado local",
+    "description": "Productos frescos de agricultores de la región.",
+    "date": "01-04-25"
+  },
+  {
+    "id": 6,
+    "title": "Conferencia de tecnología",
+    "description": "Charlas sobre innovación y desarrollo de software.",
+    "date": "03-04-25"
+  },
+  {
+    "id": 7,
+    "title": "Festival gastronómico",
+    "description": "Degustación de platillos típicos y música en vivo.",
+    "date": "05-04-25"
+  },
+  {
+    "id": 8,
+    "title": "Carrera 5K",
+    "description": "Inscripciones abiertas para corredores y caminantes.",
+    "date": "07-04-25"
+  },
+  {
+    "id": 9,
+    "title": "Torneo de ajedrez",
+    "description": "Competencia abierta con premios para los ganadores.",
+    "date": "10-04-25"
+  },
+  {
+    "id": 10,
+    "title": "Noche de karaoke",
+    "description": "Ven y canta tus canciones favoritas con tus amigos.",
+    "date": "12-04-25"
+  },
+  {
+    "id": 11,
+    "title": "Exposición de arte",
+    "description": "Obras de artistas emergentes de la comunidad.",
+    "date": "14-04-25"
+  },
+  {
+    "id": 12,
+    "title": "Concierto acústico",
+    "description": "Presentación íntima de cantautores locales.",
+    "date": "16-04-25"
+  },
+  {
+    "id": 13,
+    "title": "Noche de comedia",
+    "description": "Stand-up con talentos nacionales e invitados especiales.",
+    "date": "02-10-25"
+  },
+  {
+    "id": 14,
+    "title": "Taller de fotografía",
+    "description": "Aprende a capturar momentos con tu cámara o celular.",
+    "date": "20-04-25"
+  },
+  {
+    "id": 15,
+    "title": "Fiesta de clausura",
+    "description": "Gran cierre con DJ en vivo y fuegos artificiales.",
+    "date": "22-04-25"
+  }
+]

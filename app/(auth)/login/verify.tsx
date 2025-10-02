@@ -1,8 +1,8 @@
-import { SegmentedInput, Text, TextBold } from "@/components";
+import { Text, TextBold } from "@/components";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { isNullOrWhitespace } from "@/lib/utils";
 import { useEffect, useState } from "react";
-import { TouchableOpacity, View } from "react-native";
+import { StyleSheet, TextInput, TouchableOpacity, View } from "react-native";
 
 const RESEND_TIME = 45;
 
@@ -44,7 +44,17 @@ export default function VerifyScreen() {
 				continue.
 			</Text>
 
-			<SegmentedInput length={6} onChange={setCode} error={error} />
+			<TextInput
+				className="h-16 justify-center items-center text-center text-black rounded-[8px] bg-[#EEEEEE] text-[20px] tracking-[2em]"
+				value={code}
+				onChangeText={(text) => {
+					setCode(text.replace(/[^0-9]/g, ""));
+					setError(false);
+				}}
+				keyboardType="number-pad"
+				maxLength={6}
+				style={[error ? styles.errorBorder : null]}
+			/>
 			<TouchableOpacity
 				className="bg-[#E3C6FB] mt-40 w-1/2 h-[54px] self-center items-center justify-center rounded-[30px]"
 				activeOpacity={0.8}
@@ -75,3 +85,10 @@ export default function VerifyScreen() {
 		</View>
 	);
 }
+
+export const styles = StyleSheet.create({
+	errorBorder: {
+		borderColor: "red",
+		borderWidth: 1,
+	},
+});

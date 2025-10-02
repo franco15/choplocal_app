@@ -2,7 +2,7 @@ import { useSuggestionsApi } from "@/lib/api/useApi";
 import { createContext, useContext, useMemo } from "react";
 
 interface ISuggestionContext {
-	craeteSuggestion: (name: string, description: string) => Promise<void>;
+	craeteSuggestion: (name: string) => Promise<void>;
 }
 
 const SuggestionContext = createContext<ISuggestionContext>(
@@ -12,9 +12,9 @@ const SuggestionContext = createContext<ISuggestionContext>(
 const SuggestionProvider = ({ children }: { children: React.ReactNode }) => {
 	const suggestionsApi = useSuggestionsApi();
 
-	const craeteSuggestion = async (name: string, description: string = "") => {
+	const craeteSuggestion = async (name: string) => {
 		try {
-			const res = await suggestionsApi.create({ name, description });
+			const res = await suggestionsApi.create({ name });
 		} catch (error) {
 			console.log(error);
 		}

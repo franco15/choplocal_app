@@ -82,3 +82,10 @@ export const circularReplacer = () => {
 };
 
 export const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));
+
+// ["jpg", "jpeg", "png", "gif", "bmp", "webp", "svg"]
+export const isImage = (url: string) => {
+	const imageExtensions = ["jpg", "jpeg", "png", "gif", "bmp", "webp"];
+	const extension = url.split(".").pop();
+	return extension && imageExtensions.includes(extension.toLowerCase());
+};

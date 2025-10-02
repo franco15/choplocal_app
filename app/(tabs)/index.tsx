@@ -1,14 +1,9 @@
 import { Container, Text, TextBold } from "@/components";
-import {
-	ArrowFortyFive,
-	Forknife,
-	Gear,
-	Share as ShareIcon,
-} from "@/constants/svgs";
+import { ArrowFortyFive, Bell, ChopLocal, Forknife } from "@/constants/svgs";
 import { useUserContext } from "@/contexts/UserContext";
 import { Link, router } from "expo-router";
 import { useEffect } from "react";
-import { Share, StyleSheet, TouchableOpacity, View } from "react-native";
+import { Share, StyleSheet, View } from "react-native";
 import QRCode from "react-native-qrcode-svg";
 
 export default function HomeScreen() {
@@ -37,35 +32,25 @@ export default function HomeScreen() {
 
 	return (
 		<Container>
-			<View className="px-2 pt-5 h-[90%]">
+			<View className="px-3 pt-5 h-[90%]">
 				<View className="flex">
 					<View className="flex-row justify-between">
 						<TextBold className="text-[25px] ml-5">
 							Hi {user.firstName}!
 						</TextBold>
-						<View className="flex-row items-center justify-between mr-3">
-							{/* <TouchableOpacity activeOpacity={0.8} className="mr-5">
-								<Bell width={21} height={21} />
-							</TouchableOpacity> */}
-							<Link href="/settings">
-								<Gear width={21} height={21} />
-							</Link>
-						</View>
 					</View>
 					<Text className="text-[13px] mt-3 ml-5">
 						Here you will find everything about chop local
 					</Text>
 				</View>
 				<View className="flex w-full h-64 bg-[#96190F] rounded-[24px] p-5 justify-between mt-10">
-					<View className="flex items-end">
-						{/* <TextBold className="text-white text-[30px]">$400</TextBold> */}
-					</View>
+					<View className="flex items-end"></View>
 					<View className="flex items-start justify-end">
-						<Text className="text-[13px] text-white">Card ID: {user.code}</Text>
-						<Text className="text-[13px] text-white">
+						<Text className="text-[15px] text-white">Card ID: {user.code}</Text>
+						<Text className="text-[15px] text-white mb-5">
 							{user.firstName + " " + user.lastName}
 						</Text>
-						<TextBold className="text-[45px] text-white">Chop Local</TextBold>
+						<ChopLocal width={"80%"} height={50} />
 					</View>
 				</View>
 				<View className="mt-10 flex-row justify-between px-5">
@@ -93,43 +78,22 @@ export default function HomeScreen() {
 							</Text>
 						</View>
 					</Link>
-					<TouchableOpacity
-						activeOpacity={0.8}
-						className="flex items-center"
-						onPress={onShare}
-					>
-						<View
-							className="h-[64px] w-[64px] rounded-full flex justify-center items-center"
-							style={[styles.shadow]}
-						>
-							<ShareIcon width={30} height={30} />
+					<Link href="/restaurants/news">
+						<View className="flex items-center">
+							<View
+								className="h-[64px] w-[64px] rounded-full flex justify-center items-center"
+								style={[styles.shadow]}
+							>
+								<Bell width={30} height={30} />
+							</View>
+							<Text className="text-[13px] text-center mt-2">
+								{"Restaurants\nnews"}
+							</Text>
 						</View>
-						<Text className="text-[13px] text-center mt-2">
-							{"Share with\nfriends"}
-						</Text>
-					</TouchableOpacity>
+					</Link>
 				</View>
 
 				<View className="absolute bottom-0 w-full flex self-center">
-					{/* <Link
-						href="/restaurants"
-						className="rounded-[41px] px-10 py-5 items-center bg-white"
-						style={[{ opacity: 0.5 }]}
-					>
-						<View className="flex flex-row">
-							<View className="flex-[3]">
-								<TextBold className="text-[13px]">
-									Restaurants i have visted
-								</TextBold>
-								<Text className="text-[11px]">
-									Upload the ticket and validate your check in
-								</Text>
-							</View>
-							<View className="flex-[1] rounded-full bg-black max-w-[40px] h-[40px] justify-center items-center">
-								<ArrowFortyFive width={19} height={19} />
-							</View>
-						</View>
-					</Link> */}
 					<Link
 						href="/suggestions"
 						className="rounded-[41px]"

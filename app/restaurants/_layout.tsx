@@ -5,10 +5,10 @@ const RestaurantsLayout = () => {
 		<Stack screenOptions={{ headerTransparent: true }}>
 			<Stack.Screen
 				options={{
-					headerTitle: "Back to home",
+					headerTitle: "Back",
 					headerShadowVisible: false,
 				}}
-				name="index"
+				name="news"
 			/>
 			<Stack.Screen
 				options={{

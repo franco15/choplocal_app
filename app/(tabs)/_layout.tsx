@@ -1,34 +1,40 @@
 import {
+	Forknife,
+	ForknifeOff,
 	Home,
-	HomeSolid,
-	SearchIcon,
+	HomeOff,
+	Person,
+	PersonOff,
 	Star,
-	User,
-	UserSolid,
 } from "@/constants/svgs";
 import { Tabs } from "expo-router";
 import React from "react";
 
-const ICONSIZE = 30;
+const ICONSIZE = 25;
 
 const TabsLayout = () => {
 	return (
 		<Tabs
 			screenOptions={{
+				lazy: false,
 				tabBarShowLabel: false,
 				tabBarHideOnKeyboard: true,
 				tabBarLabelStyle: {
 					color: "black",
 				},
 				headerShown: false,
+				sceneStyle: { paddingBottom: 0 },
 				tabBarStyle: {
-					backgroundColor: "transparent",
+					backgroundColor: "white",
 					position: "absolute",
 					elevation: 0,
 					borderTopWidth: 0,
+					borderTopLeftRadius: 27,
+					borderTopRightRadius: 27,
+					height: 80,
 				},
 				tabBarIconStyle: {
-					marginVertical: 5,
+					marginVertical: 10,
 				},
 			}}
 		>
@@ -38,25 +44,25 @@ const TabsLayout = () => {
 					title: "Home",
 					tabBarIcon: ({ focused }) => {
 						if (focused)
-							return (
-								<HomeSolid width={ICONSIZE} height={ICONSIZE} fill="#000000" />
-							);
-						return <Home width={ICONSIZE} height={ICONSIZE} fill="#000000" />;
+							return <Home width={ICONSIZE} height={ICONSIZE} fill="#000000" />;
+						return (
+							<HomeOff width={ICONSIZE} height={ICONSIZE} fill="#000000" />
+						);
 					},
 				}}
 			/>
 			<Tabs.Screen
-				name="search"
+				name="restaurants"
 				options={{
-					href: null,
-					title: "Search",
+					// href: null,
+					title: "Restaurants",
 					tabBarIcon: ({ focused }) => {
 						if (focused)
 							return (
-								<SearchIcon width={ICONSIZE} height={ICONSIZE} fill="#000000" />
+								<Forknife width={ICONSIZE} height={ICONSIZE} fill="#000000" />
 							);
 						return (
-							<SearchIcon width={ICONSIZE} height={ICONSIZE} fill="#000000" />
+							<ForknifeOff width={ICONSIZE} height={ICONSIZE} fill="#000000" />
 						);
 					},
 				}}
@@ -78,9 +84,8 @@ const TabsLayout = () => {
 				options={{
 					title: "Profile",
 					tabBarIcon: ({ focused }) => {
-						if (focused)
-							return <UserSolid width={ICONSIZE} height={ICONSIZE} />;
-						return <User width={ICONSIZE} height={ICONSIZE} />;
+						if (focused) return <Person width={ICONSIZE} height={ICONSIZE} />;
+						return <PersonOff width={ICONSIZE} height={ICONSIZE} />;
 					},
 				}}
 			/>

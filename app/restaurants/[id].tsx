@@ -1,12 +1,12 @@
 import { Container, Text, TextBold } from "@/components";
-import { ArrowFortyFive, Share as ShareIcon } from "@/constants/svgs";
+import { ChopLocalBlack, MapPin, Share as ShareIcon } from "@/constants/svgs";
 import { useUserContext } from "@/contexts/UserContext";
 import { queryKeys } from "@/lib/api/queryClient";
 import { useRestaurantApi } from "@/lib/api/useApi";
 import { shadowStyle } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useLocalSearchParams } from "expo-router";
-import { Share, TouchableOpacity, View } from "react-native";
+import { FlatList, Share, TouchableOpacity, View } from "react-native";
 import QRCode from "react-native-qrcode-svg";
 
 export default function Restaurant() {
@@ -42,28 +42,30 @@ export default function Restaurant() {
 
 	return (
 		<Container>
-			<View className="px-2 mt-20 h-[88%]">
-				<View className="justify-center">
-					<TextBold className="text-[45px] text-center">
-						{restaurant?.name}
-					</TextBold>
-				</View>
-				<View className="flex w-full h-64 bg-[#96190F] rounded-[24px] p-5 justify-between mt-10">
-					<View className="flex flex-row justify-between items-center">
-						<Text className="text-white text-[13px]">
-							{restaurant?.checkIns} visits
+			<View className="px-3 mt-14" style={{ flex: 3 }}>
+				<View className="flex">
+					<TextBold className="text-[35px]">{restaurant?.name}</TextBold>
+					<View className="flex-row mt-3 items-center">
+						<MapPin width={20} height={20} />
+						<Text className="text-[13px] ml-2">
+							Felicitas Zermeño 41, Centro, 83010 Hermosillo, Son.
 						</Text>
-						<TextBold className="text-white text-[30px]">$400</TextBold>
+					</View>
+				</View>
+				<View className="flex w-full h-64 bg-[#E5E382] rounded-[24px] p-5 justify-between mt-5">
+					<View className="flex flex-row justify-between items-center">
+						<Text className="text-[20px]">{restaurant?.checkIns} visits</Text>
+						<TextBold className="text-[30px]">$400</TextBold>
 					</View>
 					<View className="flex items-start justify-end">
-						<Text className="text-[13px] text-white">Card ID: {user.code}</Text>
-						<Text className="text-[13px] text-white">
+						<Text className="text-[15px]">Card ID: {user.code}</Text>
+						<Text className="text-[15px] mb-5">
 							{user.firstName + " " + user.lastName}
 						</Text>
-						<TextBold className="text-[45px] text-white">Chop Local</TextBold>
+						<ChopLocalBlack width={"80%"} height={50} />
 					</View>
 				</View>
-				<View className="mt-10 flex-row justify-between px-20">
+				<View className="mt-5 flex-row justify-between px-20">
 					<Link href="/qr">
 						<View className="flex items-center">
 							<View
@@ -91,31 +93,73 @@ export default function Restaurant() {
 						</Text>
 					</TouchableOpacity>
 				</View>
-
-				<View className="absolute bottom-0 w-full flex self-center">
-					<Link
-						href="/suggestions"
-						className="rounded-[41px]"
-						style={[{ backgroundColor: "rgba(255,255,255, 0.5)" }]}
-					>
-						<View className="flex flex-row px-10 py-5 items-center">
-							<View className="flex-[3]">
-								<TextBold className="text-[13px]">
-									Help chop local grow
-								</TextBold>
-								<Text className="text-[11px]">
-									{
-										"Tell us which restaurants you would\nlike to be part of chop local"
-									}
-								</Text>
+			</View>
+			<View className="mt-5 px-3" style={{ flex: 2 }}>
+				<Text className="text-[13px]">Latest</Text>
+				<TextBold className="text-[35px] mb-5">News</TextBold>
+				<FlatList
+					data={news}
+					initialNumToRender={4}
+					// showsVerticalScrollIndicator={false}
+					contentContainerStyle={{}}
+					key={"_"}
+					keyExtractor={(item, index) => `${index}_${item.id}`}
+					renderItem={({ item, index }) => {
+						return (
+							<View
+								key={`${index}_${item.id}`}
+								className="flex h-[85px] py-3 px-5 w-full bg-white rounded-[16px] mb-5"
+							>
+								<View className="flex-row">
+									<Text>{item.title}</Text>
+									<Text>{item.date}</Text>
+								</View>
+								<View>
+									<Text>{item.description}</Text>
+								</View>
 							</View>
-							<View className="rounded-full bg-black max-w-[40px] h-[40px] justify-center items-center flex-[1]">
-								<ArrowFortyFive width={19} height={19} />
-							</View>
-						</View>
-					</Link>
-				</View>
+						);
+					}}
+				/>
 			</View>
 		</Container>
 	);
 }
+
+const news = [
+	{
+		id: 1,
+		title: "Evento hoy !!",
+		description:
+			"Hoy hay banda en vivo a partir de las 7 de la tarde, acompañanos ",
+		date: "25-03-25",
+	},
+	{
+		id: 2,
+		title: "Evento hoy !!",
+		description:
+			"Hoy hay banda en vivo a partir de las 7 de la tarde, acompañanos ",
+		date: "25-03-25",
+	},
+	{
+		id: 3,
+		title: "Evento hoy !!",
+		description:
+			"Hoy hay banda en vivo a partir de las 7 de la tarde, acompañanos ",
+		date: "25-03-25",
+	},
+	{
+		id: 4,
+		title: "Evento hoy !!",
+		description:
+			"Hoy hay banda en vivo a partir de las 7 de la tarde, acompañanos ",
+		date: "25-03-25",
+	},
+	{
+		id: 5,
+		title: "Evento hoy !!",
+		description:
+			"Hoy hay banda en vivo a partir de las 7 de la tarde, acompañanos ",
+		date: "25-03-25",
+	},
+];
