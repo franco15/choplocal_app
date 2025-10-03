@@ -1,4 +1,4 @@
-import { Container, Text } from "@/components";
+import { Container, Text, TextBold } from "@/components";
 import { images } from "@/constants/images";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { regex } from "@/lib";
@@ -19,10 +19,15 @@ import {
 	View,
 } from "react-native";
 import CountryPicker, { CountryCode } from "react-native-country-picker-modal";
+import Modal from "react-native-modal";
 
 export default function LoginScreen() {
 	const router = useRouter();
-	const { requestVerificationCode } = useAuthContext();
+	const {
+		requestVerificationCode,
+		showDeletedUserAlert,
+		setShowDeletedUserAlert,
+	} = useAuthContext();
 	const [phone, setPhone] = useState("");
 	const [countryCode, setCountryCode] = useState<CountryCode>("US");
 	const [callingCode, setCallingCode] = useState("+1");
@@ -115,6 +120,45 @@ export default function LoginScreen() {
 					</TouchableWithoutFeedback>
 				</ScrollView>
 			</KeyboardAvoidingView>
+			<Modal
+				isVisible={showDeletedUserAlert}
+				onBackdropPress={() => setShowDeletedUserAlert(false)}
+				animationIn="slideInUp"
+				animationOut="slideOutDown"
+				useNativeDriver
+				hideModalContentWhileAnimating
+				backdropOpacity={0}
+				style={{
+					margin: 0,
+					alignItems: "center",
+					justifyContent: "flex-end",
+					marginBottom: 50,
+				}}
+			>
+				<View
+					className={`flex bg-white h-[300px] w-[90%] rounded-[30px] justify-center items-center px-10`}
+					style={{
+						elevation: 5,
+						borderWidth: 1,
+						borderColor: "rgba(0, 0, 0, 0.2)",
+					}}
+				>
+					<TextBold className="text-[20px] mb-5 text-center">
+						Your account has been successfully deleted.
+					</TextBold>
+					<TouchableOpacity
+						className="bg-[#E3C6FB] w-1/2 h-[54px] flex items-center justify-center rounded-[30px] mt-5"
+						activeOpacity={0.8}
+						onPress={() => setShowDeletedUserAlert(false)}
+					>
+						<Text
+							className={`text-[14px] pt-[${Platform.OS === "ios" ? 10 : 0}]`}
+						>
+							Ok
+						</Text>
+					</TouchableOpacity>
+				</View>
+			</Modal>
 		</Container>
 	);
 }

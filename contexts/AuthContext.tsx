@@ -24,6 +24,8 @@ interface IAuthContext {
 	verifyCode: (code: string) => Promise<boolean>;
 	registerWithCode: (code: string) => Promise<boolean>;
 	logout: () => Promise<void>;
+	showDeletedUserAlert: boolean;
+	setShowDeletedUserAlert: (showDeletedUserAlert: boolean) => void;
 }
 
 const AuthContext = createContext<IAuthContext>({} as IAuthContext);
@@ -38,6 +40,7 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 		phone: string;
 		id: string;
 	}>({ phone: "", id: "" });
+	const [showDeletedUserAlert, setShowDeletedUserAlert] = useState(false);
 
 	useEffect(() => {
 		const getToken = async () => {
@@ -131,8 +134,10 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 			phoneNumber,
 			setPhoneNumber,
 			userAuth,
+			showDeletedUserAlert,
+			setShowDeletedUserAlert,
 		} as IAuthContext;
-	}, [authenticated, phoneNumber, userAuth, token]);
+	}, [authenticated, phoneNumber, userAuth, token, showDeletedUserAlert]);
 
 	return <AuthContext.Provider value={data}>{children}</AuthContext.Provider>;
 };
