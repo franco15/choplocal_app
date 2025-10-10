@@ -8,6 +8,13 @@ const RestaurantsLayout = () => {
 					headerTitle: "Back",
 					headerShadowVisible: false,
 				}}
+				name="[id]"
+			/>
+			<Stack.Screen
+				options={{
+					headerTitle: "Back",
+					headerShadowVisible: false,
+				}}
 				name="news"
 			/>
 			<Stack.Screen
@@ -15,7 +22,7 @@ const RestaurantsLayout = () => {
 					headerTitle: "Back",
 					headerShadowVisible: false,
 				}}
-				name="[id]"
+				name="transactions"
 			/>
 		</Stack>
 	);

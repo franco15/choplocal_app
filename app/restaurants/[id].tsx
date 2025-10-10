@@ -1,5 +1,10 @@
 import { Container, Text, TextBold } from "@/components";
-import { ChopLocalBlack, MapPin, Share as ShareIcon } from "@/constants/svgs";
+import {
+	Bell,
+	ChopLocalBlack,
+	MapPin,
+	Share as ShareIcon,
+} from "@/constants/svgs";
 import { useUserContext } from "@/contexts/UserContext";
 import { queryKeys } from "@/lib/api/queryClient";
 import { useRestaurantApi } from "@/lib/api/useApi";
@@ -65,7 +70,7 @@ export default function Restaurant() {
 						<ChopLocalBlack width={"80%"} height={50} />
 					</View>
 				</View>
-				<View className="mt-5 flex-row justify-between px-20">
+				<View className="mt-5 flex-row justify-between px-5">
 					<Link href="/qr">
 						<View className="flex items-center">
 							<View
@@ -75,6 +80,24 @@ export default function Restaurant() {
 								<QRCode value={user.code} size={30} />
 							</View>
 							<Text className="text-[13px] text-center mt-2">{"QR\ncode"}</Text>
+						</View>
+					</Link>
+					<Link
+						href={{
+							pathname: "/restaurants/transactions",
+							params: { restaurantId: id },
+						}}
+					>
+						<View className="flex items-center">
+							<View
+								className="h-[64px] w-[64px] rounded-full flex justify-center items-center"
+								style={[shadowStyle]}
+							>
+								<Bell width={30} height={30} />
+							</View>
+							<Text className="text-[13px] text-center mt-2">
+								{"My chop local\nactivity"}
+							</Text>
 						</View>
 					</Link>
 					<TouchableOpacity

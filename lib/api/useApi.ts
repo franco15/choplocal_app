@@ -1,4 +1,4 @@
-import { IRestaurant } from "../types/restaurant";
+import { IRestaurant, IRestaurantTransactions } from "../types/restaurant";
 import { ISuggestion } from "../types/suggestions";
 import { IUser, IUserPut } from "../types/user";
 import useAxios from "./axiosInstance";
@@ -47,6 +47,11 @@ export const useRestaurantApi = () => {
 	return {
 		byId: async (id: string, userId: string): Promise<IRestaurant> =>
 			api.get(`api/app/restaurant/${id}/user/${userId}`),
+		transactions: async (
+			id: string,
+			userId: string
+		): Promise<Array<IRestaurantTransactions>> =>
+			api.get(`api/app/restaurant/${id}/user/${userId}/transactions`),
 	};
 };
 

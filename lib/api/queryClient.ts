@@ -17,6 +17,7 @@ export const queryKeys = {
 	restaurants: {
 		all: ["restaurants"] as const,
 		byId: (id: string) => ["restaurant", id] as const,
+		transactions: (id: string) => ["transactions", id] as const,
 	},
 	suggestions: {
 		create: ["new suggestion"] as const,

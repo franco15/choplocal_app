@@ -12,3 +12,8 @@ export interface IRestaurant {
 	balance: number;
 	image: string;
 }
+
+export interface IRestaurantTransactions {
+	date: Date;
+	cashback: number;
+}
