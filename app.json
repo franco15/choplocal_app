@@ -25,7 +25,7 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.choplocal.choplocal",
+      "package": "com.choplocal",
       "runtimeVersion": "1.0.0"
     },
     "web": {
