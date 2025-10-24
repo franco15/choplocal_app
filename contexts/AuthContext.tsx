@@ -72,7 +72,7 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 		queryClient.clear();
 		setAuthenticated(false);
 		setUserAuth({ phone: "", id: "" });
-		await setAuthToken(null);
+		await setAuthToken(null, null);
 	};
 
 	const requestVerificationCode = async (phoneNumber: string) => {
@@ -86,14 +86,11 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
 	const verifyCode = async (code: string) => {
 		try {
-			const res: { jwt: string } = await authApi.loginWithCode(
-				phoneNumber,
-				code
-			);
-			const jwt = res.jwt;
-			if (jwt) {
+			const res: { jwt: string; refreshToken: string } =
+				await authApi.loginWithCode(phoneNumber, code);
+			if (res.jwt && res.refreshToken) {
 				setAuthenticated(true);
-				await setAuthToken(jwt);
+				await setAuthToken(res.jwt, res.refreshToken);
 			}
 			return true;
 		} catch (error) {
@@ -104,14 +101,11 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
 	const registerWithCode = async (code: string) => {
 		try {
-			const res: { jwt: string } = await authApi.registerWithCode(
-				phoneNumber,
-				code
-			);
-			const jwt = res.jwt;
-			if (jwt) {
+			const res: { jwt: string; refreshToken: string } =
+				await authApi.registerWithCode(phoneNumber, code);
+			if (res.jwt && res.refreshToken) {
 				setAuthenticated(true);
-				await setAuthToken(jwt);
+				await setAuthToken(res.jwt, res.refreshToken);
 			}
 			return true;
 		} catch (error) {

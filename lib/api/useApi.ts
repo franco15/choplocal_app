@@ -13,7 +13,7 @@ export const useAuthApi = () => {
 		loginWithCode: async (
 			phoneNumber: string,
 			code: string
-		): Promise<{ jwt: string }> =>
+		): Promise<{ jwt: string; refreshToken: string }> =>
 			api.post("api/auth/login-with-code", {
 				phoneNumber,
 				code: code,
@@ -21,7 +21,7 @@ export const useAuthApi = () => {
 		registerWithCode: async (
 			phoneNumber: string,
 			code: string
-		): Promise<{ jwt: string }> =>
+		): Promise<{ jwt: string; refreshToken: string }> =>
 			api.post("api/auth/register-with-code", {
 				phoneNumber,
 				code: code,

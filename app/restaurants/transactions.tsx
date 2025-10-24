@@ -5,58 +5,6 @@ import { useRestaurantApi } from "@/lib/api/useApi";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useLocalSearchParams } from "expo-router";
 import { FlatList, View } from "react-native";
-// const transactions = [
-// 	{
-// 		id: 1,
-// 		date: "02-10-25",
-// 		cashback: 2.5,
-// 	},
-// 	{
-// 		id: 2,
-// 		date: "02-10-25",
-// 		cashback: 2.5,
-// 	},
-// 	{
-// 		id: 3,
-// 		date: "02-10-25",
-// 		cashback: 2.5,
-// 	},
-// 	{
-// 		id: 4,
-// 		date: "02-10-25",
-// 		cashback: 2.5,
-// 	},
-// 	{
-// 		id: 5,
-// 		date: "02-10-25",
-// 		cashback: 2.5,
-// 	},
-// 	{
-// 		id: 6,
-// 		date: "02-10-25",
-// 		cashback: 2.5,
-// 	},
-// 	{
-// 		id: 7,
-// 		date: "02-10-25",
-// 		cashback: 2.5,
-// 	},
-// 	{
-// 		id: 8,
-// 		date: "02-10-25",
-// 		cashback: 2.5,
-// 	},
-// 	{
-// 		id: 9,
-// 		date: "02-10-25",
-// 		cashback: 2.5,
-// 	},
-// 	{
-// 		id: 10,
-// 		date: "02-10-25",
-// 		cashback: 2.5,
-// 	},
-// ];
 
 export default function Transactions() {
 	const { restaurantId } = useLocalSearchParams();

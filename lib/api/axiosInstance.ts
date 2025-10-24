@@ -1,7 +1,7 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
 import * as SecureStore from "expo-secure-store";
 
-import { API_URL, TOKEN_KEY } from "@/constants/keys";
+import { API_URL, REFRESH_TOKEN_KEY, TOKEN_KEY } from "@/constants/keys";
 import { isNullOrWhitespace } from "../utils";
 
 let cachedToken: string | null = null;
@@ -12,12 +12,17 @@ const loadToken = async () => {
 	return cachedToken;
 };
 
-const saveToken = async (token: string | null) => {
+const saveToken = async (token: string | null, refreshToken: string | null) => {
 	cachedToken = token;
 	if (token) {
 		await SecureStore.setItemAsync(TOKEN_KEY, token);
 	} else {
 		await SecureStore.deleteItemAsync(TOKEN_KEY);
+	}
+	if (refreshToken) {
+		await SecureStore.setItemAsync(REFRESH_TOKEN_KEY, refreshToken);
+	} else {
+		await SecureStore.deleteItemAsync(REFRESH_TOKEN_KEY);
 	}
 };
 
@@ -31,14 +36,21 @@ const useAxios = () => {
 		headers: {
 			"Content-Type": "application/json",
 		},
-		// timeout: 10000,
+	});
+
+	const refreshInstance = axios.create({
+		baseURL: API_URL,
+		headers: {
+			"Content-Type": "application/json",
+		},
+		timeout: 10000,
 	});
 
 	axiosInstance.interceptors.request.use(
 		async (config: InternalAxiosRequestConfig) => {
 			const token = await loadToken();
 			if (!isNullOrWhitespace(token)) {
-				// console.log(token);
+				// console.log("token", token);
 				config.headers.Authorization = `Bearer ${token}`;
 			}
 			return config;
@@ -54,37 +66,45 @@ const useAxios = () => {
 			return response.data;
 		},
 		async (error: AxiosError) => {
-			if (error.response) {
-				switch (error.response.status) {
-					case 401:
-						// console.log(
-						// 	"error who",
-						// 	error.config?.url,
-						// 	"    |    ",
-						// 	error.config?.params
-						// );
-						await saveToken(null);
-						onLogout();
-						break;
-					case 404:
-					// console.log(
-					// 	"error who",
-					// 	error.config?.url,
-					// 	"    |    ",
-					// 	error.config?.params
-					// );
-					case 500:
-					// console.log(
-					// 	"error who",
-					// 	error.config?.url,
-					// 	"    |    ",
-					// 	error.config?.params
-					// );
-					default:
-						break;
+			const originalRequest = error.config;
+			if (
+				error.response?.status === 401 &&
+				originalRequest &&
+				!originalRequest?._retry
+			) {
+				console.log("error response", error.message);
+				originalRequest._retry = true;
+				const refreshToken = await SecureStore.getItemAsync(REFRESH_TOKEN_KEY);
+				if (!refreshToken) return Promise.reject(error);
+				try {
+					const refreshTokenResponse: {
+						data: { jwt: string; refreshToken: string };
+					} = await refreshInstance.post("api/auth/refresh", {
+						refreshToken,
+					});
+					const data = refreshTokenResponse.data;
+					await saveToken(data.jwt, data.refreshToken);
+					axiosInstance.defaults.headers.common[
+						"Authorization"
+					] = `Bearer ${data.jwt}`;
+					return axiosInstance(originalRequest);
+				} catch (refreshError) {
+					console.log("catch error", refreshError);
+					await saveToken(null, null);
+					onLogout();
+					return Promise.reject(refreshError);
 				}
 			}
-			console.log("error response", error.message);
+			if (error.response?.status === 404) {
+				console.log(
+					"error who",
+					error.config?.url,
+					"    |    ",
+					error.config?.params
+				);
+			}
+			if (error.response?.status === 500) {
+			}
 
 			return Promise.reject(error);
 		}
