@@ -11,7 +11,6 @@ import {
 	KeyboardAvoidingView,
 	Platform,
 	ScrollView,
-	// SafeAreaView,
 	StyleSheet,
 	TextInput,
 	TouchableOpacity,
