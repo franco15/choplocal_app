@@ -1,3 +1,4 @@
+import { horizontalScale } from "@/lib/metrics";
 import { StyleProp, View, ViewProps, ViewStyle } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import GradientBackground from "./GradientBackground";
@@ -19,11 +20,12 @@ const Container = ({
 		<View className="flex-[1]">
 			{useGradient && <GradientBackground />}
 			<View
-				className="flex-[1] px-3"
+				className="flex-[1]"
 				style={[
 					{
+						paddingHorizontal: horizontalScale(12),
 						paddingTop: insets.top,
-						paddingBottom: insets.bottom,
+						paddingBottom: insets.bottom < 35 ? 0 : insets.bottom,
 						backgroundColor: useGradient ? "transparent" : "#FFFFFF",
 					},
 					style,

@@ -75,7 +75,10 @@ const useAxios = () => {
 				console.log("error response", error.message);
 				originalRequest._retry = true;
 				const refreshToken = await SecureStore.getItemAsync(REFRESH_TOKEN_KEY);
-				if (!refreshToken) return Promise.reject(error);
+				if (!refreshToken) {
+					onLogout();
+					return Promise.reject(error);
+				}
 				try {
 					const refreshTokenResponse: {
 						data: { jwt: string; refreshToken: string };

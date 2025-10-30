@@ -1,9 +1,10 @@
 import { Container, Text, TextBold } from "@/components";
-import { ArrowFortyFive, Bell, ChopLocal, Forknife } from "@/constants/svgs";
+import { ArrowFortyFive, ChopLocal, Forknife } from "@/constants/svgs";
 import { useUserContext } from "@/contexts/UserContext";
+import { horizontalScale, moderateScale, verticalScale } from "@/lib/metrics";
 import { Link, router } from "expo-router";
 import { useEffect } from "react";
-import { Share, StyleSheet, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 import QRCode from "react-native-qrcode-svg";
 
 export default function HomeScreen() {
@@ -13,105 +14,186 @@ export default function HomeScreen() {
 		if (!profileComplete) router.replace("/complete-profile");
 	}, [profileComplete]);
 
-	const onShare = async () => {
-		const result = await Share.share({
-			message: "Share Chop Local app with your friends!",
-		});
-		if (result.action === Share.sharedAction) {
-			if (result.activityType) {
-				//action type
-			} else {
-				// shared
-			}
-		} else {
-			// dismissed
-		}
-	};
-
 	if (!user) return null;
 
 	return (
 		<Container>
-			<View className="px-3 pt-5 h-[90%]">
+			<View
+				className={`h-[90%]`}
+				style={{
+					paddingHorizontal: horizontalScale(8),
+					paddingTop: verticalScale(10),
+				}}
+			>
 				<View className="flex">
 					<View className="flex-row justify-between">
-						<TextBold className="text-[25px] ml-5">
+						<TextBold
+							className=""
+							style={{
+								fontSize: moderateScale(30),
+								marginLeft: horizontalScale(15),
+							}}
+						>
 							Hi {user.firstName}!
 						</TextBold>
 					</View>
-					<Text className="text-[13px] mt-3 ml-5">
-						Here you will find everything about chop local
+					<Text
+						className=""
+						style={{
+							fontSize: moderateScale(18),
+							marginTop: verticalScale(12),
+							marginLeft: horizontalScale(15),
+						}}
+					>
+						{"Here you will find everything\nabout chop local"}
 					</Text>
 				</View>
-				<View className="flex w-full h-64 bg-[#96190F] rounded-[24px] p-5 justify-between mt-10">
+				<View
+					className="flex w-full bg-[#96190F] justify-between"
+					style={{
+						height: verticalScale(200),
+						borderRadius: moderateScale(24),
+						padding: moderateScale(20),
+						marginTop: verticalScale(20),
+					}}
+				>
 					<View className="flex items-end"></View>
 					<View className="flex items-start justify-end">
-						<Text className="text-[15px] text-white">Card ID: {user.code}</Text>
-						<Text className="text-[15px] text-white mb-5">
+						<Text
+							className="text-white"
+							style={{ fontSize: moderateScale(15) }}
+						>
+							Card ID: {user.code}
+						</Text>
+						<Text
+							className="text-white"
+							style={{
+								fontSize: moderateScale(15),
+								marginBottom: verticalScale(15),
+							}}
+						>
 							{user.firstName + " " + user.lastName}
 						</Text>
-						<ChopLocal width={"80%"} height={50} />
+						<ChopLocal width={"80%"} height={verticalScale(50)} />
 					</View>
 				</View>
-				<View className="mt-10 flex-row justify-between px-5">
+				<View
+					className="flex-row justify-between"
+					style={{
+						marginTop: verticalScale(30),
+						paddingHorizontal: horizontalScale(50), // 20 de padding cuando esten los tres botones
+					}}
+				>
 					<Link href="/qr">
 						<View className="flex items-center">
 							<View
-								className="h-[64px] w-[64px] rounded-full flex justify-center items-center"
-								style={[styles.shadow]}
+								className="rounded-full flex justify-center items-center"
+								style={[
+									styles.shadow,
+									{ height: verticalScale(60), width: horizontalScale(60) },
+								]}
 							>
-								<QRCode value={user.code} size={30} />
+								<QRCode value={user.code} size={moderateScale(30)} />
 							</View>
-							<Text className="text-[13px] text-center mt-2">{"QR\ncode"}</Text>
+							<Text
+								className="text-center"
+								style={{
+									fontSize: moderateScale(13),
+									marginTop: verticalScale(8),
+								}}
+							>
+								{"QR\ncode"}
+							</Text>
 						</View>
 					</Link>
 					<Link href="/restaurants">
 						<View className="flex items-center">
 							<View
-								className="h-[64px] w-[64px] rounded-full flex justify-center items-center"
-								style={[styles.shadow]}
+								className="rounded-full flex justify-center items-center"
+								style={[
+									styles.shadow,
+									{ height: verticalScale(60), width: horizontalScale(60) },
+								]}
 							>
-								<Forknife width={30} height={30} />
+								<Forknife
+									width={horizontalScale(30)}
+									height={verticalScale(30)}
+								/>
 							</View>
-							<Text className="text-[13px] text-center mt-2">
+							<Text
+								className="text-center"
+								style={{
+									fontSize: moderateScale(13),
+									marginTop: verticalScale(8),
+								}}
+							>
 								{"Restaurants\nbalances"}
 							</Text>
 						</View>
 					</Link>
-					<Link href="/restaurants/news">
+					{/* <Link href="/restaurants/news">
 						<View className="flex items-center">
 							<View
-								className="h-[64px] w-[64px] rounded-full flex justify-center items-center"
-								style={[styles.shadow]}
+								className="rounded-full flex justify-center items-center"
+								style={[
+									styles.shadow,
+									{ height: verticalScale(60), width: horizontalScale(60) },
+								]}
 							>
-								<Bell width={30} height={30} />
+								<Bell width={horizontalScale(30)} height={verticalScale(30)} />
 							</View>
-							<Text className="text-[13px] text-center mt-2">
+							<Text
+								className="text-center"
+								style={{
+									fontSize: moderateScale(13),
+									marginTop: verticalScale(8),
+								}}
+							>
 								{"Restaurants\nnews"}
 							</Text>
 						</View>
-					</Link>
+					</Link> */}
 				</View>
 
 				<View className="absolute bottom-0 w-full flex self-center">
 					<Link
 						href="/suggestions"
-						className="rounded-[41px]"
-						style={[{ backgroundColor: "rgba(255,255,255, 0.5)" }]}
+						className=""
+						style={[
+							{
+								backgroundColor: "rgba(255,255,255, 0.5)",
+								borderRadius: moderateScale(41),
+							},
+						]}
 					>
-						<View className="flex flex-row px-10 py-5 items-center">
+						<View
+							className="flex flex-row items-center"
+							style={{
+								paddingHorizontal: horizontalScale(25),
+								paddingVertical: verticalScale(15),
+							}}
+						>
 							<View className="flex-[3]">
-								<TextBold className="text-[13px]">
+								<TextBold className="" style={{ fontSize: moderateScale(13) }}>
 									Help chop local grow
 								</TextBold>
-								<Text className="text-[11px]">
+								<Text className="" style={{ fontSize: moderateScale(13) }}>
 									{
 										"Tell us which restaurants you would\nlike to be part of chop local"
 									}
 								</Text>
 							</View>
-							<View className="rounded-full bg-black max-w-[40px] h-[40px] justify-center items-center flex-[1]">
-								<ArrowFortyFive width={19} height={19} />
+							<View
+								className="rounded-full bg-black justify-center items-center flex-[1]"
+								style={{
+									maxWidth: horizontalScale(50),
+									height: verticalScale(50),
+								}}
+							>
+								<ArrowFortyFive
+									width={horizontalScale(20)}
+									height={verticalScale(20)}
+								/>
 							</View>
 						</View>
 					</Link>

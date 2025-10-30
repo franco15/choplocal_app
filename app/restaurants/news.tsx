@@ -1,5 +1,6 @@
 import { Container, Text, TextBold } from "@/components";
 import { images } from "@/constants/images";
+import { horizontalScale, moderateScale, verticalScale } from "@/lib/metrics";
 import { default as rawNews } from "@/lib/mock/news.json";
 import { INews } from "@/lib/types/news";
 import { useEffect, useState } from "react";
@@ -27,31 +28,69 @@ export default function NewsScreen() {
 	}, [news]);
 	return (
 		<Container useGradient={false}>
-			<ScrollView className="px-3 mt-16 flex-1">
+			<ScrollView
+				className="flex-1"
+				style={{
+					paddingHorizontal: horizontalScale(12),
+					marginTop: verticalScale(50),
+				}}
+			>
 				<View className="flex items-center">
-					<TextBold className="text-[35px]">What is happening</TextBold>
+					<TextBold className="" style={{ fontSize: moderateScale(35) }}>
+						What is happening
+					</TextBold>
 				</View>
 				{todayNews.length > 0 && (
-					<View className="mt-5">
-						<Text className="text-[13px] mb-2">Today</Text>
+					<View className="" style={{ marginTop: verticalScale(20) }}>
+						<Text
+							className=""
+							style={{
+								fontSize: moderateScale(13),
+								marginBottom: verticalScale(8),
+							}}
+						>
+							Today
+						</Text>
 						{todayNews.map((item, index) => {
 							return (
 								<View
-									className="flex flex-row h-[100px] py-5 px-2 w-full bg-[#EFEECD] rounded-[16px] mb-3"
+									className="flex flex-row w-full bg-[#EFEECD]"
+									style={{
+										height: verticalScale(85),
+										paddingHorizontal: horizontalScale(8),
+										borderRadius: moderateScale(16),
+										marginBottom: verticalScale(12),
+									}}
 									key={`${item.id}_${index}`}
 								>
 									<View className="w-[20%] items-center justify-center">
 										<Image
 											source={images.restaurantDefault}
-											className="w-[54px] h-[54px] rounded-[9px]"
+											className=""
+											style={{
+												width: horizontalScale(45),
+												height: verticalScale(45),
+												borderRadius: moderateScale(9),
+											}}
 										/>
 									</View>
-									<View className="w-[80%] justify-center px-1">
-										<Text className="text-[20px]" numberOfLines={2}>
+									<View
+										className="w-[80%] justify-center"
+										style={{ paddingHorizontal: horizontalScale(4) }}
+									>
+										<Text
+											className=""
+											style={{ fontSize: moderateScale(15) }}
+											numberOfLines={2}
+										>
 											{item.title}
 										</Text>
-										<Text className="text-[11px]">{item.date}</Text>
-										<Text className="text-[11px]">{item.description}</Text>
+										<Text className="" style={{ fontSize: moderateScale(11) }}>
+											{item.date}
+										</Text>
+										<Text className="" style={{ fontSize: moderateScale(11) }}>
+											{item.description}
+										</Text>
 									</View>
 								</View>
 							);
@@ -59,26 +98,57 @@ export default function NewsScreen() {
 					</View>
 				)}
 				{pastNews.length > 0 && (
-					<View className="mt-5">
-						<Text className="text-[13px] mb-2">Past news</Text>
+					<View className="" style={{ marginTop: verticalScale(20) }}>
+						<Text
+							className=""
+							style={{
+								fontSize: moderateScale(13),
+								marginBottom: verticalScale(8),
+							}}
+						>
+							Past news
+						</Text>
 						{pastNews.map((item, index) => {
 							return (
 								<View
-									className="flex flex-row h-[100px] py-5 px-2 w-full bg-white rounded-[16px] mb-3 border-[#ADADAD] border-[0.5px]"
+									className="flex flex-row  w-full bg-white border-[#ADADAD]"
+									style={{
+										height: verticalScale(85),
+										paddingHorizontal: horizontalScale(8),
+										borderRadius: moderateScale(16),
+										marginBottom: verticalScale(12),
+										borderWidth: moderateScale(0.5),
+									}}
 									key={`${item.id}_${index}`}
 								>
 									<View className="w-[20%] items-center justify-center">
 										<Image
 											source={images.restaurantDefault}
-											className="w-[54px] h-[54px] rounded-[9px]"
+											className=""
+											style={{
+												width: horizontalScale(45),
+												height: verticalScale(45),
+												borderRadius: moderateScale(9),
+											}}
 										/>
 									</View>
-									<View className="w-[80%] justify-center px-1">
-										<Text className="text-[20px]" numberOfLines={2}>
+									<View
+										className="w-[80%] justify-center"
+										style={{ paddingHorizontal: horizontalScale(4) }}
+									>
+										<Text
+											className=""
+											style={{ fontSize: moderateScale(15) }}
+											numberOfLines={2}
+										>
 											{item.title}
 										</Text>
-										<Text className="text-[11px]">{item.date}</Text>
-										<Text className="text-[11px]">{item.description}</Text>
+										<Text className="" style={{ fontSize: moderateScale(11) }}>
+											{item.date}
+										</Text>
+										<Text className="" style={{ fontSize: moderateScale(11) }}>
+											{item.description}
+										</Text>
 									</View>
 								</View>
 							);
