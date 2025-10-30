@@ -7,12 +7,16 @@ import {
 	PersonOff,
 	Star,
 } from "@/constants/svgs";
+import { horizontalScale, moderateScale, verticalScale } from "@/lib/metrics";
 import { Tabs } from "expo-router";
 import React from "react";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-const ICONSIZE = 25;
+const HORIZONTAL_ICONSIZE = horizontalScale(25);
+const VERTICAL_ICONSIZE = verticalScale(25);
 
 const TabsLayout = () => {
+	const insets = useSafeAreaInsets();
 	return (
 		<Tabs
 			screenOptions={{
@@ -29,12 +33,14 @@ const TabsLayout = () => {
 					position: "absolute",
 					elevation: 0,
 					borderTopWidth: 0,
-					borderTopLeftRadius: 27,
-					borderTopRightRadius: 27,
-					height: 80,
+					borderTopLeftRadius: moderateScale(27),
+					borderTopRightRadius: moderateScale(27),
+					height: verticalScale(56),
+					// paddingBottom: 60,
+					marginBottom: insets.bottom < 35 ? 0 : insets.bottom,
 				},
 				tabBarIconStyle: {
-					marginVertical: 10,
+					marginVertical: verticalScale(10),
 				},
 			}}
 		>
@@ -44,9 +50,19 @@ const TabsLayout = () => {
 					title: "Home",
 					tabBarIcon: ({ focused }) => {
 						if (focused)
-							return <Home width={ICONSIZE} height={ICONSIZE} fill="#000000" />;
+							return (
+								<Home
+									width={HORIZONTAL_ICONSIZE}
+									height={VERTICAL_ICONSIZE}
+									fill="#000000"
+								/>
+							);
 						return (
-							<HomeOff width={ICONSIZE} height={ICONSIZE} fill="#000000" />
+							<HomeOff
+								width={HORIZONTAL_ICONSIZE}
+								height={VERTICAL_ICONSIZE}
+								fill="#000000"
+							/>
 						);
 					},
 				}}
@@ -59,10 +75,18 @@ const TabsLayout = () => {
 					tabBarIcon: ({ focused }) => {
 						if (focused)
 							return (
-								<Forknife width={ICONSIZE} height={ICONSIZE} fill="#000000" />
+								<Forknife
+									width={HORIZONTAL_ICONSIZE}
+									height={VERTICAL_ICONSIZE}
+									fill="#000000"
+								/>
 							);
 						return (
-							<ForknifeOff width={ICONSIZE} height={ICONSIZE} fill="#000000" />
+							<ForknifeOff
+								width={HORIZONTAL_ICONSIZE}
+								height={VERTICAL_ICONSIZE}
+								fill="#000000"
+							/>
 						);
 					},
 				}}
@@ -74,8 +98,20 @@ const TabsLayout = () => {
 					title: "Favorites",
 					tabBarIcon: ({ focused }) => {
 						if (focused)
-							return <Star width={ICONSIZE} height={ICONSIZE} fill="#000000" />;
-						return <Star width={ICONSIZE} height={ICONSIZE} fill="#000000" />;
+							return (
+								<Star
+									width={HORIZONTAL_ICONSIZE}
+									height={VERTICAL_ICONSIZE}
+									fill="#000000"
+								/>
+							);
+						return (
+							<Star
+								width={HORIZONTAL_ICONSIZE}
+								height={VERTICAL_ICONSIZE}
+								fill="#000000"
+							/>
+						);
 					},
 				}}
 			/>
@@ -84,8 +120,19 @@ const TabsLayout = () => {
 				options={{
 					title: "Profile",
 					tabBarIcon: ({ focused }) => {
-						if (focused) return <Person width={ICONSIZE} height={ICONSIZE} />;
-						return <PersonOff width={ICONSIZE} height={ICONSIZE} />;
+						if (focused)
+							return (
+								<Person
+									width={HORIZONTAL_ICONSIZE}
+									height={VERTICAL_ICONSIZE}
+								/>
+							);
+						return (
+							<PersonOff
+								width={HORIZONTAL_ICONSIZE}
+								height={VERTICAL_ICONSIZE}
+							/>
+						);
 					},
 				}}
 			/>

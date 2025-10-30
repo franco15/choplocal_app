@@ -4,6 +4,7 @@ import { SearchIcon } from "@/constants/svgs";
 import { useUserContext } from "@/contexts/UserContext";
 import { queryKeys } from "@/lib/api/queryClient";
 import { useUserApi } from "@/lib/api/useApi";
+import { horizontalScale, moderateScale, verticalScale } from "@/lib/metrics";
 import { IRestaurant } from "@/lib/types/restaurant";
 import { inlcudesCaseInsensitive, isImage } from "@/lib/utils";
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
@@ -41,10 +42,32 @@ export default function Restaurants() {
 
 	return (
 		<Container useGradient={false} style={{ backgroundColor: "#E3C6FB" }}>
-			<View className="px-2 flex-1 mt-5">
-				<View className="pl-8" style={{ flex: 1 }}>
-					<Text className="text-[13px]">Chop Local</Text>
-					<TextBold className="text-[35px] mb-5">Restaurants</TextBold>
+			<View
+				className="flex-1"
+				style={{
+					paddingHorizontal: horizontalScale(5),
+					marginTop: verticalScale(10),
+				}}
+			>
+				<View
+					className=""
+					style={{
+						flex: 1,
+						paddingLeft: horizontalScale(20),
+						marginBottom: verticalScale(15),
+					}}
+				>
+					<Text className="" style={{ fontSize: moderateScale(13) }}>
+						Chop Local
+					</Text>
+					<TextBold
+						className=""
+						style={{
+							fontSize: moderateScale(35),
+						}}
+					>
+						Restaurants
+					</TextBold>
 				</View>
 				<View
 					className="flex flex-row items-center justify-between"
@@ -57,18 +80,26 @@ export default function Restaurants() {
 						style={{
 							backgroundColor: "#F4E8FD",
 							borderColor: "#ebebeb",
-							borderRadius: 12,
-							borderWidth: 1,
-							fontSize: 16,
-							marginTop: 5,
+							borderRadius: moderateScale(12),
+							borderWidth: moderateScale(1),
+							fontSize: moderateScale(16),
 							width: "88%",
-							height: 40,
-							paddingHorizontal: 15,
+							height: verticalScale(40),
+							paddingHorizontal: horizontalScale(15),
 						}}
 						placeholderTextColor="#c4c4c4"
 					/>
-					<View className="bg-[#F4E8FD] h-[40px] rounded-[12px] w-[10%] items-center justify-center">
-						<SearchIcon width={18} height={18} />
+					<View
+						className="bg-[#F4E8FD] w-[10%] items-center justify-center"
+						style={{
+							height: verticalScale(40),
+							borderRadius: moderateScale(12),
+						}}
+					>
+						<SearchIcon
+							width={horizontalScale(18)}
+							height={verticalScale(18)}
+						/>
 					</View>
 				</View>
 				<View style={{ flex: 10 }}>
@@ -87,9 +118,18 @@ export default function Restaurants() {
 										params: { id: item.id },
 									}}
 									key={`${index}_${item.id}`}
-									className="mb-5"
+									className=""
+									style={{ marginBottom: verticalScale(10) }}
 								>
-									<View className="flex flex-row h-[85px] py-3 px-2 w-full bg-white rounded-[16px]">
+									<View
+										className="flex flex-row w-full bg-white"
+										style={{
+											height: verticalScale(75),
+											paddingVertical: verticalScale(10),
+											paddingHorizontal: horizontalScale(8),
+											borderRadius: moderateScale(16),
+										}}
+									>
 										<View className="w-[20%] items-center justify-center">
 											<Image
 												source={
@@ -97,20 +137,46 @@ export default function Restaurants() {
 														? { uri: item.image }
 														: images.restaurantDefault
 												}
-												className="w-[54px] h-[54px] rounded-[9px]"
+												className=""
+												style={{
+													width: horizontalScale(45),
+													height: verticalScale(45),
+													borderRadius: moderateScale(9),
+												}}
 											/>
 										</View>
-										<View className="w-[55%] justify-center px-1">
-											<Text className="text-[20px]" numberOfLines={1}>
+										<View
+											className="w-[50%] justify-center"
+											style={{ paddingHorizontal: horizontalScale(4) }}
+										>
+											<Text
+												className=""
+												style={{ fontSize: moderateScale(18) }}
+												numberOfLines={1}
+											>
 												{item.name}
 											</Text>
-											<Text className="text-[11px]">OPEN: 9:00-22:00</Text>
+											{/* <Text
+												className=""
+												style={{ fontSize: moderateScale(11) }}
+											>
+												OPEN: 9:00-22:00
+											</Text> */}
 										</View>
-										<View className="w-[25%] justify-center items-center">
-											<Text className="text-[11px]">
+										<View
+											className="w-[30%] justify-center items-center"
+											style={{ marginLeft: horizontalScale(0) }}
+										>
+											<Text
+												className=""
+												style={{ fontSize: moderateScale(11) }}
+											>
 												{item.checkIns} VISITS
 											</Text>
-											<Text className="text-[20px]">
+											<Text
+												className=""
+												style={{ fontSize: moderateScale(18) }}
+											>
 												${item.balance.toFixed(2)}
 											</Text>
 										</View>

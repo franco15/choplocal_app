@@ -1,6 +1,7 @@
 import { Container, Text, TextBold } from "@/components";
 import { useUserContext } from "@/contexts/UserContext";
 import { useUpdateUser } from "@/lib/api/queries/userQueries";
+import { horizontalScale, moderateScale, verticalScale } from "@/lib/metrics";
 import { isNullOrWhitespace } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import DateTimePicker from "@react-native-community/datetimepicker";
@@ -20,13 +21,6 @@ import {
 } from "react-native";
 import { z } from "zod";
 
-interface IForm {
-	firstName: string;
-	lastName: string;
-	email: string;
-	birthDate: Date;
-}
-
 const schema = z.object({
 	firstName: z.string({ error: "Name cannot be empty" }),
 	lastName: z.string({ error: "Last name cannot be empty" }),
@@ -34,8 +28,7 @@ const schema = z.object({
 	birthDate: z.date({ error: "Birthdate cannot be empty" }),
 });
 
-const INPUT_CLASS =
-	"h-12 justify-center items-center text-black rounded-[27.5px] border-[0.5px] border-[#1A1C20] mt-1 px-5 text-[13px]";
+const INPUT_CLASS = "justify-center items-center text-black border-[#1A1C20]";
 
 export default function CompleteProfile() {
 	const router = useRouter();
@@ -61,136 +54,241 @@ export default function CompleteProfile() {
 				behavior={Platform.OS == "ios" ? "padding" : "height"}
 				style={{ flex: 1 }}
 			>
-				<ScrollView style={{ paddingTop: 20 }}>
+				<ScrollView style={{ paddingTop: verticalScale(40) }}>
 					<TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-						<View className="flex h-full px-6 bg-background">
+						<View
+							className="flex h-full bg-background"
+							style={{ paddingHorizontal: horizontalScale(15) }}
+						>
 							<TextBold
-								className="text-[35px] mb-3 mx-1"
-								style={{ color: "#1A1C20" }}
+								className=""
+								style={{
+									color: "#1A1C20",
+									fontSize: moderateScale(35),
+									marginBottom: verticalScale(12),
+									marginHorizontal: horizontalScale(5),
+								}}
 							>
 								WELCOME TO{"\n"}CHOP LOCAL
 							</TextBold>
-							<Text className="text-[13px] mb-24" style={{ color: "#000000" }}>
+							<Text
+								className=""
+								style={{
+									color: "#000000",
+									fontSize: moderateScale(13),
+									marginBottom: verticalScale(120),
+								}}
+							>
 								Just a few last steps before everything is set up
 							</Text>
-							<Text className="text-black text-[13px] ml-5">Name</Text>
-							<Controller
-								control={control}
-								rules={{ required: "Name cannot be empty" }}
-								name="firstName"
-								render={({ field: { onChange, onBlur, value } }) => (
-									<TextInput
-										className={INPUT_CLASS}
-										placeholderTextColor={"rgba(0, 0, 0, 0.3)"}
-										onBlur={onBlur}
-										onChangeText={onChange}
-										value={value}
-										style={[errors.firstName && style.inputError]}
-									/>
-								)}
-							/>
-							{errors.firstName && (
-								<Text className="text-red-600">{errors.firstName.message}</Text>
-							)}
-							<Text className="text-black text-[13px] mt-5 ml-5">
-								Last name
-							</Text>
-							<Controller
-								control={control}
-								rules={{ required: "Last name cannot be empty" }}
-								name="lastName"
-								render={({ field: { onChange, onBlur, value } }) => (
-									<TextInput
-										className={INPUT_CLASS}
-										placeholderTextColor={"rgba(0, 0, 0, 0.3)"}
-										onBlur={onBlur}
-										onChangeText={onChange}
-										value={value}
-										style={[errors.lastName && style.inputError]}
-									/>
-								)}
-							/>
-							{errors.lastName && (
-								<Text className="text-red-600">{errors.lastName.message}</Text>
-							)}
-							<Text className="text-black text-[13px] ml-5 mt-5">Email</Text>
-							<Controller
-								control={control}
-								rules={{ required: "Not a valid email" }}
-								name="email"
-								render={({ field: { onChange, onBlur, value } }) => (
-									<TextInput
-										className={INPUT_CLASS}
-										placeholderTextColor={"rgba(0, 0, 0, 0.3)"}
-										onBlur={onBlur}
-										onChangeText={onChange}
-										value={value}
-										style={[errors.email && style.inputError]}
-									/>
-								)}
-							/>
-							{errors.email && (
-								<Text className="text-red-600">{errors.email.message}</Text>
-							)}
-							<Text className="text-black text-[13px] ml-5 mt-5">
-								Birthdate
-							</Text>
-							<TouchableOpacity
-								className="h-12 justify-center rounded-[27.5px] border-[0.5px] border-[#1A1C20] mt-1 px-5 text-[13px]"
-								activeOpacity={0.8}
-								onPress={() => setShowDateSelector(true)}
-								style={[errors.birthDate && style.inputError]}
-							>
+							<View style={{ marginHorizontal: horizontalScale(10) }}>
 								<Text
-									className="text-[13px]"
+									className="text-black"
 									style={{
-										color: isNullOrWhitespace(
-											control._formValues.birthDate?.toLocaleDateString()
-										)
-											? "text-[rgba(0, 0, 0, 0.3)]"
-											: "",
+										fontSize: moderateScale(13),
+										marginLeft: horizontalScale(20),
 									}}
 								>
-									{isNullOrWhitespace(
-										control._formValues.birthDate?.toLocaleDateString()
-									)
-										? "MM/DD/YYYY"
-										: control._formValues.birthDate.toLocaleDateString()}
+									Name
 								</Text>
-							</TouchableOpacity>
-							{errors.birthDate && (
-								<Text className="text-red-600">{errors.birthDate.message}</Text>
-							)}
-							{showDateSelector && (
 								<Controller
 									control={control}
-									rules={{ required: "Date cannot be empty" }}
-									name="birthDate"
+									rules={{ required: "Name cannot be empty" }}
+									name="firstName"
 									render={({ field: { onChange, onBlur, value } }) => (
-										<DateTimePicker
-											testID="dateTimePicker"
-											value={value ?? new Date()}
-											mode={"date"}
-											onChange={(event, date) => {
-												onChange(date);
-												setShowDateSelector(false);
-											}}
-											style={[errors.birthDate && style.inputError]}
-											maximumDate={new Date()}
-											minimumDate={new Date(1940, 0, 1)}
+										<TextInput
+											className={INPUT_CLASS}
+											placeholderTextColor={"rgba(0, 0, 0, 0.3)"}
+											onBlur={onBlur}
+											onChangeText={onChange}
+											value={value}
+											style={[
+												style.inputStyle,
+												errors.firstName && style.inputError,
+											]}
 										/>
 									)}
 								/>
-							)}
-							<TouchableOpacity
-								className="bg-[#E3C6FB] mt-20 w-1/2 h-[54px] self-center items-center justify-center rounded-[30px]"
-								activeOpacity={0.8}
-								onPress={handleSubmit(onSubmit)}
-							>
-								<Text className="text-[14px]" style={{ color: "#000000" }}>
-									Done
+								{errors.firstName && (
+									<Text
+										className="text-red-600"
+										style={{
+											fontSize: moderateScale(11),
+											marginLeft: horizontalScale(20),
+											marginTop: verticalScale(2),
+										}}
+									>
+										{errors.firstName.message}
+									</Text>
+								)}
+								<Text
+									className="text-black"
+									style={{
+										fontSize: moderateScale(13),
+										marginLeft: horizontalScale(20),
+										marginTop: verticalScale(15),
+									}}
+								>
+									Last name
 								</Text>
-							</TouchableOpacity>
+								<Controller
+									control={control}
+									rules={{ required: "Last name cannot be empty" }}
+									name="lastName"
+									render={({ field: { onChange, onBlur, value } }) => (
+										<TextInput
+											className={INPUT_CLASS}
+											placeholderTextColor={"rgba(0, 0, 0, 0.3)"}
+											onBlur={onBlur}
+											onChangeText={onChange}
+											value={value}
+											style={[
+												style.inputStyle,
+												errors.lastName && style.inputError,
+											]}
+										/>
+									)}
+								/>
+								{errors.lastName && (
+									<Text
+										className="text-red-600"
+										style={{
+											fontSize: moderateScale(11),
+											marginLeft: horizontalScale(20),
+											marginTop: verticalScale(2),
+										}}
+									>
+										{errors.lastName.message}
+									</Text>
+								)}
+								<Text
+									className="text-black"
+									style={{
+										fontSize: moderateScale(13),
+										marginLeft: horizontalScale(20),
+										marginTop: verticalScale(15),
+									}}
+								>
+									Email
+								</Text>
+								<Controller
+									control={control}
+									rules={{ required: "Not a valid email" }}
+									name="email"
+									render={({ field: { onChange, onBlur, value } }) => (
+										<TextInput
+											className={INPUT_CLASS}
+											placeholderTextColor={"rgba(0, 0, 0, 0.3)"}
+											onBlur={onBlur}
+											onChangeText={onChange}
+											value={value}
+											style={[
+												style.inputStyle,
+												errors.email && style.inputError,
+											]}
+										/>
+									)}
+								/>
+								{errors.email && (
+									<Text
+										className="text-red-600"
+										style={{
+											fontSize: moderateScale(11),
+											marginLeft: horizontalScale(20),
+											marginTop: verticalScale(2),
+										}}
+									>
+										{errors.email.message}
+									</Text>
+								)}
+								<Text
+									className="text-black"
+									style={{
+										fontSize: moderateScale(13),
+										marginLeft: horizontalScale(20),
+										marginTop: verticalScale(15),
+									}}
+								>
+									Birthdate
+								</Text>
+								<TouchableOpacity
+									className="justify-center border-[#1A1C20]"
+									activeOpacity={0.8}
+									onPress={() => setShowDateSelector(true)}
+									style={[
+										style.inputStyle,
+										errors.birthDate && style.inputError,
+									]}
+								>
+									<Text
+										className=""
+										style={{
+											fontSize: moderateScale(13),
+											color: isNullOrWhitespace(
+												control._formValues.birthDate?.toLocaleDateString()
+											)
+												? "text-[rgba(0, 0, 0, 0.3)]"
+												: "",
+										}}
+									>
+										{isNullOrWhitespace(
+											control._formValues.birthDate?.toLocaleDateString()
+										)
+											? "MM/DD/YYYY"
+											: control._formValues.birthDate.toLocaleDateString()}
+									</Text>
+								</TouchableOpacity>
+								{errors.birthDate && (
+									<Text
+										className="text-red-600"
+										style={{
+											fontSize: moderateScale(11),
+											marginLeft: horizontalScale(20),
+											marginTop: verticalScale(2),
+										}}
+									>
+										{errors.birthDate.message}
+									</Text>
+								)}
+								{showDateSelector && (
+									<Controller
+										control={control}
+										rules={{ required: "Date cannot be empty" }}
+										name="birthDate"
+										render={({ field: { onChange, onBlur, value } }) => (
+											<DateTimePicker
+												testID="dateTimePicker"
+												value={value ?? new Date()}
+												mode={"date"}
+												onChange={(event, date) => {
+													onChange(date);
+													setShowDateSelector(false);
+												}}
+												style={[errors.birthDate && style.inputError]}
+												maximumDate={new Date()}
+												minimumDate={new Date(1940, 0, 1)}
+											/>
+										)}
+									/>
+								)}
+								<TouchableOpacity
+									className="bg-[#E3C6FB] w-1/2 self-center items-center justify-center"
+									activeOpacity={0.8}
+									onPress={handleSubmit(onSubmit)}
+									style={{
+										marginTop: verticalScale(80),
+										height: verticalScale(54),
+										borderRadius: moderateScale(30),
+									}}
+								>
+									<Text
+										className=""
+										style={{ color: "#000000", fontSize: moderateScale(14) }}
+									>
+										Done
+									</Text>
+								</TouchableOpacity>
+							</View>
 						</View>
 					</TouchableWithoutFeedback>
 				</ScrollView>
@@ -203,5 +301,13 @@ const style = StyleSheet.create({
 	inputError: {
 		borderWidth: 1,
 		borderColor: "red",
+	},
+	inputStyle: {
+		height: verticalScale(40),
+		borderRadius: moderateScale(27),
+		borderWidth: moderateScale(0.5),
+		// marginTop: verticalScale(4),
+		paddingHorizontal: horizontalScale(20),
+		fontSize: moderateScale(13),
 	},
 });

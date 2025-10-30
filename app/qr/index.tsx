@@ -1,5 +1,6 @@
 import { Container, Text, TextBold } from "@/components";
 import { useUserContext } from "@/contexts/UserContext";
+import { horizontalScale, moderateScale, verticalScale } from "@/lib/metrics";
 import { View } from "react-native";
 import QRCode from "react-native-qrcode-svg";
 
@@ -7,22 +8,51 @@ export default function QrScreen() {
 	const { user } = useUserContext();
 	return (
 		<Container>
-			<View className="flex-1 px-3 mt-10">
+			<View
+				className="flex-1"
+				style={{
+					paddingHorizontal: horizontalScale(12),
+					marginTop: verticalScale(40),
+				}}
+			>
 				<View className="justify-center" style={{ flex: 1 }}>
-					<TextBold className="text-[35px] text-center">
+					<TextBold
+						className="text-center"
+						style={{ fontSize: moderateScale(35) }}
+					>
 						{"Show this code\nbefore paying"}
 					</TextBold>
-					<Text className="text-[15px] text-center mt-5">
+					<Text
+						className="text-center"
+						style={{
+							fontSize: moderateScale(15),
+							marginTop: verticalScale(20),
+						}}
+					>
 						{"This is your identifier as a member\nof chop local"}
 					</Text>
 				</View>
 				<View className="flex justify-center items-center" style={{ flex: 2 }}>
-					<QRCode value={user.code} size={300} backgroundColor="transparent" />
+					<QRCode
+						value={user.code}
+						size={moderateScale(300)}
+						backgroundColor="transparent"
+					/>
 				</View>
 				<View style={{ flex: 1 }} className="justify-center">
-					<View className="bg-white rounded-[42px] h-[85px] flex items-center justify-center">
-						<TextBold className="text-[13px]">YOUR CARD CODE</TextBold>
-						<Text className="text-[25px]">{user.code}</Text>
+					<View
+						className="bg-white flex items-center justify-center"
+						style={{
+							borderRadius: moderateScale(42),
+							height: verticalScale(85),
+						}}
+					>
+						<TextBold className="" style={{ fontSize: moderateScale(13) }}>
+							YOUR CARD CODE
+						</TextBold>
+						<Text className="" style={{ fontSize: moderateScale(25) }}>
+							{user.code}
+						</Text>
 					</View>
 				</View>
 			</View>

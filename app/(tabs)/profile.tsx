@@ -123,7 +123,7 @@ const Profile = () => {
 						<TouchableOpacity
 							activeOpacity={0.8}
 							className="w-auto h-auto flex items-center justify-center p-5"
-							// onPress={() => setDeleteAlert(false)}
+							onPress={() => setDeleteAlert(false)}
 						>
 							<Text
 								className={`text-[20px] pt-[${
