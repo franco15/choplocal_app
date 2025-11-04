@@ -2,7 +2,7 @@
   "expo": {
     "name": "choplocal",
     "slug": "choplocal",
-    "version": "0.1.0",
+    "version": "1.0.0",
     "orientation": "portrait",
     "icon": "assets/images/logo.png",
     "scheme": "choplocal",
@@ -25,8 +25,7 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.choplocal",
-      "runtimeVersion": "1.0.0"
+      "package": "com.choplocal"
     },
     "web": {
       "bundler": "metro",

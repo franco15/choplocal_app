@@ -1,9 +1,15 @@
 import { Container, Text, TextBold } from "@/components";
-import { Lock, Logout, Paper } from "@/constants/svgs";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { useUserContext } from "@/contexts/UserContext";
+import { horizontalScale, moderateScale, verticalScale } from "@/lib/metrics";
 import React, { useState } from "react";
-import { Platform, TouchableOpacity, View } from "react-native";
+import {
+	Linking,
+	Platform,
+	StyleSheet,
+	TouchableOpacity,
+	View,
+} from "react-native";
 import Modal from "react-native-modal";
 
 const Profile = () => {
@@ -34,7 +40,7 @@ const Profile = () => {
 					<TextBold className="text-[25px] ml-5">Hi {user.firstName}!</TextBold>
 				</View>
 				<View className="mt-10">
-					<TouchableOpacity
+					{/* <TouchableOpacity
 						activeOpacity={0.8}
 						className="flex flex-row items-center py-5"
 					>
@@ -42,43 +48,60 @@ const Profile = () => {
 							<Logout height={30} width={30} />
 						</View>
 						<TextBold className="ml-5">Change number</TextBold>
-					</TouchableOpacity>
+					</TouchableOpacity> */}
 					<TouchableOpacity
 						activeOpacity={0.8}
-						className="flex flex-row items-center py-5"
+						className="flex flex-row items-center border-b-[0.75px]"
+						onPress={() =>
+							Linking.openURL(
+								"https://www.choplocally.com/terms-and-conditions"
+							)
+						}
 					>
-						<View className="flex justify-center">
+						{/* <View className="flex justify-center">
 							<Paper height={35} width={35} />
-						</View>
-						<TextBold className="ml-5">Terms and conditions</TextBold>
+						</View> */}
+						<Text className="" style={styles.text}>
+							Terms and conditions
+						</Text>
 					</TouchableOpacity>
 					<TouchableOpacity
 						activeOpacity={0.8}
-						className="flex flex-row items-center py-5"
+						className="flex flex-row items-center border-b-[0.75px]"
+						onPress={() =>
+							Linking.openURL("https://www.choplocally.com/privacy-policy")
+						}
 					>
-						<View className="flex justify-center items-center">
+						{/* <View className="flex justify-center items-center">
 							<Lock height={35} width={35} />
-						</View>
-						<TextBold className="ml-5">Privacy policy</TextBold>
+						</View> */}
+						<Text className="" style={styles.text}>
+							Privacy policy
+						</Text>
 					</TouchableOpacity>
 					<TouchableOpacity
 						activeOpacity={0.8}
-						className="flex flex-row items-center py-5"
+						className="flex flex-row items-center border-b-[0.75px]"
 						onPress={() => setDeleteAlert(true)}
 					>
-						<Logout height={30} width={30} />
-						<TextBold className="ml-5">Delete account</TextBold>
+						{/* <Logout height={30} width={30} /> */}
+						<Text className="" style={styles.text}>
+							Delete account
+						</Text>
 					</TouchableOpacity>
 					<TouchableOpacity
 						activeOpacity={0.8}
-						className="flex flex-row items-center py-5"
+						className="flex flex-row items-center"
 						onPress={onLogut}
 					>
-						<Logout height={30} width={30} />
-						<TextBold className="ml-5">Logout</TextBold>
+						{/* <Logout height={30} width={30} /> */}
+						<Text className="" style={styles.text}>
+							Logout
+						</Text>
 					</TouchableOpacity>
 				</View>
 			</View>
+			{/* delete user modal */}
 			<Modal
 				isVisible={deleteAlert}
 				onBackdropPress={() => setDeleteAlert(false)}
@@ -141,3 +164,12 @@ const Profile = () => {
 };
 
 export default Profile;
+
+const styles = StyleSheet.create({
+	text: {
+		fontSize: moderateScale(20),
+		marginHorizontal: horizontalScale(20),
+		marginTop: verticalScale(25),
+		paddingBottom: verticalScale(25),
+	},
+});
