@@ -26,10 +26,28 @@
       "channel": "preview"
     },
     "production": {
-      "autoIncrement": true
+      "autoIncrement": true,
+      "android": {
+        "buildType": "app-bundle"
+      },
+      "ios": {
+        "buildConfiguration": "Release",
+        "simulator": false
+      }
     }
   },
   "cli": {
     "appVersionSource": "remote"
+  },
+  "submit": {
+    "production": {
+      "android": {
+        "serviceAccountKeyPath": "",
+        "track": "internal"
+      },
+      "ios": {
+        "ascAppId": "6754047000"
+      }
+    }
   }
 }
