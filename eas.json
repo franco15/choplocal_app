@@ -42,7 +42,7 @@
   "submit": {
     "production": {
       "android": {
-        "serviceAccountKeyPath": "@credentials:chop-local-477319",
+        "serviceAccountKeyPath": "./service_account.json",
         "track": "production"
       },
       "ios": {
