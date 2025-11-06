@@ -77,7 +77,6 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
 	const requestVerificationCode = async (phoneNumber: string) => {
 		try {
-			console.log(phoneNumber);
 			setPhoneNumber(phoneNumber);
 			await authApi.requestCode(phoneNumber);
 		} catch (error) {
