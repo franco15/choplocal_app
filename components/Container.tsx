@@ -24,7 +24,7 @@ const Container = ({
 				style={[
 					{
 						paddingHorizontal: horizontalScale(12),
-						paddingTop: insets.top,
+						paddingTop: insets.top + 30,
 						paddingBottom: insets.bottom < 35 ? 0 : insets.bottom,
 						backgroundColor: useGradient ? "transparent" : "#FFFFFF",
 					},

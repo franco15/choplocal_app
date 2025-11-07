@@ -57,7 +57,7 @@ export default function Restaurants() {
 						marginBottom: verticalScale(15),
 					}}
 				>
-					<Text className="" style={{ fontSize: moderateScale(13) }}>
+					<Text className="" style={{ fontSize: moderateScale(15) }}>
 						Chop Local
 					</Text>
 					<TextBold
@@ -71,7 +71,7 @@ export default function Restaurants() {
 				</View>
 				<View
 					className="flex flex-row items-center justify-between"
-					style={{ flex: 1 }}
+					style={{ flex: 1, marginBottom: verticalScale(10) }}
 				>
 					<TextInput
 						placeholder="Search in restaurants"
@@ -86,6 +86,7 @@ export default function Restaurants() {
 							width: "88%",
 							height: verticalScale(40),
 							paddingHorizontal: horizontalScale(15),
+							letterSpacing: 0,
 						}}
 						placeholderTextColor="#c4c4c4"
 					/>
@@ -122,12 +123,12 @@ export default function Restaurants() {
 									style={{ marginBottom: verticalScale(10) }}
 								>
 									<View
-										className="flex flex-row w-full bg-white"
+										className="flex flex-row w-[99%] bg-[#F4E8FD] self-center"
 										style={{
 											height: verticalScale(75),
 											paddingVertical: verticalScale(10),
 											paddingHorizontal: horizontalScale(8),
-											borderRadius: moderateScale(16),
+											borderRadius: moderateScale(25),
 										}}
 									>
 										<View className="w-[20%] items-center justify-center">
