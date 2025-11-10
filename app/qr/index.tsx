@@ -7,13 +7,13 @@ import QRCode from "react-native-qrcode-svg";
 export default function QrScreen() {
 	const { user } = useUserContext();
 	return (
-		<Container style={{paddingTop: 0}}>
+		<Container style={{ paddingTop: 0 }}>
 			<View
 				className=""
 				style={{
 					paddingHorizontal: horizontalScale(12),
 					// marginTop: verticalScale(10),
-					flex: 1
+					flex: 1,
 				}}
 			>
 				<View className="" style={{ flex: 1 }}>

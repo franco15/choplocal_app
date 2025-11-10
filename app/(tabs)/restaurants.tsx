@@ -7,14 +7,12 @@ import { useUserApi } from "@/lib/api/useApi";
 import { horizontalScale, moderateScale, verticalScale } from "@/lib/metrics";
 import { IRestaurant } from "@/lib/types/restaurant";
 import { inlcudesCaseInsensitive, isImage } from "@/lib/utils";
-import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "expo-router";
 import { useEffect, useState } from "react";
 import { FlatList, Image, StyleSheet, TextInput, View } from "react-native";
 
 export default function Restaurants() {
-	const tabBarHeight = useBottomTabBarHeight();
 	const userApi = useUserApi();
 	const { user } = useUserContext();
 	const { data: restaurants, isPending } = useQuery({
