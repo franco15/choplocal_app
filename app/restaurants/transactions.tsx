@@ -27,7 +27,7 @@ export default function Transactions() {
 	if (isPending) return null;
 
 	return (
-		<Container useGradient={false}>
+		<Container useGradient={false} style={{paddingTop: 0}}>
 			<View
 				className=""
 				style={{

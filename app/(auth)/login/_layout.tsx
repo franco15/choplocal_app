@@ -10,7 +10,7 @@ const LoginLayout = () => {
 				name="index"
 			/>
 			<Stack.Screen
-				options={{ headerTitle: "", headerShadowVisible: false }}
+				options={{ headerTitle: "", headerShadowVisible: false, headerBackTitle: "Back" }}
 				name="verify"
 			/>
 		</Stack>

@@ -14,6 +14,7 @@ import { Stack, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
 import "./global.css";
+import { Platform } from "react-native";
 
 export default function RootLayout() {
 	let [fontsLoaded] = useFonts({
@@ -61,9 +62,15 @@ const RootComponent = () => {
 			<SuggestionProvider>
 				<Stack screenOptions={{ headerShown: false }}>
 					<Stack.Screen name="(tabs)" />
-					<Stack.Screen name="restaurants" />
-					<Stack.Screen name="qr" />
-					<Stack.Screen name="suggestions" />
+					<Stack.Screen name="restaurants"
+						options={{ headerShown: Platform.OS === "ios" ? true : false, headerShadowVisible: false, headerTitle: "", headerBackTitle: "Back" }}
+					/>
+					<Stack.Screen name="qr"
+						options={{ headerShown: Platform.OS === "ios" ? true : false, headerShadowVisible: false, headerTitle: "", headerBackTitle: "Back" }}
+					 />
+					<Stack.Screen name="suggestions"
+						options={{ headerShown: Platform.OS === "ios" ? true : false, headerShadowVisible: false, headerTitle: "", headerBackTitle: "Back", headerTransparent: true }}
+ 					/>
 				</Stack>
 			</SuggestionProvider>
 		</UserProvider>

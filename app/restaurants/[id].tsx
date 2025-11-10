@@ -42,13 +42,13 @@ export default function Restaurant() {
 	if (isPending) return null;
 
 	return (
-		<Container>
+		<Container style={{paddingTop: 0}}>
 			<View
 				className=""
 				style={{
 					flex: 3,
 					paddingHorizontal: horizontalScale(8),
-					marginTop: verticalScale(45),
+					// marginTop: verticalScale(45),
 				}}
 			>
 				<View className="flex">

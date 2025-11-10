@@ -2,26 +2,17 @@ import { Stack } from "expo-router";
 
 const RestaurantsLayout = () => {
 	return (
-		<Stack screenOptions={{ headerTransparent: true }}>
+		<Stack>
 			<Stack.Screen
-				options={{
-					headerTitle: "Back",
-					headerShadowVisible: false,
-				}}
+				options={{ headerShown: false }}
 				name="[id]"
 			/>
 			<Stack.Screen
-				options={{
-					headerTitle: "Back",
-					headerShadowVisible: false,
-				}}
+				options={{ headerShown: false }}
 				name="news"
 			/>
 			<Stack.Screen
-				options={{
-					headerTitle: "Back",
-					headerShadowVisible: false,
-				}}
+				options={{ headerShown: false }}
 				name="transactions"
 			/>
 		</Stack>

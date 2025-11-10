@@ -7,15 +7,16 @@ import QRCode from "react-native-qrcode-svg";
 export default function QrScreen() {
 	const { user } = useUserContext();
 	return (
-		<Container>
+		<Container style={{paddingTop: 0}}>
 			<View
-				className="flex-1"
+				className=""
 				style={{
 					paddingHorizontal: horizontalScale(12),
-					marginTop: verticalScale(40),
+					// marginTop: verticalScale(10),
+					flex: 1
 				}}
 			>
-				<View className="justify-center" style={{ flex: 1 }}>
+				<View className="" style={{ flex: 1 }}>
 					<TextBold
 						className="text-center"
 						style={{ fontSize: moderateScale(35) }}
@@ -32,7 +33,7 @@ export default function QrScreen() {
 						{"This is your identifier as a member\nof chop local"}
 					</Text>
 				</View>
-				<View className="flex justify-center items-center" style={{ flex: 2 }}>
+				<View className="flex justify-center items-center" style={{ flex: 3 }}>
 					<QRCode
 						value={user.code}
 						size={moderateScale(300)}

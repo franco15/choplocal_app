@@ -2,11 +2,10 @@ import { Stack } from "expo-router";
 
 export default function QrLayout() {
 	return (
-		<Stack screenOptions={{ headerTransparent: true }}>
+		<Stack>
 			<Stack.Screen
 				options={{
-					headerTitle: "Back",
-					headerShadowVisible: false,
+					headerShown: false
 				}}
 				name="index"
 			/>

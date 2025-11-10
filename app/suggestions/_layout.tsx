@@ -5,7 +5,7 @@ export default function SuggestionsLayout() {
 		<Stack screenOptions={{ headerTransparent: true }}>
 			<Stack.Screen
 				options={{
-					headerTitle: "Back",
+					headerShown: false,
 					headerShadowVisible: false,
 				}}
 				name="index"
