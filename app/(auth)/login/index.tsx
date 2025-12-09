@@ -4,12 +4,14 @@ import { useAuthContext } from "@/contexts/AuthContext";
 import { regex } from "@/lib";
 import { horizontalScale, moderateScale, verticalScale } from "@/lib/metrics";
 import { formatPhoneNumber } from "@/lib/utils";
+import Checkbox from "expo-checkbox";
 import { Link, useRouter } from "expo-router";
 import { useState } from "react";
 import {
 	Image,
 	Keyboard,
 	KeyboardAvoidingView,
+	Linking,
 	Platform,
 	ScrollView,
 	StyleSheet,
@@ -32,8 +34,11 @@ export default function LoginScreen() {
 	const [countryCode, setCountryCode] = useState<CountryCode>("US");
 	const [callingCode, setCallingCode] = useState("+1");
 	const [phoneError, setPhoneError] = useState(false);
+	const [isChecked, setChecked] = useState(false);
+	const [checkError, setCheckError] = useState(false);
 
 	const onSend = async () => {
+		if (!isChecked) return setCheckError(true);
 		if (!regex.phone.test(phone)) return setPhoneError(true);
 		const fullPhone =
 			callingCode.replace(/\D/g, "") + phone.replace(/\D/g, "").slice(0, 10);
@@ -124,6 +129,46 @@ export default function LoginScreen() {
 										</Text>
 									)}
 								</View>
+							</View>
+							<View className="flex flex-row items-center mt-5">
+								<Checkbox
+									value={isChecked}
+									onValueChange={setChecked}
+									style={{ marginRight: horizontalScale(10) }}
+									color={isChecked ? "#B91E18" : undefined}
+								/>
+								<Text
+									style={{
+										fontSize: moderateScale(14),
+										color: checkError ? "#FF0000" : "#000000",
+									}}
+									className=""
+								>
+									By signing up, you agree to our{" "}
+									<Text
+										onPress={() =>
+											Linking.openURL(
+												"https://www.choplocally.com/terms-and-conditions"
+											)
+										}
+										className="text-[#B91E18] underline"
+										style={{ fontSize: moderateScale(14) }}
+									>
+										Terms and conditions
+									</Text>{" "}
+									and{" "}
+									<Text
+										onPress={() =>
+											Linking.openURL(
+												"https://www.choplocally.com/privacy-policy"
+											)
+										}
+										className="text-[#B91E18] underline"
+										style={{ fontSize: moderateScale(14) }}
+									>
+										Privacy policy
+									</Text>
+								</Text>
 							</View>
 							<Link
 								className=""
