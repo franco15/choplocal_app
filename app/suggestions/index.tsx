@@ -1,5 +1,4 @@
 import { Container, Text, TextBold } from "@/components";
-import { ChefTwo } from "@/constants/svgs";
 import { useSuggestionContext } from "@/contexts/SuggestionsContext";
 import { horizontalScale, moderateScale, verticalScale } from "@/lib/metrics";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -43,7 +42,7 @@ export default function SuggestionsScreen() {
 				style={{}}
 			>
 				<TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-					<View className="flex justify-between h-full">
+					<View className="flex justify-center h-full">
 						<View
 							className="flex"
 							style={{
@@ -143,15 +142,6 @@ export default function SuggestionsScreen() {
 									</Text>
 								</TouchableOpacity>
 							</View>
-						</View>
-						<View
-							className="flex items-center"
-							style={{ top: verticalScale(5) }}
-						>
-							<ChefTwo
-								width={horizontalScale(250)}
-								height={verticalScale(400)}
-							/>
 						</View>
 					</View>
 				</TouchableWithoutFeedback>

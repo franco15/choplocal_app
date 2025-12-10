@@ -1,17 +1,17 @@
 import { Container, Text, TextBold } from "@/components";
-import { ChefThree } from "@/constants/svgs";
 import { useUserContext } from "@/contexts/UserContext";
 import { queryKeys } from "@/lib/api/queryClient";
 import { useRestaurantApi } from "@/lib/api/useApi";
 import { horizontalScale, moderateScale, verticalScale } from "@/lib/metrics";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { useLocalSearchParams } from "expo-router";
-import { FlatList, View } from "react-native";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { FlatList, TouchableOpacity, View } from "react-native";
 
 export default function Transactions() {
 	const { restaurantId } = useLocalSearchParams();
 	const { user } = useUserContext();
 	const restaurantApi = useRestaurantApi();
+	const router = useRouter();
 
 	const { data: transactions, isPending } = useSuspenseQuery({
 		queryKey: [queryKeys.restaurants.transactions(restaurantId as string)],
@@ -27,7 +27,7 @@ export default function Transactions() {
 	if (isPending) return null;
 
 	return (
-		<Container useGradient={false} style={{paddingTop: 0}}>
+		<Container useGradient={false} style={{ paddingTop: 0 }}>
 			<View
 				className=""
 				style={{
@@ -97,15 +97,24 @@ export default function Transactions() {
 					)}
 				/>
 				{transactions.length === 0 && (
-					<View
-						className="items-center flex"
-						style={{ top: verticalScale(50) }}
+					<TouchableOpacity
+						activeOpacity={0.8}
+						onPress={() => router.replace("/restaurants")}
+						className="flex bg-black self-center items-center justify-center"
+						style={{
+							marginTop: verticalScale(20),
+							width: horizontalScale(170),
+							height: verticalScale(54),
+							borderRadius: moderateScale(30),
+						}}
 					>
-						<ChefThree
-							width={horizontalScale(250)}
-							height={verticalScale(400)}
-						/>
-					</View>
+						<Text
+							className="text-white"
+							style={{ fontSize: moderateScale(14) }}
+						>
+							Okay
+						</Text>
+					</TouchableOpacity>
 				)}
 			</View>
 		</Container>

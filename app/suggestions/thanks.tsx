@@ -1,5 +1,4 @@
 import { Container, Text, TextBold } from "@/components";
-import { ChefThree } from "@/constants/svgs";
 import { horizontalScale, moderateScale, verticalScale } from "@/lib/metrics";
 import { useRouter } from "expo-router";
 import { Dimensions, TouchableOpacity, View } from "react-native";
@@ -52,9 +51,6 @@ export default function ThanksScreen() {
 						</Text>
 					</View>
 				</TouchableOpacity>
-			</View>
-			<View className="items-center flex" style={{ top: verticalScale(50) }}>
-				<ChefThree width={horizontalScale(250)} height={verticalScale(400)} />
 			</View>
 		</Container>
 	);
