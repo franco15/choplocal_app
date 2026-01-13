@@ -41,7 +41,6 @@ export default function RootLayout() {
 const RootComponent = () => {
 	const router = useRouter();
 	const { authenticated } = useAuthContext();
-	console.log("authenticated", authenticated);
 
 	useEffect(() => {
 		if (!authenticated) {
