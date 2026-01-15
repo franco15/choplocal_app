@@ -6,6 +6,7 @@ import { Link, router } from "expo-router";
 import { useEffect } from "react";
 import { StyleSheet, View } from "react-native";
 import QRCode from "react-native-qrcode-svg";
+import HomeSkeleton from "../skeletons/home";
 
 export default function HomeScreen() {
 	const { profileComplete, user, isUserLoading } = useUserContext();
@@ -14,7 +15,7 @@ export default function HomeScreen() {
 		if (!profileComplete) router.replace("/complete-profile");
 	}, [profileComplete]);
 
-	if (!user) return null;
+	if (!user || isUserLoading) return <HomeSkeleton />;
 
 	return (
 		<Container>

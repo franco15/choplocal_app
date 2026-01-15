@@ -11,6 +11,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Link } from "expo-router";
 import { useEffect, useState } from "react";
 import { FlatList, Image, StyleSheet, TextInput, View } from "react-native";
+import RestaurantsSkeleton from "../skeletons/restaurants";
 
 export default function Restaurants() {
 	const userApi = useUserApi();
@@ -19,6 +20,7 @@ export default function Restaurants() {
 		queryKey: [queryKeys.users.restaurants],
 		queryFn: async () => {
 			const data = await userApi.restaurants(user.id);
+			console.log(data);
 			return data;
 		},
 	});
@@ -37,6 +39,8 @@ export default function Restaurants() {
 			);
 		}
 	}, [restaurants, search]);
+
+	if (isPending) return <RestaurantsSkeleton />;
 
 	return (
 		<Container useGradient={false} style={{ backgroundColor: "#E3C6FB" }}>

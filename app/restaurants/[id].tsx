@@ -9,6 +9,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Link, useLocalSearchParams } from "expo-router";
 import { Share, TouchableOpacity, View } from "react-native";
 import QRCode from "react-native-qrcode-svg";
+import RestaurantSkeleton from "../skeletons/restaurant";
 
 export default function Restaurant() {
 	const { id } = useLocalSearchParams();
@@ -39,10 +40,10 @@ export default function Restaurant() {
 		}
 	};
 
-	if (isPending) return null;
+	if (isPending) return <RestaurantSkeleton />;
 
 	return (
-		<Container style={{paddingTop: 0}}>
+		<Container style={{ paddingTop: 0 }}>
 			<View
 				className=""
 				style={{

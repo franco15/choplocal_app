@@ -6,6 +6,7 @@ import { horizontalScale, moderateScale, verticalScale } from "@/lib/metrics";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { FlatList, TouchableOpacity, View } from "react-native";
+import TransactionsSkeleton from "../skeletons/transactions";
 
 export default function Transactions() {
 	const { restaurantId } = useLocalSearchParams();
@@ -24,7 +25,7 @@ export default function Transactions() {
 		},
 	});
 
-	if (isPending) return null;
+	if (isPending) return <TransactionsSkeleton />;
 
 	return (
 		<Container useGradient={false} style={{ paddingTop: 0 }}>
