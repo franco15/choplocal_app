@@ -45,7 +45,7 @@ export default function CompleteProfile() {
 		await updateUser.mutateAsync({ id: user.id as string, data });
 		setProfileComplete(true);
 		await refetch();
-		router.replace("/");
+		router.replace("/(tabs)");
 	};
 
 	return (
