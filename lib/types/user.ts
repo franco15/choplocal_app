@@ -15,3 +15,10 @@ export interface IUserPut {
 	birthDate: Date;
 	email: string;
 }
+
+export interface IUserPutVM {
+	firstName: string;
+	lastName: string;
+	birthDate: string;
+	email: string;
+}

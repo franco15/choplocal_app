@@ -90,3 +90,29 @@ export const isImage = (url: string) => {
 	const extension = url.split(".").pop();
 	return extension && imageExtensions.includes(extension.toLowerCase());
 };
+
+export function convertStringToDate(dateString: string): Date {
+	const parts = dateString.split("/");
+
+	if (parts.length !== 3) {
+		throw new Error("Invalid date format. Expected MM/DD/YYYY");
+	}
+
+	const month = parseInt(parts[0], 10);
+	const day = parseInt(parts[1], 10);
+	const year = parseInt(parts[2], 10);
+
+	if (
+		isNaN(month) ||
+		isNaN(day) ||
+		isNaN(year) ||
+		month < 1 ||
+		month > 12 ||
+		day < 1 ||
+		day > 31
+	) {
+		throw new Error("Invalid date values.");
+	}
+
+	return new Date(year, month - 1, day);
+}

@@ -16,7 +16,11 @@ import RestaurantsSkeleton from "../skeletons/restaurants";
 export default function Restaurants() {
 	const userApi = useUserApi();
 	const { user } = useUserContext();
-	const { data: restaurants, isPending } = useQuery({
+	const {
+		data: restaurants,
+		isPending,
+		error,
+	} = useQuery({
 		queryKey: [queryKeys.users.restaurants],
 		queryFn: async () => {
 			const data = await userApi.restaurants(user.id);
@@ -27,7 +31,7 @@ export default function Restaurants() {
 
 	const [search, setSearch] = useState("");
 	const [filteredRestaurants, setFilteredRestaurants] = useState<IRestaurant[]>(
-		[]
+		[],
 	);
 
 	useEffect(() => {
@@ -35,7 +39,7 @@ export default function Restaurants() {
 			let rests: IRestaurant[] = restaurants;
 			if (search.trim() === "") return setFilteredRestaurants(rests);
 			setFilteredRestaurants(
-				rests.filter((x) => inlcudesCaseInsensitive(x.name, search))
+				rests.filter((x) => inlcudesCaseInsensitive(x.name, search)),
 			);
 		}
 	}, [restaurants, search]);
@@ -189,6 +193,12 @@ export default function Restaurants() {
 						}}
 					/>
 				</View>
+				{error && (
+					<View>
+						<Text>{error}</Text>
+						<Text>{error.message}</Text>
+					</View>
+				)}
 				<View style={{ flex: 1 }} />
 			</View>
 		</Container>

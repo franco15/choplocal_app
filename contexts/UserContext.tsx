@@ -20,7 +20,7 @@ interface IUserContext {
 	setProfileComplete: (complete: boolean) => void;
 	updateUser: UseMutationResult<IUser, Error, IUser, unknown>;
 	refetch: (
-		options?: RefetchOptions
+		options?: RefetchOptions,
 	) => Promise<QueryObserverResult<IUser, Error>>;
 }
 

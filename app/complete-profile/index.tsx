@@ -1,12 +1,9 @@
-import { Container, Text, TextBold } from "@/components";
+import { Birthdate, Container, Text, TextBold } from "@/components";
 import { useUserContext } from "@/contexts/UserContext";
 import { useUpdateUser } from "@/lib/api/queries/userQueries";
 import { horizontalScale, moderateScale, verticalScale } from "@/lib/metrics";
-import { isNullOrWhitespace } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
-import DateTimePicker from "@react-native-community/datetimepicker";
 import { useRouter } from "expo-router";
-import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import {
 	Keyboard,
@@ -25,7 +22,8 @@ const schema = z.object({
 	firstName: z.string({ error: "Name cannot be empty" }),
 	lastName: z.string({ error: "Last name cannot be empty" }),
 	email: z.email({ error: "Invalid email address" }),
-	birthDate: z.date({ error: "Birthdate cannot be empty" }),
+	// birthDate: z.date({ error: "Birthdate cannot be empty" }),
+	birthDate: z.string({ error: "Birthdate cannot be empty" }),
 });
 
 const INPUT_CLASS = "justify-center items-center text-black border-[#1A1C20]";
@@ -39,7 +37,6 @@ export default function CompleteProfile() {
 		handleSubmit,
 		formState: { errors },
 	} = useForm({ resolver: zodResolver(schema) });
-	const [showDateSelector, setShowDateSelector] = useState(false);
 
 	const onSubmit = async (data: any) => {
 		await updateUser.mutateAsync({ id: user.id as string, data });
@@ -211,33 +208,14 @@ export default function CompleteProfile() {
 								>
 									Birthdate
 								</Text>
-								<TouchableOpacity
-									className="justify-center border-[#1A1C20]"
-									activeOpacity={0.8}
-									onPress={() => setShowDateSelector(true)}
-									style={[
-										style.inputStyle,
-										errors.birthDate && style.inputError,
-									]}
-								>
-									<Text
-										className=""
-										style={{
-											fontSize: moderateScale(13),
-											color: isNullOrWhitespace(
-												control._formValues.birthDate?.toLocaleDateString()
-											)
-												? "text-[rgba(0, 0, 0, 0.3)]"
-												: "",
-										}}
-									>
-										{isNullOrWhitespace(
-											control._formValues.birthDate?.toLocaleDateString()
-										)
-											? "MM/DD/YYYY"
-											: control._formValues.birthDate.toLocaleDateString()}
-									</Text>
-								</TouchableOpacity>
+								<Controller
+									control={control}
+									rules={{ required: "Date cannot be empty" }}
+									name="birthDate"
+									render={({ field: { onChange, onBlur, value } }) => (
+										<Birthdate onChange={onChange} value={value} />
+									)}
+								/>
 								{errors.birthDate && (
 									<Text
 										className="text-red-600"
@@ -249,27 +227,6 @@ export default function CompleteProfile() {
 									>
 										{errors.birthDate.message}
 									</Text>
-								)}
-								{showDateSelector && (
-									<Controller
-										control={control}
-										rules={{ required: "Date cannot be empty" }}
-										name="birthDate"
-										render={({ field: { onChange, onBlur, value } }) => (
-											<DateTimePicker
-												testID="dateTimePicker"
-												value={value ?? new Date()}
-												mode={"date"}
-												onChange={(event, date) => {
-													onChange(date);
-													setShowDateSelector(false);
-												}}
-												style={[errors.birthDate && style.inputError]}
-												maximumDate={new Date()}
-												minimumDate={new Date(1940, 0, 1)}
-											/>
-										)}
-									/>
 								)}
 								<TouchableOpacity
 									className="bg-[#E3C6FB] w-1/2 self-center items-center justify-center"
@@ -306,7 +263,6 @@ const style = StyleSheet.create({
 		height: verticalScale(40),
 		borderRadius: moderateScale(27),
 		borderWidth: moderateScale(0.5),
-		// marginTop: verticalScale(4),
 		paddingHorizontal: horizontalScale(20),
 		fontSize: moderateScale(13),
 	},
