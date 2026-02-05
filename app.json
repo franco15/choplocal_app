@@ -3,6 +3,7 @@
 		"name": "choplocal",
 		"slug": "choplocal",
 		"version": "1.0.3",
+		"runtimeVersion": "sdkVersion",
 		"orientation": "portrait",
 		"icon": "assets/images/logo.png",
 		"scheme": "choplocal",
