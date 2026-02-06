@@ -15,23 +15,28 @@ import {
 	TouchableWithoutFeedback,
 	View,
 } from "react-native";
-import CountryPicker, { CountryCode } from "react-native-country-picker-modal";
+import CountrySelect, { ICountry } from "react-native-country-select";
 
 export default function SignUpScreen() {
 	const router = useRouter();
 	const { requestVerificationCode } = useAuthContext();
 	const [phoneNumber, setPhoneNumber] = useState("");
-	const [countryCode, setCountryCode] = useState<CountryCode>("US");
-	const [callingCode, setCallingCode] = useState("+1");
 	const [phoneError, setPhoneError] = useState(false);
 	const [isChecked, setChecked] = useState(false);
 	const [checkError, setCheckError] = useState(false);
+	const [showPicker, setShowPicker] = useState<boolean>(false);
+	const [selectedCountry, setSelectedCountry] = useState<ICountry | null>(null);
+
+	const handleCountrySelect = (country: ICountry) => {
+		setSelectedCountry(country);
+	};
 
 	const onSend = async () => {
 		if (!isChecked) return setCheckError(true);
-		if (!regex.phone.test(phoneNumber)) return setPhoneError(true);
+		if (!regex.phone.test(phoneNumber) || !selectedCountry)
+			return setPhoneError(true);
 		const fullPhone =
-			callingCode.replace(/\D/g, "") +
+			selectedCountry.idd.root.replace(/\D/g, "") +
 			phoneNumber.replace(/\D/g, "").slice(0, 10);
 		requestVerificationCode(fullPhone);
 		router.navigate("/register/verify");
@@ -68,27 +73,42 @@ export default function SignUpScreen() {
 					style={{ height: verticalScale(50) }}
 				>
 					<View className="w-[27%]">
-						<CountryPicker
-							countryCode={countryCode}
-							withCallingCodeButton
-							onSelect={(country) => {
-								setCountryCode(country.cca2);
-								setCallingCode(country.callingCode[0]);
-							}}
-							withFlag
-							withCallingCode
-							withFilter
-							preferredCountries={["US", "MX", "CA", "GB"]}
-							containerButtonStyle={{
-								width: "100%",
-								height: "100%",
-								alignItems: "center",
-								backgroundColor: "#EEEEEE",
-								marginHorizontal: horizontalScale(2),
+						<TouchableOpacity
+							className="flex flex-row bg-[#EEEEEE] h-full items-center"
+							activeOpacity={0.8}
+							onPress={() => setShowPicker(true)}
+							style={{
 								borderRadius: moderateScale(10),
+								paddingVertical: verticalScale(10),
+								paddingHorizontal: "auto",
 								justifyContent: "center",
-								paddingHorizontal: horizontalScale(10),
 							}}
+						>
+							{selectedCountry ? (
+								<>
+									<Text
+										style={{
+											fontSize: moderateScale(15),
+											marginRight: horizontalScale(10),
+										}}
+									>
+										{selectedCountry?.flag}
+									</Text>
+									<Text style={{ fontSize: moderateScale(15) }}>
+										{selectedCountry?.idd.root}
+									</Text>
+								</>
+							) : (
+								<Text className="text-[#000000] opacity-[0.3]">+1</Text>
+							)}
+						</TouchableOpacity>
+						<CountrySelect
+							visible={showPicker}
+							onClose={() => setShowPicker(false)}
+							onSelect={handleCountrySelect}
+							popularCountries={["MX", "CA", "US"]}
+							isFullScreen
+							showCloseButton
 						/>
 					</View>
 					<View className="w-[71%]">
@@ -143,7 +163,7 @@ export default function SignUpScreen() {
 						<Text
 							onPress={() =>
 								Linking.openURL(
-									"https://www.choplocally.com/terms-and-conditions"
+									"https://www.choplocally.com/terms-and-conditions",
 								)
 							}
 							className="text-[#B91E18] underline"
