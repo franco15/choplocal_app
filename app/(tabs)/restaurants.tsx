@@ -10,7 +10,14 @@ import { inlcudesCaseInsensitive, isImage } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "expo-router";
 import { useEffect, useState } from "react";
-import { FlatList, Image, StyleSheet, TextInput, View } from "react-native";
+import {
+	FlatList,
+	Image,
+	ScrollView,
+	StyleSheet,
+	TextInput,
+	View,
+} from "react-native";
 import RestaurantsSkeleton from "../skeletons/restaurants";
 
 export default function Restaurants() {
@@ -192,13 +199,17 @@ export default function Restaurants() {
 							);
 						}}
 					/>
+					{error &&
+						(user.phoneNumber === "526621690322" ||
+							user.phoneNumber === "526623589754") && (
+							<ScrollView style={{ flex: 1 }}>
+								<Text className="">Error:</Text>
+								<Text className="">{error}</Text>
+								<Text className="mt-5">Error message:</Text>
+								<Text className="">{error?.message}</Text>
+							</ScrollView>
+						)}
 				</View>
-				{error && (
-					<View>
-						<Text>{error}</Text>
-						<Text>{error.message}</Text>
-					</View>
-				)}
 				<View style={{ flex: 1 }} />
 			</View>
 		</Container>

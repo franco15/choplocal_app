@@ -12,7 +12,7 @@ export const useAuthApi = () => {
 			}),
 		loginWithCode: async (
 			phoneNumber: string,
-			code: string
+			code: string,
 		): Promise<{ jwt: string; refreshToken: string }> =>
 			api.post("api/auth/login-with-code", {
 				phoneNumber,
@@ -20,7 +20,7 @@ export const useAuthApi = () => {
 			}),
 		registerWithCode: async (
 			phoneNumber: string,
-			code: string
+			code: string,
 		): Promise<{ jwt: string; refreshToken: string }> =>
 			api.post("api/auth/register-with-code", {
 				phoneNumber,
@@ -49,7 +49,7 @@ export const useRestaurantApi = () => {
 			api.get(`api/app/restaurant/${id}/user/${userId}`),
 		transactions: async (
 			id: string,
-			userId: string
+			userId: string,
 		): Promise<Array<IRestaurantTransactions>> =>
 			api.get(`api/app/restaurant/${id}/user/${userId}/transactions`),
 	};
@@ -59,6 +59,6 @@ export const useSuggestionsApi = () => {
 	const api = useAxios();
 	return {
 		create: async (params: ISuggestion): Promise<void> =>
-			api.post(`api/app/business-recomendations`, params),
+			api.post(`api/app/business-recommendations`, params),
 	};
 };

@@ -2,11 +2,9 @@ import { Container, Text, TextBold } from "@/components";
 import { horizontalScale, moderateScale, verticalScale } from "@/lib/metrics";
 import { useRouter } from "expo-router";
 import { Dimensions, TouchableOpacity, View } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 const { width, height } = Dimensions.get("screen");
 
 export default function ThanksScreen() {
-	const insets = useSafeAreaInsets();
 	const router = useRouter();
 	return (
 		<Container style={{ backgroundColor: "#EFEECD" }}>
@@ -32,7 +30,7 @@ export default function ThanksScreen() {
 				</Text>
 				<TouchableOpacity
 					activeOpacity={0.8}
-					onPress={() => router.replace("/")}
+					onPress={() => router.replace("/(tabs)")}
 					className="flex self-center"
 					style={{ marginTop: verticalScale(60), width: horizontalScale(170) }}
 				>

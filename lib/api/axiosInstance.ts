@@ -58,7 +58,7 @@ const useAxios = () => {
 		(error: AxiosError) => {
 			console.log("error request", error);
 			return Promise.reject(error);
-		}
+		},
 	);
 
 	axiosInstance.interceptors.response.use(
@@ -87,9 +87,8 @@ const useAxios = () => {
 					});
 					const data = refreshTokenResponse.data;
 					await saveToken(data.jwt, data.refreshToken);
-					axiosInstance.defaults.headers.common[
-						"Authorization"
-					] = `Bearer ${data.jwt}`;
+					axiosInstance.defaults.headers.common["Authorization"] =
+						`Bearer ${data.jwt}`;
 					return axiosInstance(originalRequest);
 				} catch (refreshError) {
 					console.log("catch error", refreshError);
@@ -103,14 +102,21 @@ const useAxios = () => {
 					"error who",
 					error.config?.url,
 					"    |    ",
-					error.config?.params
+					error.config?.params,
 				);
 			}
 			if (error.response?.status === 500) {
+				console.log(
+					"error who",
+					error.config?.url,
+					"    |    ",
+					error.config?.params,
+				);
+				console.log(error.message);
 			}
 
 			return Promise.reject(error);
-		}
+		},
 	);
 
 	return axiosInstance;
