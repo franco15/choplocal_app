@@ -5,11 +5,10 @@ import { useUserContext } from "@/contexts/UserContext";
 import { queryKeys } from "@/lib/api/queryClient";
 import { useUserApi } from "@/lib/api/useApi";
 import { horizontalScale, moderateScale, verticalScale } from "@/lib/metrics";
-import { IRestaurant } from "@/lib/types/restaurant";
 import { inlcudesCaseInsensitive, isImage } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "expo-router";
-import { useEffect, useState } from "react";
+import { useMemo, useState } from "react";
 import {
 	FlatList,
 	Image,
@@ -31,27 +30,33 @@ export default function Restaurants() {
 		queryKey: [queryKeys.users.restaurants],
 		queryFn: async () => {
 			const data = await userApi.restaurants(user.id);
-			console.log(data);
+			// console.log(data);
 			return data;
 		},
 	});
 
 	const [search, setSearch] = useState("");
-	const [filteredRestaurants, setFilteredRestaurants] = useState<IRestaurant[]>(
-		[],
-	);
+	// const [filteredRestaurants, setFilteredRestaurants] = useState<IRestaurant[]>(
+	// 	[],
+	// );
 
-	useEffect(() => {
-		if (restaurants) {
-			let rests: IRestaurant[] = restaurants;
-			if (search.trim() === "") return setFilteredRestaurants(rests);
-			setFilteredRestaurants(
-				rests.filter((x) => inlcudesCaseInsensitive(x.name, search)),
-			);
-		}
+	const filteredRestaurants = useMemo(() => {
+		const s = search.trim();
+		return restaurants?.filter((x) => inlcudesCaseInsensitive(x.name, s));
 	}, [restaurants, search]);
 
+	// useEffect(() => {
+	// 	if (restaurants) {
+	// 		let rests: IRestaurant[] = restaurants;
+	// 		if (search.trim() === "") return setFilteredRestaurants(rests);
+	// 		setFilteredRestaurants(
+	// 			rests.filter((x) => inlcudesCaseInsensitive(x.name, search)),
+	// 		);
+	// 	}
+	// }, [restaurants, search]);
+
 	if (isPending) return <RestaurantsSkeleton />;
+	if (error) console.log(error);
 
 	return (
 		<Container useGradient={false} style={{ backgroundColor: "#E3C6FB" }}>
