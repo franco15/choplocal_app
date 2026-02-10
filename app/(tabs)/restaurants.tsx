@@ -204,6 +204,17 @@ export default function Restaurants() {
 							);
 						}}
 					/>
+					{search !== "" &&
+						restaurants?.length !== filteredRestaurants?.length &&
+						(user.phoneNumber === "526621690322" ||
+							user.phoneNumber === "526623589754") && (
+							<>
+								<Text className="">restaurants</Text>
+								<Text className="">{restaurants?.length}</Text>
+								<Text className="mt-2">filteredRestaurants</Text>
+								<Text className="">{filteredRestaurants?.length}</Text>
+							</>
+						)}
 					{error &&
 						(user.phoneNumber === "526621690322" ||
 							user.phoneNumber === "526623589754") && (
