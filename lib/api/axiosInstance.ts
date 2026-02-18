@@ -56,7 +56,7 @@ const useAxios = () => {
 			return config;
 		},
 		(error: AxiosError) => {
-			console.log("error request", error);
+			// console.log("error request", error);
 			return Promise.reject(error);
 		},
 	);
@@ -72,7 +72,7 @@ const useAxios = () => {
 				originalRequest &&
 				!originalRequest?._retry
 			) {
-				console.log("error response", error.message);
+				// console.log("error response", error.message);
 				originalRequest._retry = true;
 				const refreshToken = await SecureStore.getItemAsync(REFRESH_TOKEN_KEY);
 				if (!refreshToken) {
@@ -91,28 +91,28 @@ const useAxios = () => {
 						`Bearer ${data.jwt}`;
 					return axiosInstance(originalRequest);
 				} catch (refreshError) {
-					console.log("catch error", refreshError);
+					// console.log("catch error", refreshError);
 					await saveToken(null, null);
 					onLogout();
 					return Promise.reject(refreshError);
 				}
 			}
 			if (error.response?.status === 404) {
-				console.log(
-					"error who",
-					error.config?.url,
-					"    |    ",
-					error.config?.params,
-				);
+				// console.log(
+				// 	"error who",
+				// 	error.config?.url,
+				// 	"    |    ",
+				// 	error.config?.params,
+				// );
 			}
 			if (error.response?.status === 500) {
-				console.log(
-					"error who",
-					error.config?.url,
-					"    |    ",
-					error.config?.params,
-				);
-				console.log(error.message);
+				// console.log(
+				// 	"error who",
+				// 	error.config?.url,
+				// 	"    |    ",
+				// 	error.config?.params,
+				// );
+				// console.log("500", error.message);
 			}
 
 			return Promise.reject(error);

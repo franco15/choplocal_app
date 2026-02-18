@@ -64,7 +64,7 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 		try {
 			await requestVerificationCode(userReference);
 		} catch (error) {
-			console.log("login", error);
+			// console.log("login", error);
 		}
 	};
 
@@ -80,7 +80,7 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 			setPhoneNumber(phoneNumber);
 			await authApi.requestCode(phoneNumber);
 		} catch (error) {
-			console.log("error", error);
+			// console.log("error", error);
 		}
 	};
 
@@ -94,7 +94,6 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 			}
 			return true;
 		} catch (error) {
-			console.log("verify", error);
 			return false;
 		}
 	};
@@ -109,7 +108,6 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 			}
 			return true;
 		} catch (error) {
-			console.log("error", error);
 			return false;
 		}
 	};

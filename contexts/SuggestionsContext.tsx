@@ -6,7 +6,7 @@ interface ISuggestionContext {
 }
 
 const SuggestionContext = createContext<ISuggestionContext>(
-	{} as ISuggestionContext
+	{} as ISuggestionContext,
 );
 
 const SuggestionProvider = ({ children }: { children: React.ReactNode }) => {
@@ -16,7 +16,7 @@ const SuggestionProvider = ({ children }: { children: React.ReactNode }) => {
 		try {
 			const res = await suggestionsApi.create({ name });
 		} catch (error) {
-			console.log(error);
+			// console.log(error);
 		}
 	};
 

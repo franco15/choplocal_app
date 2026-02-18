@@ -9,14 +9,7 @@ import { inlcudesCaseInsensitive, isImage } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "expo-router";
 import { useMemo, useState } from "react";
-import {
-	FlatList,
-	Image,
-	ScrollView,
-	StyleSheet,
-	TextInput,
-	View,
-} from "react-native";
+import { FlatList, Image, StyleSheet, TextInput, View } from "react-native";
 import RestaurantsSkeleton from "../skeletons/restaurants";
 
 export default function Restaurants() {
@@ -30,33 +23,22 @@ export default function Restaurants() {
 		queryKey: [queryKeys.users.restaurants],
 		queryFn: async () => {
 			const data = await userApi.restaurants(user.id);
-			// console.log(data);
 			return data;
 		},
+		enabled: !!user?.id,
 	});
 
 	const [search, setSearch] = useState("");
-	// const [filteredRestaurants, setFilteredRestaurants] = useState<IRestaurant[]>(
-	// 	[],
-	// );
 
 	const filteredRestaurants = useMemo(() => {
 		const s = search.trim();
-		return restaurants?.filter((x) => inlcudesCaseInsensitive(x.name, s));
+		return restaurants?.filter((x) => inlcudesCaseInsensitive(x.name, s)) ?? [];
 	}, [restaurants, search]);
 
-	// useEffect(() => {
-	// 	if (restaurants) {
-	// 		let rests: IRestaurant[] = restaurants;
-	// 		if (search.trim() === "") return setFilteredRestaurants(rests);
-	// 		setFilteredRestaurants(
-	// 			rests.filter((x) => inlcudesCaseInsensitive(x.name, search)),
-	// 		);
-	// 	}
-	// }, [restaurants, search]);
-
 	if (isPending) return <RestaurantsSkeleton />;
-	if (error) console.log(error);
+	// if (error) {
+	// 	console.log("error message", error.message);
+	// }
 
 	return (
 		<Container useGradient={false} style={{ backgroundColor: "#E3C6FB" }}>
@@ -204,10 +186,10 @@ export default function Restaurants() {
 							);
 						}}
 					/>
-					{search === "" &&
+					{/* {search === "" &&
 						restaurants?.length !== filteredRestaurants?.length &&
-						(user.phoneNumber === "526621690322" ||
-							user.phoneNumber === "526623589754") && (
+						(user?.phoneNumber === "526621690322" ||
+							user?.phoneNumber === "526623589754") && (
 							<>
 								<Text className="">restaurants</Text>
 								<Text className="">{restaurants?.length}</Text>
@@ -216,15 +198,13 @@ export default function Restaurants() {
 							</>
 						)}
 					{error &&
-						(user.phoneNumber === "526621690322" ||
-							user.phoneNumber === "526623589754") && (
+						(user?.phoneNumber === "526621690322" ||
+							user?.phoneNumber === "526623589754") && (
 							<ScrollView style={{ flex: 1 }}>
-								<Text className="">Error:</Text>
-								<Text className="">{error}</Text>
 								<Text className="mt-5">Error message:</Text>
 								<Text className="">{error?.message}</Text>
 							</ScrollView>
-						)}
+						)} */}
 				</View>
 				<View style={{ flex: 1 }} />
 			</View>
