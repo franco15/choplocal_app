@@ -52,11 +52,7 @@ const Profile = () => {
 					<TouchableOpacity
 						activeOpacity={0.8}
 						className="flex flex-row items-center border-b-[0.75px]"
-						onPress={() =>
-							Linking.openURL(
-								"https://www.choplocally.com/terms-and-conditions"
-							)
-						}
+						onPress={() => Linking.openURL("https://choplocally.com/terms")}
 					>
 						{/* <View className="flex justify-center">
 							<Paper height={35} width={35} />
@@ -68,9 +64,7 @@ const Profile = () => {
 					<TouchableOpacity
 						activeOpacity={0.8}
 						className="flex flex-row items-center border-b-[0.75px]"
-						onPress={() =>
-							Linking.openURL("https://www.choplocally.com/privacy-policy")
-						}
+						onPress={() => Linking.openURL("https://choplocally.com/privacy")}
 					>
 						{/* <View className="flex justify-center items-center">
 							<Lock height={35} width={35} />
