@@ -9,14 +9,24 @@ import {
 	Inter_700Bold,
 	useFonts,
 } from "@expo-google-fonts/inter";
+import * as Sentry from "@sentry/react-native";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Stack, useRouter } from "expo-router";
+import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
 import { Platform } from "react-native";
 import "./global.css";
 
-export default function RootLayout() {
+Sentry.init({
+	dsn: "https://001dca4ce436bb2e1842ea56bee3ffd6@o275485.ingest.us.sentry.io/4510959168651264",
+	enableAutoSessionTracking: true,
+	tracesSampleRate: 1.0,
+});
+
+SplashScreen.preventAutoHideAsync();
+
+function RootLayout() {
 	let [fontsLoaded] = useFonts({
 		Inter_400Regular,
 		Inter_500Medium,
@@ -38,17 +48,23 @@ export default function RootLayout() {
 	);
 }
 
+export default Sentry.wrap(RootLayout);
+
 const RootComponent = () => {
 	const router = useRouter();
 	const { authenticated } = useAuthContext();
 
 	useEffect(() => {
+		// console.log("authenticated in root", authenticated);
+		if (authenticated !== null) SplashScreen.hide();
 		if (!authenticated) {
 			router.replace("/(auth)");
 		} else {
 			router.replace("/(tabs)");
 		}
 	}, [authenticated]);
+
+	// if (authenticated === null) console.log("auth null");
 
 	if (!authenticated)
 		return (

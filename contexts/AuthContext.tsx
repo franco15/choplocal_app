@@ -6,6 +6,7 @@ import { TOKEN_KEY } from "@/constants/keys";
 import { setAuthToken, setOnLogout } from "@/lib/api/axiosInstance";
 import { useAuthApi } from "@/lib/api/useApi";
 import { isNullOrWhitespace } from "@/lib/utils";
+import * as Sentry from "@sentry/react-native";
 import { useQueryClient } from "@tanstack/react-query";
 
 interface IAuthContext {
@@ -33,7 +34,7 @@ const AuthContext = createContext<IAuthContext>({} as IAuthContext);
 const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 	const authApi = useAuthApi();
 	const queryClient = useQueryClient();
-	const [authenticated, setAuthenticated] = useState(false);
+	const [authenticated, setAuthenticated] = useState<boolean | null>(null);
 	const [token, setToken] = useState<string | null>(null);
 	const [phoneNumber, setPhoneNumber] = useState<string>("");
 	const [userAuth, setUserAuth] = useState<{
@@ -44,21 +45,27 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
 	useEffect(() => {
 		const getToken = async () => {
+			// console.log("getToken");
 			const jwt = await SecureStore.getItemAsync(TOKEN_KEY);
+			// console.log("jwt", jwt);
 			if (!isNullOrWhitespace(jwt)) {
-				setToken(jwt);
-				setAuthenticated(true);
-				const decoded = jwtDecode(jwt!);
-				let phone = "";
-				let id = "";
-				if (!isNullOrWhitespace(decoded.sub)) phone = decoded.sub!;
-				if (!isNullOrWhitespace(decoded.jti)) id = decoded.jti!;
-				setUserAuth({ phone, id });
+				decodeTokenAndSave(jwt as string);
 			}
 		};
 		getToken();
 		setOnLogout(logout);
-	}, [authenticated]);
+	}, []);
+
+	const decodeTokenAndSave = (jwt: string) => {
+		setToken(jwt);
+		setAuthenticated(true);
+		const decoded = jwtDecode(jwt!);
+		let phone = "";
+		let id = "";
+		if (!isNullOrWhitespace(decoded.sub)) phone = decoded.sub!;
+		if (!isNullOrWhitespace(decoded.jti)) id = decoded.jti!;
+		setUserAuth({ phone, id });
+	};
 
 	const login = async (userReference: string) => {
 		try {
@@ -73,6 +80,7 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 		setAuthenticated(false);
 		setUserAuth({ phone: "", id: "" });
 		await setAuthToken(null, null);
+		Sentry.setUser(null);
 	};
 
 	const requestVerificationCode = async (phoneNumber: string) => {
@@ -88,9 +96,12 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 		try {
 			const res: { jwt: string; refreshToken: string } =
 				await authApi.loginWithCode(phoneNumber, code);
-			if (res.jwt && res.refreshToken) {
-				setAuthenticated(true);
+			if (
+				!isNullOrWhitespace(res.jwt) &&
+				!isNullOrWhitespace(res.refreshToken)
+			) {
 				await setAuthToken(res.jwt, res.refreshToken);
+				decodeTokenAndSave(res.jwt);
 			}
 			return true;
 		} catch (error) {
@@ -102,9 +113,12 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 		try {
 			const res: { jwt: string; refreshToken: string } =
 				await authApi.registerWithCode(phoneNumber, code);
-			if (res.jwt && res.refreshToken) {
-				setAuthenticated(true);
+			if (
+				!isNullOrWhitespace(res.jwt) &&
+				!isNullOrWhitespace(res.refreshToken)
+			) {
 				await setAuthToken(res.jwt, res.refreshToken);
+				decodeTokenAndSave(res.jwt);
 			}
 			return true;
 		} catch (error) {

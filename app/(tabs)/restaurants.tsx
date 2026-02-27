@@ -5,7 +5,11 @@ import { useUserContext } from "@/contexts/UserContext";
 import { queryKeys } from "@/lib/api/queryClient";
 import { useUserApi } from "@/lib/api/useApi";
 import { horizontalScale, moderateScale, verticalScale } from "@/lib/metrics";
-import { inlcudesCaseInsensitive, isImage } from "@/lib/utils";
+import {
+	inlcudesCaseInsensitive,
+	isImage,
+	isNullOrWhitespace,
+} from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "expo-router";
 import { useMemo, useState } from "react";
@@ -22,10 +26,11 @@ export default function Restaurants() {
 	} = useQuery({
 		queryKey: [queryKeys.users.restaurants],
 		queryFn: async () => {
+			// console.log("get restaurants query");
 			const data = await userApi.restaurants(user.id);
 			return data;
 		},
-		enabled: !!user?.id,
+		enabled: !isNullOrWhitespace(user?.id),
 	});
 
 	const [search, setSearch] = useState("");

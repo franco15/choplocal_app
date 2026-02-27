@@ -21,6 +21,7 @@
 		"@react-navigation/native": "^7.1.6",
 		"@rneui/base": "^4.0.0-rc.8",
 		"@rneui/themed": "^4.0.0-rc.8",
+		"@sentry/react-native": "~6.14.0",
 		"@shopify/react-native-skia": "^2.4.7",
 		"@tanstack/react-query": "^5.85.5",
 		"axios": "^1.11.0",

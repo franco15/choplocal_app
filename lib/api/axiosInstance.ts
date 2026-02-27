@@ -1,3 +1,4 @@
+import * as Sentry from "@sentry/react-native";
 import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
 import * as SecureStore from "expo-secure-store";
 
@@ -14,13 +15,13 @@ const loadToken = async () => {
 
 const saveToken = async (token: string | null, refreshToken: string | null) => {
 	cachedToken = token;
-	if (token) {
-		await SecureStore.setItemAsync(TOKEN_KEY, token);
+	if (!isNullOrWhitespace(token)) {
+		await SecureStore.setItemAsync(TOKEN_KEY, token as string);
 	} else {
 		await SecureStore.deleteItemAsync(TOKEN_KEY);
 	}
-	if (refreshToken) {
-		await SecureStore.setItemAsync(REFRESH_TOKEN_KEY, refreshToken);
+	if (!isNullOrWhitespace(refreshToken)) {
+		await SecureStore.setItemAsync(REFRESH_TOKEN_KEY, refreshToken as string);
 	} else {
 		await SecureStore.deleteItemAsync(REFRESH_TOKEN_KEY);
 	}
@@ -43,12 +44,13 @@ const useAxios = () => {
 		headers: {
 			"Content-Type": "application/json",
 		},
-		timeout: 10000,
+		timeout: 20000,
 	});
 
 	axiosInstance.interceptors.request.use(
 		async (config: InternalAxiosRequestConfig) => {
 			const token = await loadToken();
+			// console.log("token in request", token);
 			if (!isNullOrWhitespace(token)) {
 				// console.log("token", token);
 				config.headers.Authorization = `Bearer ${token}`;
@@ -56,6 +58,8 @@ const useAxios = () => {
 			return config;
 		},
 		(error: AxiosError) => {
+			Sentry.captureMessage("Error in request");
+			Sentry.captureException(error.message);
 			// console.log("error request", error);
 			return Promise.reject(error);
 		},
@@ -67,6 +71,12 @@ const useAxios = () => {
 		},
 		async (error: AxiosError) => {
 			const originalRequest = error.config;
+			// console.log(
+			// 	"status: ",
+			// 	error.response?.status,
+			// 	"retry: ",
+			// 	originalRequest?._retry,
+			// );
 			if (
 				error.response?.status === 401 &&
 				originalRequest &&
@@ -75,7 +85,8 @@ const useAxios = () => {
 				// console.log("error response", error.message);
 				originalRequest._retry = true;
 				const refreshToken = await SecureStore.getItemAsync(REFRESH_TOKEN_KEY);
-				if (!refreshToken) {
+				if (isNullOrWhitespace(refreshToken)) {
+					// console.log("no refresh token");
 					onLogout();
 					return Promise.reject(error);
 				}
@@ -86,17 +97,21 @@ const useAxios = () => {
 						refreshToken,
 					});
 					const data = refreshTokenResponse.data;
+					// console.log("refresh kewl");
 					await saveToken(data.jwt, data.refreshToken);
 					axiosInstance.defaults.headers.common["Authorization"] =
 						`Bearer ${data.jwt}`;
 					return axiosInstance(originalRequest);
 				} catch (refreshError) {
-					// console.log("catch error", refreshError);
+					// console.log("refresh catch error", refreshError);
+					Sentry.captureMessage("Error in refreshing token");
+					Sentry.captureException(refreshError);
 					await saveToken(null, null);
 					onLogout();
 					return Promise.reject(refreshError);
 				}
 			}
+			Sentry.captureException(error.message);
 			if (error.response?.status === 404) {
 				// console.log(
 				// 	"error who",

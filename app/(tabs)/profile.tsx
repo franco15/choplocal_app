@@ -14,7 +14,7 @@ import Modal from "react-native-modal";
 
 const Profile = () => {
 	const { logout, setShowDeletedUserAlert } = useAuthContext();
-	const { user } = useUserContext();
+	const { user, deleteUser } = useUserContext();
 	const [deleteAlert, setDeleteAlert] = useState(false);
 	const [disableDelete, setDisableDelete] = useState(false);
 
@@ -25,9 +25,9 @@ const Profile = () => {
 	const onDeleteAccount = async () => {
 		setDisableDelete(true);
 		setDeleteAlert(false);
-		// await deleteUser();
-		setShowDeletedUserAlert(true);
+		await deleteUser();
 		await logout();
+		setShowDeletedUserAlert(true);
 		setDisableDelete(false);
 	};
 
@@ -43,20 +43,17 @@ const Profile = () => {
 					{/* <TouchableOpacity
 						activeOpacity={0.8}
 						className="flex flex-row items-center py-5"
+						onPress={() => {
+							Sentry.captureException(new Error("test error"));
+						}}
 					>
-						<View className="flex justify-center">
-							<Logout height={30} width={30} />
-						</View>
-						<TextBold className="ml-5">Change number</TextBold>
+						<TextBold className="ml-5">Try sentry</TextBold>
 					</TouchableOpacity> */}
 					<TouchableOpacity
 						activeOpacity={0.8}
 						className="flex flex-row items-center border-b-[0.75px]"
 						onPress={() => Linking.openURL("https://choplocally.com/terms")}
 					>
-						{/* <View className="flex justify-center">
-							<Paper height={35} width={35} />
-						</View> */}
 						<Text className="" style={styles.text}>
 							Terms and conditions
 						</Text>
@@ -66,9 +63,6 @@ const Profile = () => {
 						className="flex flex-row items-center border-b-[0.75px]"
 						onPress={() => Linking.openURL("https://choplocally.com/privacy")}
 					>
-						{/* <View className="flex justify-center items-center">
-							<Lock height={35} width={35} />
-						</View> */}
 						<Text className="" style={styles.text}>
 							Privacy policy
 						</Text>
@@ -78,7 +72,6 @@ const Profile = () => {
 						className="flex flex-row items-center border-b-[0.75px]"
 						onPress={() => setDeleteAlert(true)}
 					>
-						{/* <Logout height={30} width={30} /> */}
 						<Text className="" style={styles.text}>
 							Delete account
 						</Text>
@@ -88,7 +81,6 @@ const Profile = () => {
 						className="flex flex-row items-center"
 						onPress={onLogut}
 					>
-						{/* <Logout height={30} width={30} /> */}
 						<Text className="" style={styles.text}>
 							Logout
 						</Text>

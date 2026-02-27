@@ -2,7 +2,7 @@
 	"expo": {
 		"name": "choplocal",
 		"slug": "choplocal",
-		"version": "1.0.4",
+		"version": "1.0.5",
 		"runtimeVersion": "sdkVersion",
 		"orientation": "portrait",
 		"icon": "assets/images/logo.png",
@@ -46,7 +46,15 @@
 			],
 			"expo-font",
 			"expo-secure-store",
-			"expo-web-browser"
+			"expo-web-browser",
+			[
+				"@sentry/react-native/expo",
+				{
+					"url": "https://sentry.io/",
+					"project": "choplocal",
+					"organization": "xipe"
+				}
+			]
 		],
 		"experiments": {
 			"typedRoutes": true
