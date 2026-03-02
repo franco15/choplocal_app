@@ -45,12 +45,11 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
 	useEffect(() => {
 		const getToken = async () => {
-			// console.log("getToken");
 			const jwt = await SecureStore.getItemAsync(TOKEN_KEY);
-			// console.log("jwt", jwt);
 			if (!isNullOrWhitespace(jwt)) {
-				decodeTokenAndSave(jwt as string);
+				return decodeTokenAndSave(jwt as string);
 			}
+			setAuthenticated(false);
 		};
 		getToken();
 		setOnLogout(logout);

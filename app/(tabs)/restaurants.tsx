@@ -26,7 +26,6 @@ export default function Restaurants() {
 	} = useQuery({
 		queryKey: [queryKeys.users.restaurants],
 		queryFn: async () => {
-			// console.log("get restaurants query");
 			const data = await userApi.restaurants(user.id);
 			return data;
 		},
@@ -41,9 +40,6 @@ export default function Restaurants() {
 	}, [restaurants, search]);
 
 	if (isPending) return <RestaurantsSkeleton />;
-	// if (error) {
-	// 	console.log("error message", error.message);
-	// }
 
 	return (
 		<Container useGradient={false} style={{ backgroundColor: "#E3C6FB" }}>

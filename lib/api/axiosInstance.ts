@@ -50,9 +50,7 @@ const useAxios = () => {
 	axiosInstance.interceptors.request.use(
 		async (config: InternalAxiosRequestConfig) => {
 			const token = await loadToken();
-			// console.log("token in request", token);
 			if (!isNullOrWhitespace(token)) {
-				// console.log("token", token);
 				config.headers.Authorization = `Bearer ${token}`;
 			}
 			return config;
@@ -60,7 +58,6 @@ const useAxios = () => {
 		(error: AxiosError) => {
 			Sentry.captureMessage("Error in request");
 			Sentry.captureException(error.message);
-			// console.log("error request", error);
 			return Promise.reject(error);
 		},
 	);

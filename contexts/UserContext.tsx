@@ -43,7 +43,6 @@ const UserProvider = ({ children }: { children: React.ReactNode }) => {
 	} = useQuery({
 		queryKey: [queryKeys.users.byId(userAuth.id)],
 		queryFn: async () => {
-			// console.log("get user query");
 			const data = await userApi.byId(userAuth.phone);
 			return data;
 		},
