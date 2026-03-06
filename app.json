@@ -2,7 +2,7 @@
 	"expo": {
 		"name": "choplocal",
 		"slug": "choplocal",
-		"version": "1.0.6",
+		"version": "1.0.7",
 		"runtimeVersion": "sdkVersion",
 		"orientation": "portrait",
 		"icon": "assets/images/logo.png",
