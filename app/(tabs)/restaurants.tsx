@@ -130,6 +130,9 @@ export default function Restaurants() {
 					`${activeFilter}_${index}_${item.id}`
 				}
 				renderItem={renderItem}
+				ItemSeparatorComponent={() => (
+					<View style={styles.separator} />
+				)}
 				contentContainerStyle={{
 					paddingHorizontal: horizontalScale(14),
 					paddingBottom: verticalScale(80),
@@ -323,5 +326,10 @@ const styles = StyleSheet.create({
 		color: "#1A1A1A",
 		marginLeft: horizontalScale(10),
 		padding: 0,
+	},
+	separator: {
+		height: 1,
+		backgroundColor: "#EDEDED",
+		marginVertical: verticalScale(4),
 	},
 });

@@ -40,7 +40,7 @@ export default function GiftCardsLayout() {
 				headerTitle: "",
 				headerBackTitle: "Back",
 				headerShadowVisible: false,
-				headerStyle: { backgroundColor: "#FEFCFB" },
+				headerStyle: { backgroundColor: "#FFFFFF" },
 				headerTintColor: "#1A1A1A",
 			}}
 		>

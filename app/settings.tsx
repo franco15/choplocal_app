@@ -59,7 +59,7 @@ export default function SettingsScreen() {
 		<View
 			style={{
 				flex: 1,
-				backgroundColor: "#FEFCFB",
+				backgroundColor: "#FFFFFF",
 				paddingTop:
 					Platform.OS === "ios" ? 0 : insets.top + verticalScale(16),
 			}}

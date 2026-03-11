@@ -103,8 +103,6 @@ export default function RestaurantCard({
 				style={({ pressed }) => [
 					styles.card,
 					{
-						borderRadius: moderateScale(16),
-						marginBottom: verticalScale(14),
 						transform: [{ scale: pressed ? 0.985 : 1 }],
 					},
 				]}
@@ -251,15 +249,6 @@ export default function RestaurantCard({
 						</TextBold>
 					</TouchableOpacity>
 
-					<TouchableOpacity
-						activeOpacity={0.7}
-						onPress={onVisit}
-						style={styles.actionBtnFilled}
-					>
-						<TextBold style={styles.actionTextFilled}>
-							Visit
-						</TextBold>
-					</TouchableOpacity>
 				</View>
 			</Pressable>
 		</MotiView>
@@ -268,13 +257,13 @@ export default function RestaurantCard({
 
 const styles = StyleSheet.create({
 	card: {
-		backgroundColor: "#FFFFFF",
-		borderWidth: 1,
-		borderColor: "#EDEDED",
+		backgroundColor: "transparent",
 		overflow: "hidden",
 	},
 	avatar: {
-		backgroundColor: "#E8E8E8",
+		backgroundColor: "#FFFFFF",
+		borderWidth: 0.5,
+		borderColor: "#CCCCCC",
 		alignItems: "center",
 		justifyContent: "center",
 	},
@@ -294,24 +283,12 @@ const styles = StyleSheet.create({
 		justifyContent: "center",
 		paddingVertical: verticalScale(10),
 		borderRadius: moderateScale(12),
-		borderWidth: 1.5,
-		borderColor: "#1A1A1A",
-		backgroundColor: "#FFFFFF",
-	},
-	actionBtnFilled: {
-		flex: 1,
-		alignItems: "center",
-		justifyContent: "center",
-		paddingVertical: verticalScale(10),
-		borderRadius: moderateScale(12),
-		backgroundColor: "#1A1A1A",
+		borderWidth: 0.5,
+		borderColor: "#CCCCCC",
+		backgroundColor: "transparent",
 	},
 	actionTextOutline: {
 		fontSize: moderateScale(13),
 		color: "#1A1A1A",
-	},
-	actionTextFilled: {
-		fontSize: moderateScale(13),
-		color: "#FFFFFF",
 	},
 });

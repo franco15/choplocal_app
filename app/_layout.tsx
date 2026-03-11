@@ -156,7 +156,7 @@ const RootComponent = () => {
 									headerTitle: "",
 									headerBackTitle: "Home",
 									headerStyle: {
-										backgroundColor: "#FEFCFB",
+										backgroundColor: "#FFFFFF",
 									},
 								}}
 							/>
@@ -188,7 +188,7 @@ const RootComponent = () => {
 									headerTitle: "",
 									headerBackTitle: "Profile",
 									headerStyle: {
-										backgroundColor: "#FEFCFB",
+										backgroundColor: "#FFFFFF",
 									},
 								}}
 							/>
@@ -201,7 +201,7 @@ const RootComponent = () => {
 									headerTitle: "",
 									headerBackTitle: "Back",
 									headerStyle: {
-										backgroundColor: "#FEFCFB",
+										backgroundColor: "#FFFFFF",
 									},
 								}}
 							/>
@@ -214,7 +214,7 @@ const RootComponent = () => {
 									headerTitle: "",
 									headerBackTitle: "Back",
 									headerStyle: {
-										backgroundColor: "#FEFCFB",
+										backgroundColor: "#FFFFFF",
 									},
 								}}
 							/>

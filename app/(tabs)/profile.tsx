@@ -235,7 +235,7 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
 	root: {
 		flex: 1,
-		backgroundColor: "#FEFCFB",
+		backgroundColor: "#FFFFFF",
 	},
 
 	/* Red Header */

@@ -136,13 +136,6 @@ export default function HomeRestaurantCard({
 						<TextBold style={styles.actionTextOutline}>Recommend</TextBold>
 					</TouchableOpacity>
 
-					<TouchableOpacity
-						activeOpacity={0.7}
-						onPress={onVisit}
-						style={styles.actionBtnFilled}
-					>
-						<TextBold style={styles.actionTextFilled}>Visit</TextBold>
-					</TouchableOpacity>
 				</View>
 			</Pressable>
 		</View>
@@ -212,24 +205,12 @@ const styles = StyleSheet.create({
 		justifyContent: "center",
 		paddingVertical: verticalScale(10),
 		borderRadius: moderateScale(12),
-		borderWidth: 1.5,
-		borderColor: "#1A1A1A",
+		borderWidth: 0.5,
+		borderColor: "#CCCCCC",
 		backgroundColor: "#FFFFFF",
-	},
-	actionBtnFilled: {
-		flex: 1,
-		alignItems: "center",
-		justifyContent: "center",
-		paddingVertical: verticalScale(10),
-		borderRadius: moderateScale(12),
-		backgroundColor: "#1A1A1A",
 	},
 	actionTextOutline: {
 		fontSize: moderateScale(13),
 		color: "#1A1A1A",
-	},
-	actionTextFilled: {
-		fontSize: moderateScale(13),
-		color: "#FFFFFF",
 	},
 });

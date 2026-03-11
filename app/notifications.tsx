@@ -244,7 +244,7 @@ export default function NotificationsScreen() {
 const styles = StyleSheet.create({
 	root: {
 		flex: 1,
-		backgroundColor: "#FEFCFB",
+		backgroundColor: "#FFFFFF",
 	},
 	title: {
 		fontSize: moderateScale(30),

@@ -15,7 +15,7 @@ export default function QrTabScreen() {
 		<View
 			style={{
 				flex: 1,
-				backgroundColor: "#FEFCFB",
+				backgroundColor: "#FFFFFF",
 				paddingTop: insets.top + verticalScale(20),
 				paddingHorizontal: horizontalScale(12),
 				paddingBottom: 60 + insets.bottom + verticalScale(10),

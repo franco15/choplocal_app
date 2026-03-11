@@ -60,7 +60,7 @@ export default function GiftCardsList() {
 	}) => <GiftCardItem giftCard={item} index={index} type="received" />;
 
 	return (
-		<View style={{ flex: 1, backgroundColor: "#FEFCFB" }}>
+		<View style={{ flex: 1, backgroundColor: "#FFFFFF" }}>
 			<FlatList
 				data={filteredCards}
 				showsVerticalScrollIndicator={false}

@@ -235,7 +235,7 @@ export default function SuggestRestaurantScreen() {
 const styles = StyleSheet.create({
 	root: {
 		flex: 1,
-		backgroundColor: "#FEFCFB",
+		backgroundColor: "#FFFFFF",
 	},
 	scrollContent: {
 		paddingHorizontal: horizontalScale(16),
