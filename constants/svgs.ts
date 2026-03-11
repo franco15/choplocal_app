@@ -1,10 +1,13 @@
 import ArrowFortyFiveBlack from "@/assets/svg/arrow-45-black.svg";
 import ArrowFortyFive from "@/assets/svg/arrow-45.svg";
 import Bell from "@/assets/svg/bell.svg";
+import Bookmark from "@/assets/svg/bookmark.svg";
+import BookmarkSolid from "@/assets/svg/bookmark-solid.svg";
 import ChefThree from "@/assets/svg/chef-three.svg";
 import ChefTwo from "@/assets/svg/chef-two.svg";
 import Chef from "@/assets/svg/chef.svg";
 import ChopLocal from "@/assets/svg/choplocal.svg";
+import EmptyPlates from "@/assets/svg/empty-plates.svg";
 import ChopLocalBlack from "@/assets/svg/choplocal_black.svg";
 import Export from "@/assets/svg/export.svg";
 import ForknifeOff from "@/assets/svg/forkknife-off.svg";
@@ -31,11 +34,14 @@ export {
 	ArrowFortyFive,
 	ArrowFortyFiveBlack,
 	Bell,
+	Bookmark,
+	BookmarkSolid,
 	Chef,
 	ChefThree,
 	ChefTwo,
 	ChopLocal,
 	ChopLocalBlack,
+	EmptyPlates,
 	Export,
 	Forknife,
 	ForknifeOff,

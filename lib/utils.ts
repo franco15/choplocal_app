@@ -83,6 +83,52 @@ export const circularReplacer = () => {
 
 export const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
+export function generateGiftCardCode(): string {
+	const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+	let code = "GC-";
+	for (let i = 0; i < 6; i++) {
+		code += chars.charAt(Math.floor(Math.random() * chars.length));
+	}
+	return code;
+}
+
+export function generateRecommendationCode(): string {
+	const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+	let code = "REC-";
+	for (let i = 0; i < 6; i++) {
+		code += chars.charAt(Math.floor(Math.random() * chars.length));
+	}
+	return code;
+}
+
+/**
+ * Generates a stable, deterministic recommendation code per user per restaurant.
+ * The same userId + restaurantId always produces the same code.
+ * This code is reusable — multiple people can redeem it.
+ * TODO: Replace with backend-generated code when API is ready.
+ */
+export function generateStableRecommendationCode(
+	userId: string,
+	restaurantId: number,
+): string {
+	const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+	const seed = `${userId}:${restaurantId}`;
+	// djb2 hash — deterministic across runs
+	let hash = 5381;
+	for (let i = 0; i < seed.length; i++) {
+		hash = ((hash << 5) + hash) ^ seed.charCodeAt(i);
+		hash = hash >>> 0; // keep as unsigned 32-bit
+	}
+	let code = "REC-";
+	let remaining = hash;
+	for (let i = 0; i < 6; i++) {
+		code += chars[remaining % chars.length];
+		remaining = Math.floor(remaining / chars.length);
+		if (remaining === 0) remaining = hash + i + 1;
+	}
+	return code;
+}
+
 // ["jpg", "jpeg", "png", "gif", "bmp", "webp"]
 export const isImage = (url: string) => {
 	if (isNullOrWhitespace(url)) return false;

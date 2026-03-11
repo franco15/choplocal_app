@@ -6,9 +6,7 @@ const RestaurantsLayout = () => {
 		<Stack>
 			<Stack.Screen
 				options={{
-					headerShown: Platform.OS === "ios" ? false : true,
-					headerTitle: "",
-					headerShadowVisible: false,
+					headerShown: false,
 				}}
 				name="[id]"
 			/>

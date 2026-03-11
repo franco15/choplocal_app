@@ -1,4 +1,5 @@
 import { Birthdate, Container, Text, TextBold } from "@/components";
+import { useAuthContext } from "@/contexts/AuthContext";
 import { useUserContext } from "@/contexts/UserContext";
 import { useUpdateUser } from "@/lib/api/queries/userQueries";
 import { horizontalScale, moderateScale, verticalScale } from "@/lib/metrics";
@@ -32,6 +33,7 @@ export default function CompleteProfile() {
 	const router = useRouter();
 	const updateUser = useUpdateUser();
 	const { user, refetch, setProfileComplete } = useUserContext();
+	const { isNewUser, clearNewUser } = useAuthContext();
 	const {
 		control,
 		handleSubmit,
@@ -42,7 +44,12 @@ export default function CompleteProfile() {
 		await updateUser.mutateAsync({ id: user.id as string, data });
 		setProfileComplete(true);
 		await refetch();
-		router.replace("/(tabs)");
+		if (isNewUser) {
+			clearNewUser();
+			router.replace("/welcome-recommendation");
+		} else {
+			router.replace("/(tabs)");
+		}
 	};
 
 	return (
@@ -229,18 +236,19 @@ export default function CompleteProfile() {
 									</Text>
 								)}
 								<TouchableOpacity
-									className="bg-[#E3C6FB] w-1/2 self-center items-center justify-center"
+									className="w-1/2 self-center items-center justify-center"
 									activeOpacity={0.8}
 									onPress={handleSubmit(onSubmit)}
 									style={{
 										marginTop: verticalScale(80),
 										height: verticalScale(54),
 										borderRadius: moderateScale(30),
+										backgroundColor: "#96190F",
 									}}
 								>
 									<Text
 										className=""
-										style={{ color: "#000000", fontSize: moderateScale(14) }}
+										style={{ color: "#FFFFFF", fontSize: moderateScale(14) }}
 									>
 										Done
 									</Text>

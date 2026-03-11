@@ -16,7 +16,7 @@ export default function GradientBackground() {
 				<LinearGradient
 					start={vec(0, 0)}
 					end={vec(0, height)}
-					colors={["#FFFFFF", "#FFFFFF", "#E5D6F2"]}
+					colors={["#FEFCFB", "#FBF6F5", "#F7EFED"]}
 				/>
 			</Rect>
 		</Canvas>

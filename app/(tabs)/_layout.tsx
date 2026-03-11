@@ -1,11 +1,12 @@
 import {
+	Bookmark,
+	BookmarkSolid,
 	Forknife,
 	ForknifeOff,
 	Home,
 	HomeOff,
 	Person,
 	PersonOff,
-	Star,
 } from "@/constants/svgs";
 import { horizontalScale, moderateScale, verticalScale } from "@/lib/metrics";
 import { Tabs } from "expo-router";
@@ -94,19 +95,18 @@ const TabsLayout = () => {
 			<Tabs.Screen
 				name="favorites"
 				options={{
-					href: null,
 					title: "Favorites",
 					tabBarIcon: ({ focused }) => {
 						if (focused)
 							return (
-								<Star
+								<BookmarkSolid
 									width={HORIZONTAL_ICONSIZE}
 									height={VERTICAL_ICONSIZE}
 									fill="#000000"
 								/>
 							);
 						return (
-							<Star
+							<Bookmark
 								width={HORIZONTAL_ICONSIZE}
 								height={VERTICAL_ICONSIZE}
 								fill="#000000"

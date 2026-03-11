@@ -1,0 +1,463 @@
+import { Text, TextBold } from "@/components";
+import { useRedeemCodeContext } from "@/contexts/RedeemCodeContext";
+import { useUserContext } from "@/contexts/UserContext";
+import { queryClient, queryKeys } from "@/lib/api/queryClient";
+import { useUserApi } from "@/lib/api/useApi";
+import { horizontalScale, moderateScale, verticalScale } from "@/lib/metrics";
+import { isNullOrWhitespace } from "@/lib/utils";
+import { ERestaurantStatus, IRestaurant } from "@/lib/types/restaurant";
+import { Ionicons } from "@expo/vector-icons";
+import { useQuery } from "@tanstack/react-query";
+import { useRouter } from "expo-router";
+import * as Haptics from "expo-haptics";
+import { MotiView } from "moti";
+import { useState } from "react";
+import {
+	ActivityIndicator,
+	Keyboard,
+	KeyboardAvoidingView,
+	Platform,
+	StyleSheet,
+	TextInput,
+	TouchableOpacity,
+	View,
+} from "react-native";
+import Modal from "react-native-modal";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+
+export default function RedeemCodeScreen() {
+	const router = useRouter();
+	const insets = useSafeAreaInsets();
+	const { user } = useUserContext();
+	const userApi = useUserApi();
+	const { redeemCode } = useRedeemCodeContext();
+
+	const [code, setCode] = useState("");
+	const [isValidating, setIsValidating] = useState(false);
+	const [errorModal, setErrorModal] = useState({
+		visible: false,
+		title: "",
+		message: "",
+	});
+
+	const { data: restaurants } = useQuery({
+		queryKey: [queryKeys.users.restaurants],
+		queryFn: async () => {
+			const data = await userApi.restaurants(user.id);
+			return data;
+		},
+		enabled: !!user && !isNullOrWhitespace(user?.id),
+	});
+
+	const handleRedeem = async () => {
+		if (!code.trim() || isValidating) return;
+		Keyboard.dismiss();
+		setIsValidating(true);
+
+		const result = await redeemCode(code, restaurants ?? []);
+		setIsValidating(false);
+
+		if (result.success) {
+			if (result.type === "recommendation") {
+				// Update restaurant list cache
+				queryClient.setQueryData(
+					[queryKeys.users.restaurants],
+					(old: IRestaurant[] | undefined) =>
+						old?.map((r) =>
+							r.id === result.restaurantId
+								? {
+										...r,
+										status: ERestaurantStatus.Recommended,
+									}
+								: r,
+						),
+				);
+				// Update individual restaurant cache
+				queryClient.setQueryData(
+					[queryKeys.restaurants.byId(String(result.restaurantId))],
+					(old: IRestaurant | undefined) =>
+						old
+							? { ...old, status: ERestaurantStatus.Recommended }
+							: old,
+				);
+			}
+
+			Haptics.notificationAsync(
+				Haptics.NotificationFeedbackType.Success,
+			);
+
+			router.push({
+				pathname: "/redeem-code/success",
+				params: {
+					restaurantName: result.restaurantName,
+					restaurantId: String(result.restaurantId),
+					codeType: result.type,
+					value:
+						result.type === "giftcard"
+							? String(result.value)
+							: String(result.rewardAmount),
+					senderName:
+						result.type === "giftcard"
+							? result.senderName
+							: "",
+					senderMessage:
+						result.type === "giftcard"
+							? result.senderMessage
+							: "",
+				},
+			});
+		} else {
+			Haptics.notificationAsync(
+				Haptics.NotificationFeedbackType.Error,
+			);
+
+			const errors: Record<string, { title: string; message: string }> =
+				{
+					invalid_code: {
+						title: "Invalid Code",
+						message:
+							"We couldn't find a match for this code. Double-check and try again!",
+					},
+					already_redeemed: {
+						title: "Already Redeemed",
+						message:
+							"You've already used this code. Each code can only be used once.",
+					},
+					already_visited: {
+						title: "Already Visited!",
+						message: `You've already been to ${(result as any).restaurantName}, so this recommendation code can't be applied.`,
+					},
+					already_recommended: {
+						title: "Already Recommended!",
+						message: `You already have a recommendation for ${(result as any).restaurantName}. Only one recommendation per restaurant!`,
+					},
+				};
+
+			const err = errors[result.error] ?? errors.invalid_code;
+			setErrorModal({ visible: true, ...err });
+		}
+	};
+
+	return (
+		<View style={styles.container}>
+			<KeyboardAvoidingView
+				behavior={Platform.OS === "ios" ? "padding" : undefined}
+				style={{ flex: 1 }}
+			>
+				{/* ── Main content ── */}
+				<View style={styles.body}>
+					{/* Icon + Title */}
+					<MotiView
+						from={{ opacity: 0, scale: 0.9 }}
+						animate={{ opacity: 1, scale: 1 }}
+						transition={{ type: "timing", duration: 400 }}
+						style={styles.headerSection}
+					>
+						<View style={styles.heroIcon}>
+							<Ionicons
+								name="ticket-outline"
+								size={44}
+								color="#1A1A1A"
+							/>
+						</View>
+						<TextBold style={styles.heroTitle}>
+							Redeem a Code
+						</TextBold>
+						<Text style={styles.heroSubtitle}>
+							Enter your recommendation or{"\n"}gift card code
+							below
+						</Text>
+					</MotiView>
+
+					{/* ── Input ── */}
+					<MotiView
+						from={{ opacity: 0, translateY: 15 }}
+						animate={{ opacity: 1, translateY: 0 }}
+						transition={{
+							type: "timing",
+							duration: 350,
+							delay: 150,
+						}}
+						style={styles.inputSection}
+					>
+						<TextBold style={styles.inputLabel}>
+							Your Code
+						</TextBold>
+						<View style={styles.inputRow}>
+							<TextInput
+								style={styles.textInput}
+								placeholder="e.g. REC-001"
+								placeholderTextColor="rgba(0,0,0,0.25)"
+								value={code}
+								onChangeText={setCode}
+								autoCapitalize="characters"
+								autoCorrect={false}
+								maxLength={20}
+								returnKeyType="go"
+								onSubmitEditing={handleRedeem}
+								selectionColor="rgba(0,0,0,0.3)"
+							/>
+							{code.length > 0 && (
+								<TouchableOpacity
+									onPress={() => setCode("")}
+									activeOpacity={0.6}
+									style={styles.clearBtn}
+								>
+									<Ionicons
+										name="close-circle"
+										size={22}
+										color="rgba(0,0,0,0.3)"
+									/>
+								</TouchableOpacity>
+							)}
+						</View>
+					</MotiView>
+
+					{/* ── Hint ── */}
+					<MotiView
+						from={{ opacity: 0 }}
+						animate={{ opacity: 1 }}
+						transition={{
+							type: "timing",
+							duration: 300,
+							delay: 350,
+						}}
+					>
+						<Text style={styles.hint}>
+							Codes are case-insensitive
+						</Text>
+					</MotiView>
+				</View>
+
+				{/* ── Bottom button (always at bottom) ── */}
+				<MotiView
+					from={{ opacity: 0, translateY: 20 }}
+					animate={{ opacity: 1, translateY: 0 }}
+					transition={{
+						type: "timing",
+						duration: 350,
+						delay: 300,
+					}}
+					style={[
+						styles.bottomSection,
+						{ paddingBottom: insets.bottom + verticalScale(16) },
+					]}
+				>
+					<TouchableOpacity
+						activeOpacity={0.8}
+						onPress={handleRedeem}
+						disabled={!code.trim() || isValidating}
+						style={[
+							styles.redeemBtn,
+							{
+								opacity:
+									!code.trim() || isValidating ? 0.5 : 1,
+							},
+						]}
+					>
+						{isValidating ? (
+							<ActivityIndicator color="#b5c6f2" />
+						) : (
+							<TextBold style={styles.redeemBtnText}>
+								Redeem
+							</TextBold>
+						)}
+					</TouchableOpacity>
+				</MotiView>
+			</KeyboardAvoidingView>
+
+			{/* ── Error Modal ── */}
+			<Modal
+				isVisible={errorModal.visible}
+				onBackdropPress={() =>
+					setErrorModal((prev) => ({ ...prev, visible: false }))
+				}
+				onSwipeComplete={() =>
+					setErrorModal((prev) => ({ ...prev, visible: false }))
+				}
+				swipeDirection="down"
+				backdropOpacity={0.4}
+				style={styles.modal}
+			>
+				<View style={styles.modalSheet}>
+					<View style={styles.modalHandle} />
+
+					<Ionicons
+						name="alert-circle"
+						size={moderateScale(48)}
+						color="#e94848"
+						style={{ marginBottom: verticalScale(12) }}
+					/>
+
+					<TextBold style={styles.modalTitle}>
+						{errorModal.title}
+					</TextBold>
+					<Text style={styles.modalMessage}>
+						{errorModal.message}
+					</Text>
+
+					<TouchableOpacity
+						activeOpacity={0.8}
+						onPress={() =>
+							setErrorModal((prev) => ({
+								...prev,
+								visible: false,
+							}))
+						}
+						style={styles.modalBtn}
+					>
+						<TextBold style={styles.modalBtnText}>
+							Got it
+						</TextBold>
+					</TouchableOpacity>
+				</View>
+			</Modal>
+		</View>
+	);
+}
+
+const styles = StyleSheet.create({
+	container: {
+		flex: 1,
+		backgroundColor: "#b5c6f2",
+	},
+
+	/* ── Body ── */
+	body: {
+		flex: 1,
+		paddingHorizontal: horizontalScale(24),
+		justifyContent: "center",
+	},
+
+	/* ── Header / Title ── */
+	headerSection: {
+		alignItems: "center",
+		marginBottom: verticalScale(40),
+	},
+	heroIcon: {
+		width: moderateScale(80),
+		height: moderateScale(80),
+		borderRadius: moderateScale(40),
+		backgroundColor: "rgba(0,0,0,0.06)",
+		alignItems: "center",
+		justifyContent: "center",
+		marginBottom: verticalScale(20),
+	},
+	heroTitle: {
+		fontSize: moderateScale(32),
+		color: "#1A1A1A",
+		textAlign: "center",
+	},
+	heroSubtitle: {
+		fontSize: moderateScale(15),
+		color: "rgba(0,0,0,0.5)",
+		textAlign: "center",
+		marginTop: verticalScale(8),
+		lineHeight: moderateScale(22),
+	},
+
+	/* ── Input ── */
+	inputSection: {
+		marginBottom: verticalScale(12),
+	},
+	inputLabel: {
+		fontSize: moderateScale(13),
+		color: "rgba(0,0,0,0.45)",
+		marginBottom: verticalScale(10),
+		textTransform: "uppercase",
+		letterSpacing: 1,
+	},
+	inputRow: {
+		flexDirection: "row",
+		alignItems: "center",
+		backgroundColor: "rgba(255,255,255,0.3)",
+		borderRadius: moderateScale(16),
+		borderWidth: 1,
+		borderColor: "rgba(255,255,255,0.5)",
+		paddingHorizontal: horizontalScale(16),
+	},
+	textInput: {
+		flex: 1,
+		height: verticalScale(56),
+		fontSize: moderateScale(22),
+		color: "#1A1A1A",
+		fontFamily: "Inter_600SemiBold",
+		letterSpacing: 2,
+	},
+	clearBtn: {
+		padding: 6,
+	},
+
+	/* ── Hint ── */
+	hint: {
+		fontSize: moderateScale(12),
+		color: "rgba(0,0,0,0.35)",
+		textAlign: "center",
+		marginTop: verticalScale(12),
+	},
+
+	/* ── Bottom button ── */
+	bottomSection: {
+		paddingHorizontal: horizontalScale(24),
+		paddingTop: verticalScale(12),
+	},
+	redeemBtn: {
+		backgroundColor: "#FFFFFF",
+		height: verticalScale(56),
+		borderRadius: moderateScale(30),
+		alignItems: "center",
+		justifyContent: "center",
+	},
+	redeemBtnText: {
+		fontSize: moderateScale(16),
+		color: "#5a6fa8",
+	},
+
+	/* ── Error modal ── */
+	modal: {
+		justifyContent: "flex-end",
+		margin: 0,
+	},
+	modalSheet: {
+		backgroundColor: "#FFFFFF",
+		borderTopLeftRadius: moderateScale(28),
+		borderTopRightRadius: moderateScale(28),
+		paddingHorizontal: horizontalScale(28),
+		paddingTop: verticalScale(14),
+		paddingBottom: verticalScale(50),
+		alignItems: "center",
+	},
+	modalHandle: {
+		width: horizontalScale(40),
+		height: 4,
+		borderRadius: 2,
+		backgroundColor: "#E0E0E0",
+		marginBottom: verticalScale(28),
+	},
+	modalTitle: {
+		fontSize: moderateScale(22),
+		color: "#1A1A1A",
+		textAlign: "center",
+	},
+	modalMessage: {
+		fontSize: moderateScale(15),
+		color: "#888",
+		textAlign: "center",
+		marginTop: verticalScale(10),
+		lineHeight: moderateScale(22),
+		paddingHorizontal: horizontalScale(8),
+	},
+	modalBtn: {
+		backgroundColor: "#000000",
+		height: verticalScale(52),
+		borderRadius: moderateScale(28),
+		alignItems: "center",
+		justifyContent: "center",
+		width: "100%",
+		marginTop: verticalScale(28),
+	},
+	modalBtnText: {
+		fontSize: moderateScale(16),
+		color: "#FFFFFF",
+	},
+});

@@ -2,6 +2,7 @@ import { Container, Text, TextBold } from "@/components";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { useUserContext } from "@/contexts/UserContext";
 import { horizontalScale, moderateScale, verticalScale } from "@/lib/metrics";
+import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
 	Linking,
@@ -13,6 +14,7 @@ import {
 import Modal from "react-native-modal";
 
 const Profile = () => {
+	const router = useRouter();
 	const { logout, setShowDeletedUserAlert } = useAuthContext();
 	const { user, deleteUser } = useUserContext();
 	const [deleteAlert, setDeleteAlert] = useState(false);
@@ -40,15 +42,15 @@ const Profile = () => {
 					<TextBold className="text-[25px] ml-5">Hi {user.firstName}!</TextBold>
 				</View>
 				<View className="mt-10">
-					{/* <TouchableOpacity
+					<TouchableOpacity
 						activeOpacity={0.8}
-						className="flex flex-row items-center py-5"
-						onPress={() => {
-							Sentry.captureException(new Error("test error"));
-						}}
+						className="flex flex-row items-center border-b-[0.75px]"
+						onPress={() => router.push("/gift-cards")}
 					>
-						<TextBold className="ml-5">Try sentry</TextBold>
-					</TouchableOpacity> */}
+						<Text className="" style={styles.text}>
+							My gift cards
+						</Text>
+					</TouchableOpacity>
 					<TouchableOpacity
 						activeOpacity={0.8}
 						className="flex flex-row items-center border-b-[0.75px]"

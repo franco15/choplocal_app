@@ -61,16 +61,17 @@ export default function LoginScreen() {
 							/>
 							<Link href="/register" asChild>
 								<Pressable
-									className={`bg-[#E3C6FB] w-2/3 flex self-center items-center justify-center`}
+									className={`w-2/3 flex self-center items-center justify-center`}
 									style={{
 										marginTop: verticalScale(60),
 										height: verticalScale(54),
 										borderRadius: moderateScale(30),
+										backgroundColor: "#96190F",
 									}}
 								>
 									<Text
 										className="text-center"
-										style={{ color: "#000000", fontSize: moderateScale(14) }}
+										style={{ color: "#FFFFFF", fontSize: moderateScale(14) }}
 									>
 										Create an account
 									</Text>
@@ -78,16 +79,17 @@ export default function LoginScreen() {
 							</Link>
 							<Link href="/login" asChild>
 								<Pressable
-									className={`bg-[#E3C6FB] w-2/3 flex self-center items-center justify-center`}
+									className={`w-2/3 flex self-center items-center justify-center`}
 									style={{
 										marginTop: verticalScale(30),
 										height: verticalScale(54),
 										borderRadius: moderateScale(30),
+										backgroundColor: "#96190F",
 									}}
 								>
 									<Text
 										className="text-center"
-										style={{ color: "#000000", fontSize: moderateScale(14) }}
+										style={{ color: "#FFFFFF", fontSize: moderateScale(14) }}
 									>
 										Log in
 									</Text>

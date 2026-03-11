@@ -27,6 +27,8 @@ interface IAuthContext {
 	logout: () => Promise<void>;
 	showDeletedUserAlert: boolean;
 	setShowDeletedUserAlert: (showDeletedUserAlert: boolean) => void;
+	isNewUser: boolean;
+	clearNewUser: () => void;
 }
 
 const AuthContext = createContext<IAuthContext>({} as IAuthContext);
@@ -42,6 +44,7 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 		id: string;
 	}>({ phone: "", id: "" });
 	const [showDeletedUserAlert, setShowDeletedUserAlert] = useState(false);
+	const [isNewUser, setIsNewUser] = useState(false);
 
 	useEffect(() => {
 		const getToken = async () => {
@@ -117,6 +120,7 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 				!isNullOrWhitespace(res.refreshToken)
 			) {
 				await setAuthToken(res.jwt, res.refreshToken);
+				setIsNewUser(true);
 				decodeTokenAndSave(res.jwt);
 			}
 			return true;
@@ -124,6 +128,8 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 			return false;
 		}
 	};
+
+	const clearNewUser = () => setIsNewUser(false);
 
 	const data = useMemo(() => {
 		return {
@@ -141,8 +147,10 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 			userAuth,
 			showDeletedUserAlert,
 			setShowDeletedUserAlert,
+			isNewUser,
+			clearNewUser,
 		} as IAuthContext;
-	}, [authenticated, phoneNumber, userAuth, token, showDeletedUserAlert]);
+	}, [authenticated, phoneNumber, userAuth, token, showDeletedUserAlert, isNewUser]);
 
 	return <AuthContext.Provider value={data}>{children}</AuthContext.Provider>;
 };

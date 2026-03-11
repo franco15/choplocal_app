@@ -163,18 +163,19 @@ export default function LoginScreen() {
 								</Text>
 							</Link>
 							<TouchableOpacity
-								className={`bg-[#E3C6FB] w-1/2 items-center self-center justify-center`}
+								className={`w-1/2 items-center self-center justify-center`}
 								activeOpacity={0.8}
 								onPress={onSend}
 								style={{
 									marginTop: verticalScale(60),
 									height: verticalScale(54),
 									borderRadius: moderateScale(30),
+									backgroundColor: "#96190F",
 								}}
 							>
 								<Text
 									className=""
-									style={{ color: "#000000", fontSize: moderateScale(14) }}
+									style={{ color: "#FFFFFF", fontSize: moderateScale(14) }}
 								>
 									Send Code
 								</Text>
