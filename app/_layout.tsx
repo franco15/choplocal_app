@@ -179,6 +179,45 @@ const RootComponent = () => {
 									gestureEnabled: false,
 								}}
 							/>
+							<Stack.Screen
+								name="settings"
+								options={{
+									headerShown:
+										Platform.OS === "ios" ? true : false,
+									headerShadowVisible: false,
+									headerTitle: "",
+									headerBackTitle: "Profile",
+									headerStyle: {
+										backgroundColor: "#FEFCFB",
+									},
+								}}
+							/>
+							<Stack.Screen
+								name="suggest-restaurant"
+								options={{
+									headerShown:
+										Platform.OS === "ios" ? true : false,
+									headerShadowVisible: false,
+									headerTitle: "",
+									headerBackTitle: "Back",
+									headerStyle: {
+										backgroundColor: "#FEFCFB",
+									},
+								}}
+							/>
+							<Stack.Screen
+								name="notifications"
+								options={{
+									headerShown:
+										Platform.OS === "ios" ? true : false,
+									headerShadowVisible: false,
+									headerTitle: "",
+									headerBackTitle: "Back",
+									headerStyle: {
+										backgroundColor: "#FEFCFB",
+									},
+								}}
+							/>
 						</Stack>
 					</SuggestionProvider>
 				</RedeemCodeProvider>

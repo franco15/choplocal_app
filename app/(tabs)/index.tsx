@@ -1,5 +1,6 @@
 import CityDropdown from "@/components/CityDropdown";
 import GiftCardBanner from "@/components/GiftCardBanner";
+import RedeemCodeBanner from "@/components/RedeemCodeBanner";
 import GradientBackground from "@/components/GradientBackground";
 import HomeRestaurantCard from "@/components/HomeRestaurantCard";
 import SectionHeader from "@/components/SectionHeader";
@@ -262,7 +263,7 @@ export default function HomeScreen() {
 				</Pressable>
 
 				<Pressable
-					onPress={() => {}}
+					onPress={() => router.push("/notifications")}
 					hitSlop={10}
 					style={({ pressed }) => ({
 						opacity: pressed ? 0.6 : 1,
@@ -293,7 +294,7 @@ export default function HomeScreen() {
 				<View style={styles.heroHeader}>
 					{/* Bell icon — top right */}
 					<Pressable
-						onPress={() => {}}
+						onPress={() => router.push("/notifications")}
 						hitSlop={10}
 						style={[
 							styles.heroBell,
@@ -370,9 +371,10 @@ export default function HomeScreen() {
 					</View>
 				)}
 
-				{/* Gift Card Banner */}
+				{/* Gift Card & Redeem Code Banners */}
 				<View style={styles.bannerSection}>
 					<GiftCardBanner />
+					<RedeemCodeBanner />
 				</View>
 
 				{/* Stats */}
@@ -443,15 +445,17 @@ const styles = StyleSheet.create({
 		zIndex: 10,
 		flexDirection: "row",
 		alignItems: "center",
+		justifyContent: "space-between",
 		paddingHorizontal: horizontalScale(16),
 		paddingBottom: verticalScale(10),
+		backgroundColor: "#FFFFFF",
 	},
 	stickyText: {
-		fontSize: moderateScale(15),
+		fontSize: moderateScale(18),
 		color: "#888",
 	},
 	stickyCity: {
-		fontSize: moderateScale(15),
+		fontSize: moderateScale(18),
 		color: "#1A1A1A",
 		flexShrink: 1,
 	},

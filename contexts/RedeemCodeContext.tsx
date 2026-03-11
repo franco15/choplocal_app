@@ -23,14 +23,18 @@ const REDEEMED_REC_RESTAURANT_IDS_KEY = "choplocal-redeemed-rec-restaurants";
 const RECOMMENDATION_REWARDS_KEY = "choplocal-recommendation-rewards";
 // Traceability records — for backend sync. Not shown in UI.
 const REFERRAL_RECORDS_KEY = "choplocal-referral-records";
+// Stores generated recommendation codes per restaurant: restaurantId → code
+const GENERATED_REC_CODES_KEY = "choplocal-generated-rec-codes";
 
 interface IRedeemCodeContext {
 	redeemCode: (
 		code: string,
 		restaurants: IRestaurant[],
 	) => Promise<RedeemResult>;
-	/** Stable personal recommendation code for a given restaurant */
-	getMyRecommendationCode: (restaurantId: number) => string;
+	/** Get existing code or create a new one (calls API in the future). Returns null if not yet generated. */
+	getOrCreateRecommendationCode: (restaurantId: number) => Promise<string>;
+	/** Check if a code was already generated for this restaurant (sync, no loading) */
+	hasRecommendationCode: (restaurantId: number) => boolean;
 	/** Earned balance from redeemed recommendation codes */
 	getRecommendationReward: (restaurantId: number) => number;
 	isLoading: boolean;
@@ -59,24 +63,30 @@ const RedeemCodeProvider = ({ children }: { children: React.ReactNode }) => {
 	const [referralRecords, setReferralRecords] = useState<IReferralRecord[]>(
 		[],
 	);
+	// Generated recommendation codes per restaurant: { restaurantId: code }
+	const [generatedRecCodes, setGeneratedRecCodes] = useState<
+		Record<string, string>
+	>({});
 
 	const [isLoading, setIsLoading] = useState(true);
 
 	// ── Load from AsyncStorage ──────────────────────────────────────────────
 	useEffect(() => {
 		const load = async () => {
-			const [giftCodes, recRestaurantIds, rewards, records] =
+			const [giftCodes, recRestaurantIds, rewards, records, genCodes] =
 				await Promise.all([
 					AsyncStorage.getItem(REDEEMED_GIFT_CODES_KEY),
 					AsyncStorage.getItem(REDEEMED_REC_RESTAURANT_IDS_KEY),
 					AsyncStorage.getItem(RECOMMENDATION_REWARDS_KEY),
 					AsyncStorage.getItem(REFERRAL_RECORDS_KEY),
+					AsyncStorage.getItem(GENERATED_REC_CODES_KEY),
 				]);
 			if (giftCodes) setRedeemedGiftCodes(JSON.parse(giftCodes));
 			if (recRestaurantIds)
 				setRedeemedRecRestaurantIds(JSON.parse(recRestaurantIds));
 			if (rewards) setRecommendationRewards(JSON.parse(rewards));
 			if (records) setReferralRecords(JSON.parse(records));
+			if (genCodes) setGeneratedRecCodes(JSON.parse(genCodes));
 			setIsLoading(false);
 		};
 		load();
@@ -269,16 +279,43 @@ const RedeemCodeProvider = ({ children }: { children: React.ReactNode }) => {
 	// ── Public getters ──────────────────────────────────────────────────────
 
 	/**
-	 * Returns this user's stable recommendation code for a given restaurant.
-	 * The same user always gets the same code for the same restaurant.
-	 * Multiple people can redeem this code — it is NOT one-time use.
-	 * TODO: Replace with backend-generated code once API is ready.
+	 * Check if a recommendation code already exists for this restaurant (sync).
 	 */
-	const getMyRecommendationCode = useCallback(
-		(restaurantId: number): string => {
-			return generateStableRecommendationCode(user?.id ?? "", restaurantId);
+	const hasRecommendationCode = useCallback(
+		(restaurantId: number): boolean => {
+			return !!generatedRecCodes[String(restaurantId)];
 		},
-		[user?.id],
+		[generatedRecCodes],
+	);
+
+	/**
+	 * Gets or creates a recommendation code for a restaurant.
+	 * First time: simulates API call with delay, generates code, persists it.
+	 * Subsequent calls: returns cached code instantly.
+	 * TODO: Replace mock generation with actual API call when backend is ready.
+	 */
+	const getOrCreateRecommendationCode = useCallback(
+		async (restaurantId: number): Promise<string> => {
+			const existing = generatedRecCodes[String(restaurantId)];
+			if (existing) return existing;
+
+			// Simulate API call to generate code
+			await new Promise((resolve) => setTimeout(resolve, 2000));
+			const code = generateStableRecommendationCode(
+				user?.id ?? "",
+				restaurantId,
+			);
+
+			const updated = { ...generatedRecCodes, [String(restaurantId)]: code };
+			setGeneratedRecCodes(updated);
+			await AsyncStorage.setItem(
+				GENERATED_REC_CODES_KEY,
+				JSON.stringify(updated),
+			);
+
+			return code;
+		},
+		[generatedRecCodes, user?.id],
 	);
 
 	const getRecommendationReward = useCallback(
@@ -292,11 +329,12 @@ const RedeemCodeProvider = ({ children }: { children: React.ReactNode }) => {
 		() =>
 			({
 				redeemCode,
-				getMyRecommendationCode,
+				getOrCreateRecommendationCode,
+				hasRecommendationCode,
 				getRecommendationReward,
 				isLoading,
 			}) as IRedeemCodeContext,
-		[redeemCode, getMyRecommendationCode, getRecommendationReward, isLoading],
+		[redeemCode, getOrCreateRecommendationCode, hasRecommendationCode, getRecommendationReward, isLoading],
 	);
 
 	return (

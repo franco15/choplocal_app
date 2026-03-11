@@ -1,4 +1,5 @@
 import { Text, TextBold } from "@/components";
+import GeneratingCodeModal from "@/components/GeneratingCodeModal";
 import GiftCardVisual, { CARD_THEMES } from "@/components/GiftCardVisual";
 import { useGiftCardContext } from "@/contexts/GiftCardContext";
 import { useRedeemCodeContext } from "@/contexts/RedeemCodeContext";
@@ -16,6 +17,8 @@ import { useQuery } from "@tanstack/react-query";
 import { BlurView } from "expo-blur";
 import { Link, useLocalSearchParams, useRouter } from "expo-router";
 import {
+	ActivityIndicator,
+	Alert,
 	Image,
 	ScrollView,
 	Share,
@@ -33,9 +36,10 @@ export default function Restaurant() {
 	const insets = useSafeAreaInsets();
 	const { user } = useUserContext();
 	const { getGiftCardsByRestaurant } = useGiftCardContext();
-	const { getRecommendationReward, getMyRecommendationCode } = useRedeemCodeContext();
+	const { getRecommendationReward, getOrCreateRecommendationCode, hasRecommendationCode } = useRedeemCodeContext();
 	const restaurantApi = useRestaurantApi();
 	const [imageLoaded, setImageLoaded] = useState(false);
+	const [isGeneratingCode, setIsGeneratingCode] = useState(false);
 
 	const { data: rawRestaurant, isPending } = useQuery({
 		queryKey: [queryKeys.restaurants.byId(id as string)],
@@ -57,20 +61,44 @@ export default function Restaurant() {
 	);
 
 	const onRecommend = async () => {
+		// Must have at least 1 visit to recommend
+		if (!restaurant || (restaurant.checkIns ?? 0) < 1) {
+			Alert.alert(
+				"You haven't visited yet!",
+				"Visit this restaurant at least once before recommending it to your friends.",
+				[{ text: "Got it" }],
+			);
+			return;
+		}
+
 		// TODO: rewardValue will come from restaurant API once backend is ready
 		const rewardValue = MOCK_REDEEM_CODES.find(
 			(c) => c.type === "recommendation" && c.restaurantId === Number(id),
 		)?.rewardValue;
 
-		if (rewardValue) {
-			const code = getMyRecommendationCode(Number(id));
-			await Share.share({
-				message: `I recommend ${restaurant?.name}! Use code: ${code} on Chop Local to get $${rewardValue.toFixed(2)} on your first visit.`,
-			});
-		} else {
-			await Share.share({
-				message: `Come visit ${restaurant?.name} on Chop Local!`,
-			});
+		const alreadyGenerated = hasRecommendationCode(Number(id));
+
+		// Show loading only for first-time code generation
+		if (!alreadyGenerated) {
+			setIsGeneratingCode(true);
+		}
+
+		try {
+			const code = await getOrCreateRecommendationCode(Number(id));
+			setIsGeneratingCode(false);
+			await new Promise((r) => setTimeout(r, 400));
+
+			if (rewardValue) {
+				await Share.share({
+					message: `I recommend ${restaurant?.name}! Use code: ${code} on Chop Local to get $${rewardValue.toFixed(2)} on your first visit.`,
+				});
+			} else {
+				await Share.share({
+					message: `Come visit ${restaurant?.name} on Chop Local! Use my code: ${code}`,
+				});
+			}
+		} catch {
+			setIsGeneratingCode(false);
 		}
 	};
 
@@ -85,6 +113,7 @@ export default function Restaurant() {
 	const hasBalance = totalBalance > 0;
 
 	return (
+	<>
 		<View style={styles.root}>
 			<ScrollView
 				contentContainerStyle={{
@@ -431,6 +460,9 @@ export default function Restaurant() {
 				</TouchableOpacity>
 			</View>
 		</View>
+
+		<GeneratingCodeModal visible={isGeneratingCode} />
+	</>
 	);
 }
 

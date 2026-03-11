@@ -1,20 +1,46 @@
-import {
-	Bookmark,
-	BookmarkSolid,
-	Forknife,
-	ForknifeOff,
-	Home,
-	HomeOff,
-	Person,
-	PersonOff,
-} from "@/constants/svgs";
-import { horizontalScale, moderateScale, verticalScale } from "@/lib/metrics";
+import { moderateScale, verticalScale } from "@/lib/metrics";
+import { Ionicons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
 import React from "react";
+import { View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-const HORIZONTAL_ICONSIZE = horizontalScale(25);
-const VERTICAL_ICONSIZE = verticalScale(25);
+const ICON_SIZE = moderateScale(24);
+
+type TabIconName = "home" | "restaurant" | "bookmark" | "qr-code" | "person";
+
+function TabIcon({
+	focused,
+	name,
+}: {
+	focused: boolean;
+	name: TabIconName;
+}) {
+	const outlineName = `${name}-outline` as keyof typeof Ionicons.glyphMap;
+	const filledName = name as keyof typeof Ionicons.glyphMap;
+
+	return (
+		<View style={{ alignItems: "center", justifyContent: "center" }}>
+			<Ionicons
+				name={focused ? filledName : outlineName}
+				size={ICON_SIZE}
+				color="#1A1A1A"
+				style={{ opacity: focused ? 1 : 0.35 }}
+			/>
+			{focused && (
+				<View
+					style={{
+						width: 6,
+						height: 6,
+						borderRadius: 3,
+						backgroundColor: "#1A1A1A",
+						marginTop: 6,
+					}}
+				/>
+			)}
+		</View>
+	);
+}
 
 const TabsLayout = () => {
 	const insets = useSafeAreaInsets();
@@ -24,9 +50,6 @@ const TabsLayout = () => {
 				lazy: false,
 				tabBarShowLabel: false,
 				tabBarHideOnKeyboard: true,
-				tabBarLabelStyle: {
-					color: "black",
-				},
 				headerShown: false,
 				sceneStyle: { paddingBottom: 0 },
 				tabBarStyle: {
@@ -36,12 +59,11 @@ const TabsLayout = () => {
 					borderTopWidth: 0,
 					borderTopLeftRadius: moderateScale(27),
 					borderTopRightRadius: moderateScale(27),
-					height: verticalScale(56),
-					// paddingBottom: 60,
-					marginBottom: insets.bottom < 35 ? 0 : insets.bottom,
+					height: 60 + insets.bottom,
+					paddingBottom: insets.bottom,
 				},
 				tabBarIconStyle: {
-					marginVertical: verticalScale(10),
+					marginTop: verticalScale(8),
 				},
 			}}
 		>
@@ -49,91 +71,45 @@ const TabsLayout = () => {
 				name="index"
 				options={{
 					title: "Home",
-					tabBarIcon: ({ focused }) => {
-						if (focused)
-							return (
-								<Home
-									width={HORIZONTAL_ICONSIZE}
-									height={VERTICAL_ICONSIZE}
-									fill="#000000"
-								/>
-							);
-						return (
-							<HomeOff
-								width={HORIZONTAL_ICONSIZE}
-								height={VERTICAL_ICONSIZE}
-								fill="#000000"
-							/>
-						);
-					},
+					tabBarIcon: ({ focused }) => (
+						<TabIcon focused={focused} name="home" />
+					),
 				}}
 			/>
 			<Tabs.Screen
 				name="restaurants"
 				options={{
-					// href: null,
 					title: "Restaurants",
-					tabBarIcon: ({ focused }) => {
-						if (focused)
-							return (
-								<Forknife
-									width={HORIZONTAL_ICONSIZE}
-									height={VERTICAL_ICONSIZE}
-									fill="#000000"
-								/>
-							);
-						return (
-							<ForknifeOff
-								width={HORIZONTAL_ICONSIZE}
-								height={VERTICAL_ICONSIZE}
-								fill="#000000"
-							/>
-						);
-					},
+					tabBarIcon: ({ focused }) => (
+						<TabIcon focused={focused} name="restaurant" />
+					),
 				}}
 			/>
 			<Tabs.Screen
 				name="favorites"
 				options={{
-					title: "Favorites",
-					tabBarIcon: ({ focused }) => {
-						if (focused)
-							return (
-								<BookmarkSolid
-									width={HORIZONTAL_ICONSIZE}
-									height={VERTICAL_ICONSIZE}
-									fill="#000000"
-								/>
-							);
-						return (
-							<Bookmark
-								width={HORIZONTAL_ICONSIZE}
-								height={VERTICAL_ICONSIZE}
-								fill="#000000"
-							/>
-						);
-					},
+					title: "Bookmarks",
+					tabBarIcon: ({ focused }) => (
+						<TabIcon focused={focused} name="bookmark" />
+					),
+				}}
+			/>
+			<Tabs.Screen
+				name="qr"
+				options={{
+					title: "QR",
+					tabBarIcon: ({ focused }) => (
+						<TabIcon focused={focused} name="qr-code" />
+					),
 				}}
 			/>
 			<Tabs.Screen
 				name="profile"
 				options={{
 					title: "Profile",
-					tabBarIcon: ({ focused }) => {
-						if (focused)
-							return (
-								<Person
-									width={HORIZONTAL_ICONSIZE}
-									height={VERTICAL_ICONSIZE}
-								/>
-							);
-						return (
-							<PersonOff
-								width={HORIZONTAL_ICONSIZE}
-								height={VERTICAL_ICONSIZE}
-							/>
-						);
-					},
+					tabBarIcon: ({ focused }) => (
+						<TabIcon focused={focused} name="person" />
+					),
 				}}
 			/>
 		</Tabs>

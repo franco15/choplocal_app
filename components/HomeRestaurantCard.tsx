@@ -1,15 +1,18 @@
 import { CustomText as Text, CustomTextBold as TextBold } from "@/components/Texts";
+import GeneratingCodeModal from "@/components/GeneratingCodeModal";
 import { Bookmark, BookmarkSolid } from "@/constants/svgs";
-import { moderateScale, verticalScale } from "@/lib/metrics";
+import { useRedeemCodeContext } from "@/contexts/RedeemCodeContext";
+import { MOCK_REDEEM_CODES } from "@/lib/mock/redeemCodes";
+import { moderateScale, verticalScale, horizontalScale } from "@/lib/metrics";
 import { IRestaurant } from "@/lib/types/restaurant";
 import { router } from "expo-router";
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import {
+	Alert,
 	Pressable,
 	Share,
 	StyleSheet,
 	TouchableOpacity,
-	useWindowDimensions,
 	View,
 } from "react-native";
 
@@ -24,8 +27,10 @@ export default function HomeRestaurantCard({
 	isFavorited = false,
 	onToggleFavorite,
 }: Props) {
-	const { width: screenWidth } = useWindowDimensions();
 	const cardWidth = 270;
+	const { getOrCreateRecommendationCode, hasRecommendationCode } =
+		useRedeemCodeContext();
+	const [isGeneratingCode, setIsGeneratingCode] = useState(false);
 
 	const getInitials = (name: string) =>
 		name
@@ -40,10 +45,30 @@ export default function HomeRestaurantCard({
 	}, [restaurant.id, onToggleFavorite]);
 
 	const onRecommend = useCallback(async () => {
-		await Share.share({
-			message: `Check out ${restaurant.name} on Chop Local!`,
-		});
-	}, [restaurant.name]);
+		if ((restaurant.checkIns ?? 0) < 1) {
+			Alert.alert(
+				"You haven't visited yet!",
+				"Visit this restaurant at least once before recommending it to your friends.",
+				[{ text: "Got it" }],
+			);
+			return;
+		}
+		const rewardValue =
+			MOCK_REDEEM_CODES.find((c) => c.restaurantId === restaurant.id && c.type === "recommendation")?.rewardValue ?? 0;
+		const alreadyGenerated = hasRecommendationCode(restaurant.id);
+		if (!alreadyGenerated) setIsGeneratingCode(true);
+		try {
+			const code = await getOrCreateRecommendationCode(restaurant.id);
+			const rewardText = rewardValue > 0 ? `\nYour friend will get a $${rewardValue} reward!` : "";
+			setIsGeneratingCode(false);
+			await new Promise((r) => setTimeout(r, 400));
+			await Share.share({
+				message: `Check out ${restaurant.name} on Chop Local! Use my recommendation code: ${code}${rewardText}`,
+			});
+		} catch {
+			setIsGeneratingCode(false);
+		}
+	}, [restaurant, hasRecommendationCode, getOrCreateRecommendationCode]);
 
 	const onVisit = useCallback(() => {
 		router.push({
@@ -54,6 +79,7 @@ export default function HomeRestaurantCard({
 
 	return (
 		<View style={{ width: cardWidth }}>
+			<GeneratingCodeModal visible={isGeneratingCode} />
 			<Pressable
 				onPress={onVisit}
 				style={({ pressed }) => [
@@ -100,29 +126,23 @@ export default function HomeRestaurantCard({
 					</Text>
 				</View>
 
-				{/* Action row: Recommend | Visit */}
+				{/* Action row */}
 				<View style={styles.actionRow}>
-					<Pressable
+					<TouchableOpacity
+						activeOpacity={0.7}
 						onPress={onRecommend}
-						style={({ pressed }) => [
-							styles.actionBtn,
-							{ opacity: pressed ? 0.5 : 1 },
-						]}
+						style={styles.actionBtnOutline}
 					>
-						<Text style={styles.actionText}>Recommend</Text>
-					</Pressable>
+						<TextBold style={styles.actionTextOutline}>Recommend</TextBold>
+					</TouchableOpacity>
 
-					<View style={styles.actionDivider} />
-
-					<Pressable
+					<TouchableOpacity
+						activeOpacity={0.7}
 						onPress={onVisit}
-						style={({ pressed }) => [
-							styles.actionBtn,
-							{ opacity: pressed ? 0.5 : 1 },
-						]}
+						style={styles.actionBtnFilled}
 					>
-						<TextBold style={styles.actionText}>Visit</TextBold>
-					</Pressable>
+						<TextBold style={styles.actionTextFilled}>Visit</TextBold>
+					</TouchableOpacity>
 				</View>
 			</Pressable>
 		</View>
@@ -182,22 +202,34 @@ const styles = StyleSheet.create({
 	actionRow: {
 		flexDirection: "row",
 		alignItems: "center",
-		borderTopWidth: 1,
-		borderTopColor: "#F0F0F0",
-		paddingVertical: 12,
+		paddingHorizontal: horizontalScale(14),
+		paddingBottom: moderateScale(14),
+		gap: horizontalScale(10),
 	},
-	actionBtn: {
+	actionBtnOutline: {
 		flex: 1,
 		alignItems: "center",
 		justifyContent: "center",
+		paddingVertical: verticalScale(10),
+		borderRadius: moderateScale(12),
+		borderWidth: 1.5,
+		borderColor: "#1A1A1A",
+		backgroundColor: "#FFFFFF",
 	},
-	actionText: {
+	actionBtnFilled: {
+		flex: 1,
+		alignItems: "center",
+		justifyContent: "center",
+		paddingVertical: verticalScale(10),
+		borderRadius: moderateScale(12),
+		backgroundColor: "#1A1A1A",
+	},
+	actionTextOutline: {
 		fontSize: moderateScale(13),
 		color: "#1A1A1A",
 	},
-	actionDivider: {
-		width: 1,
-		height: "60%",
-		backgroundColor: "#E8E8E8",
+	actionTextFilled: {
+		fontSize: moderateScale(13),
+		color: "#FFFFFF",
 	},
 });

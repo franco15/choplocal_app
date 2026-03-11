@@ -1,4 +1,4 @@
-import { Container, Text, TextBold } from "@/components";
+import { Text, TextBold } from "@/components";
 import GiftCardItem from "@/components/GiftCardItem";
 import { Gift } from "@/constants/svgs";
 import { useGiftCardContext } from "@/contexts/GiftCardContext";
@@ -60,7 +60,7 @@ export default function GiftCardsList() {
 	}) => <GiftCardItem giftCard={item} index={index} type="received" />;
 
 	return (
-		<Container>
+		<View style={{ flex: 1, backgroundColor: "#FEFCFB" }}>
 			<FlatList
 				data={filteredCards}
 				showsVerticalScrollIndicator={false}
@@ -74,7 +74,6 @@ export default function GiftCardsList() {
 					<View
 						style={{
 							paddingBottom: verticalScale(8),
-							paddingTop: verticalScale(20),
 						}}
 					>
 						<TextBold
@@ -188,7 +187,7 @@ export default function GiftCardsList() {
 					</View>
 				}
 			/>
-		</Container>
+		</View>
 	);
 }
 

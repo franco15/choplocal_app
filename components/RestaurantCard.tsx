@@ -1,11 +1,14 @@
 import { CustomText as Text, CustomTextBold as TextBold } from "@/components/Texts";
+import GeneratingCodeModal from "@/components/GeneratingCodeModal";
 import { Bookmark, BookmarkSolid } from "@/constants/svgs";
+import { useRedeemCodeContext } from "@/contexts/RedeemCodeContext";
+import { MOCK_REDEEM_CODES } from "@/lib/mock/redeemCodes";
 import { horizontalScale, moderateScale, verticalScale } from "@/lib/metrics";
 import { ERestaurantStatus, IRestaurant } from "@/lib/types/restaurant";
 import { router } from "expo-router";
 import { MotiView } from "moti";
-import { useCallback } from "react";
-import { Pressable, Share, StyleSheet, View } from "react-native";
+import { useCallback, useState } from "react";
+import { Alert, Pressable, Share, StyleSheet, TouchableOpacity, View } from "react-native";
 
 const STATUS_LABELS: Record<number, string> = {
 	[ERestaurantStatus.Visited]: "Visited",
@@ -32,6 +35,10 @@ export default function RestaurantCard({
 	isFavorited = false,
 	onToggleFavorite,
 }: Props) {
+	const { getOrCreateRecommendationCode, hasRecommendationCode } =
+		useRedeemCodeContext();
+	const [isGeneratingCode, setIsGeneratingCode] = useState(false);
+
 	const statusLabel =
 		STATUS_LABELS[restaurant.status] ??
 		STATUS_LABELS[ERestaurantStatus.NotVisited];
@@ -52,10 +59,30 @@ export default function RestaurantCard({
 	}, [restaurant.id, onToggleFavorite]);
 
 	const onRecommend = useCallback(async () => {
-		await Share.share({
-			message: `Check out ${restaurant.name} on Chop Local!`,
-		});
-	}, [restaurant.name]);
+		if ((restaurant.checkIns ?? 0) < 1) {
+			Alert.alert(
+				"You haven't visited yet!",
+				"Visit this restaurant at least once before recommending it to your friends.",
+				[{ text: "Got it" }],
+			);
+			return;
+		}
+		const rewardValue =
+			MOCK_REDEEM_CODES.find((c) => c.restaurantId === restaurant.id && c.type === "recommendation")?.rewardValue ?? 0;
+		const alreadyGenerated = hasRecommendationCode(restaurant.id);
+		if (!alreadyGenerated) setIsGeneratingCode(true);
+		try {
+			const code = await getOrCreateRecommendationCode(restaurant.id);
+			const rewardText = rewardValue > 0 ? `\nYour friend will get a $${rewardValue} reward!` : "";
+			setIsGeneratingCode(false);
+			await new Promise((r) => setTimeout(r, 400));
+			await Share.share({
+				message: `Check out ${restaurant.name} on Chop Local! Use my recommendation code: ${code}${rewardText}`,
+			});
+		} catch {
+			setIsGeneratingCode(false);
+		}
+	}, [restaurant, hasRecommendationCode, getOrCreateRecommendationCode]);
 
 	const onVisit = useCallback(() => {
 		router.push({
@@ -70,6 +97,7 @@ export default function RestaurantCard({
 			animate={{ opacity: 1, translateY: 0 }}
 			transition={{ type: "timing", duration: 280, delay: index * 40 }}
 		>
+			<GeneratingCodeModal visible={isGeneratingCode} />
 			<Pressable
 				onPress={onVisit}
 				style={({ pressed }) => [
@@ -211,57 +239,27 @@ export default function RestaurantCard({
 					</View>
 				</View>
 
-				{/* Bottom action row: Visit | Recommend */}
-				<View
-					style={[
-						styles.actionRow,
-						{
-							paddingVertical: moderateScale(16),
-							paddingHorizontal: horizontalScale(24),
-						},
-					]}
-				>
-					<Pressable
-						onPress={onVisit}
-						style={({ pressed }) => ({
-							flex: 1,
-							alignItems: "center",
-							justifyContent: "center",
-							marginRight: horizontalScale(16),
-							opacity: pressed ? 0.5 : 1,
-						})}
-					>
-						<TextBold
-							style={{
-								fontSize: moderateScale(15),
-								color: "#1A1A1A",
-							}}
-						>
-							Visit
-						</TextBold>
-					</Pressable>
-
-					<View style={styles.actionDivider} />
-
-					<Pressable
+				{/* Bottom action row */}
+				<View style={styles.actionRow}>
+					<TouchableOpacity
+						activeOpacity={0.7}
 						onPress={onRecommend}
-						style={({ pressed }) => ({
-							flex: 1,
-							alignItems: "center",
-							justifyContent: "center",
-							marginLeft: horizontalScale(16),
-							opacity: pressed ? 0.5 : 1,
-						})}
+						style={styles.actionBtnOutline}
 					>
-						<TextBold
-							style={{
-								fontSize: moderateScale(15),
-								color: "#1A1A1A",
-							}}
-						>
+						<TextBold style={styles.actionTextOutline}>
 							Recommend
 						</TextBold>
-					</Pressable>
+					</TouchableOpacity>
+
+					<TouchableOpacity
+						activeOpacity={0.7}
+						onPress={onVisit}
+						style={styles.actionBtnFilled}
+					>
+						<TextBold style={styles.actionTextFilled}>
+							Visit
+						</TextBold>
+					</TouchableOpacity>
 				</View>
 			</Pressable>
 		</MotiView>
@@ -286,17 +284,34 @@ const styles = StyleSheet.create({
 	actionRow: {
 		flexDirection: "row",
 		alignItems: "center",
-		borderTopWidth: 1,
-		borderTopColor: "#EDEDED",
+		paddingHorizontal: horizontalScale(14),
+		paddingBottom: moderateScale(14),
+		gap: horizontalScale(10),
 	},
-	actionHalf: {
+	actionBtnOutline: {
 		flex: 1,
 		alignItems: "center",
 		justifyContent: "center",
+		paddingVertical: verticalScale(10),
+		borderRadius: moderateScale(12),
+		borderWidth: 1.5,
+		borderColor: "#1A1A1A",
+		backgroundColor: "#FFFFFF",
 	},
-	actionDivider: {
-		width: 1,
-		height: "60%",
-		backgroundColor: "#E0E0E0",
+	actionBtnFilled: {
+		flex: 1,
+		alignItems: "center",
+		justifyContent: "center",
+		paddingVertical: verticalScale(10),
+		borderRadius: moderateScale(12),
+		backgroundColor: "#1A1A1A",
+	},
+	actionTextOutline: {
+		fontSize: moderateScale(13),
+		color: "#1A1A1A",
+	},
+	actionTextFilled: {
+		fontSize: moderateScale(13),
+		color: "#FFFFFF",
 	},
 });
