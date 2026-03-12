@@ -1,4 +1,5 @@
 import { Text, TextBold } from "@/components";
+import { useGiftCardContext } from "@/contexts/GiftCardContext";
 import { useUserContext } from "@/contexts/UserContext";
 import { queryKeys } from "@/lib/api/queryClient";
 import { useUserApi } from "@/lib/api/useApi";
@@ -10,9 +11,11 @@ import { router } from "expo-router";
 import { useMemo } from "react";
 import { ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { CARD_THEMES } from "@/components/GiftCardVisual";
 
 export default function ProfileScreen() {
 	const { user } = useUserContext();
+	const { receivedGiftCards } = useGiftCardContext();
 	const userApi = useUserApi();
 	const insets = useSafeAreaInsets();
 
@@ -46,6 +49,19 @@ export default function ProfileScreen() {
 			.sort((a, b) => b.checkIns - a.checkIns)
 			.slice(0, 3);
 	}, [restaurants]);
+
+	const groupedGiftCards = useMemo(() => {
+		const available = (receivedGiftCards ?? []).filter((gc) => gc.status === "Available");
+		const groups: Record<string, { restaurantName: string; cards: typeof available; total: number }> = {};
+		available.forEach((gc) => {
+			if (!groups[gc.restaurantId]) {
+				groups[gc.restaurantId] = { restaurantName: gc.restaurantName, cards: [], total: 0 };
+			}
+			groups[gc.restaurantId].cards.push(gc);
+			groups[gc.restaurantId].total += gc.value;
+		});
+		return Object.values(groups).sort((a, b) => b.cards.length - a.cards.length);
+	}, [receivedGiftCards]);
 
 	if (!user) return null;
 
@@ -95,21 +111,21 @@ export default function ProfileScreen() {
 					<View style={styles.card}>
 						{user.email ? (
 							<View style={styles.infoRow}>
-								<Ionicons name="mail-outline" size={moderateScale(18)} color="#96190F" />
+								<Ionicons name="mail-outline" size={moderateScale(18)} color="#b42406" />
 								<Text style={styles.infoText}>{user.email}</Text>
 							</View>
 						) : null}
 
 						{user.phoneNumber ? (
 							<View style={[styles.infoRow, styles.infoRowBorder]}>
-								<Ionicons name="call-outline" size={moderateScale(18)} color="#96190F" />
+								<Ionicons name="call-outline" size={moderateScale(18)} color="#b42406" />
 								<Text style={styles.infoText}>{user.phoneNumber}</Text>
 							</View>
 						) : null}
 
 						{user.birthDate ? (
 							<View style={[styles.infoRow, styles.infoRowBorder]}>
-								<Ionicons name="calendar-outline" size={moderateScale(18)} color="#96190F" />
+								<Ionicons name="calendar-outline" size={moderateScale(18)} color="#b42406" />
 								<Text style={styles.infoText}>
 									{new Date(user.birthDate).toLocaleDateString("en-US", {
 										month: "long",
@@ -139,7 +155,7 @@ export default function ProfileScreen() {
 
 					{/* Top Restaurants */}
 					<View style={styles.card}>
-						<TextBold style={styles.sectionTitle}>Top Restaurants</TextBold>
+						<TextBold style={[styles.sectionTitle, { marginBottom: verticalScale(12) }]}>Top Restaurants</TextBold>
 						{topRestaurants.length > 0 ? (
 							topRestaurants.map((r, i) => (
 								<TouchableOpacity
@@ -148,7 +164,7 @@ export default function ProfileScreen() {
 									onPress={() =>
 										router.push({
 											pathname: "/restaurants/[id]",
-											params: { id: r.id },
+											params: { id: r.id, name: r.name },
 										})
 									}
 									style={[
@@ -204,27 +220,89 @@ export default function ProfileScreen() {
 						<Ionicons name="chevron-forward" size={moderateScale(18)} color="#CCC" />
 					</TouchableOpacity>
 
-					{/* My Gift Cards Banner */}
-					<TouchableOpacity
-						activeOpacity={0.85}
-						onPress={() => router.push("/gift-cards")}
-						style={styles.banner}
+					{/* My Gift Cards Wallet */}
+					<View
+						style={styles.walletContainer}
 					>
-						<View style={[styles.bannerIcon, { backgroundColor: "#FBF6F5" }]}>
-							<Ionicons
-								name="gift-outline"
-								size={moderateScale(24)}
-								color="#96190F"
-							/>
-						</View>
-						<View style={{ flex: 1, marginLeft: horizontalScale(14) }}>
-							<TextBold style={styles.bannerTitle}>My Gift Cards</TextBold>
-							<Text style={styles.bannerSub}>
-								View your gift cards and balances
-							</Text>
-						</View>
-						<Ionicons name="chevron-forward" size={moderateScale(18)} color="#CCC" />
-					</TouchableOpacity>
+						<TouchableOpacity activeOpacity={0.7} onPress={() => router.push("/gift-cards")} style={styles.walletHeader}>
+							<TextBold style={styles.sectionTitle}>My Gift Cards</TextBold>
+							<Ionicons name="chevron-forward" size={moderateScale(18)} color="#CCC" />
+						</TouchableOpacity>
+
+						{groupedGiftCards.length > 0 ? (
+							groupedGiftCards.map((group, gi) => (
+								<View key={gi} style={styles.walletGroup}>
+									<View style={styles.walletGroupHeader}>
+										<TextBold style={styles.walletRestaurantName}>
+											{group.restaurantName}
+										</TextBold>
+										<Text style={styles.walletCardCount}>
+											{group.cards.length} {group.cards.length === 1 ? "card" : "cards"} · ${group.total}
+										</Text>
+									</View>
+									<View
+										style={{
+											height: verticalScale(140) + (group.cards.length - 1) * verticalScale(32),
+											marginTop: verticalScale(8),
+										}}
+									>
+										{group.cards.map((gc, ci) => {
+											const theme = CARD_THEMES[ci % CARD_THEMES.length];
+											return (
+												<TouchableOpacity
+													key={gc.id}
+													activeOpacity={0.85}
+													onPress={() => router.push({ pathname: "/gift-cards/card-detail", params: { giftCardId: gc.id, themeIndex: String(ci), groupIds: group.cards.map((g) => g.id).join(",") } })}
+													style={{
+														position: ci === 0 ? "relative" : "absolute",
+														top: ci * verticalScale(32),
+														left: 0,
+														right: 0,
+														zIndex: group.cards.length - ci,
+														height: verticalScale(140),
+														borderRadius: moderateScale(14),
+														backgroundColor: theme.bg,
+														overflow: "hidden",
+														padding: moderateScale(14),
+														justifyContent: "space-between",
+														shadowColor: "#000",
+														shadowOffset: { width: 0, height: 2 },
+														shadowOpacity: 0.15,
+														shadowRadius: 6,
+														elevation: 4,
+													}}
+												>
+													<View style={{ position: "absolute", top: -20, right: -15, width: 90, height: 90, borderRadius: 45, backgroundColor: theme.blob1, opacity: 0.2 }} />
+													<View style={{ position: "absolute", bottom: -15, left: -10, width: 70, height: 70, borderRadius: 35, backgroundColor: theme.blob2, opacity: 0.2 }} />
+													<View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" }}>
+														<Text style={{ color: "rgba(255,255,255,0.7)", fontSize: moderateScale(11), textTransform: "uppercase", letterSpacing: 0.5 }}>
+															{gc.restaurantName}
+														</Text>
+														<TextBold style={{ color: "#FFFFFF", fontSize: moderateScale(22) }}>
+															${gc.value}
+														</TextBold>
+													</View>
+													<View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-end" }}>
+														<TextBold style={{ color: "#FFFFFF", fontSize: moderateScale(20) }}>
+															Gift Card
+														</TextBold>
+														<Text style={{ color: "rgba(255,255,255,0.6)", fontSize: moderateScale(10) }}>
+															from {gc.senderName}
+														</Text>
+													</View>
+												</TouchableOpacity>
+											);
+										})}
+									</View>
+								</View>
+							))
+						) : (
+							<View style={styles.walletEmpty}>
+								<Ionicons name="gift-outline" size={moderateScale(32)} color="#CCC" />
+								<Text style={styles.walletEmptyText}>No gift cards yet</Text>
+							</View>
+						)}
+					</View>
 
 				</View>
 			</ScrollView>
@@ -240,7 +318,7 @@ const styles = StyleSheet.create({
 
 	/* Red Header */
 	redHeader: {
-		backgroundColor: "#96190F",
+		backgroundColor: "#b42406",
 		alignItems: "center",
 		paddingBottom: verticalScale(40),
 		borderBottomLeftRadius: moderateScale(30),
@@ -262,7 +340,7 @@ const styles = StyleSheet.create({
 	},
 	avatarText: {
 		fontSize: moderateScale(28),
-		color: "#96190F",
+		color: "#b42406",
 	},
 	name: {
 		fontSize: moderateScale(24),
@@ -340,7 +418,6 @@ const styles = StyleSheet.create({
 	sectionTitle: {
 		fontSize: moderateScale(17),
 		color: "#1A1A1A",
-		marginBottom: verticalScale(12),
 	},
 	topItem: {
 		flexDirection: "row",
@@ -362,7 +439,7 @@ const styles = StyleSheet.create({
 	},
 	topRankText: {
 		fontSize: moderateScale(13),
-		color: "#96190F",
+		color: "#b42406",
 	},
 	topName: {
 		fontSize: moderateScale(15),
@@ -409,5 +486,46 @@ const styles = StyleSheet.create({
 		fontSize: moderateScale(13),
 		color: "#888",
 		marginTop: verticalScale(2),
+	},
+
+	/* Gift Card Wallet */
+	walletContainer: {
+		backgroundColor: "#FFFFFF",
+		borderRadius: moderateScale(16),
+		borderWidth: 1,
+		borderColor: "#EDEDED",
+		padding: moderateScale(16),
+		marginTop: verticalScale(10),
+	},
+	walletHeader: {
+		flexDirection: "row",
+		justifyContent: "space-between",
+		alignItems: "center",
+		marginBottom: verticalScale(4),
+	},
+	walletGroup: {
+		marginTop: verticalScale(12),
+	},
+	walletGroupHeader: {
+		flexDirection: "row",
+		justifyContent: "space-between",
+		alignItems: "center",
+	},
+	walletRestaurantName: {
+		fontSize: moderateScale(14),
+		color: "#1A1A1A",
+	},
+	walletCardCount: {
+		fontSize: moderateScale(12),
+		color: "#888",
+	},
+	walletEmpty: {
+		alignItems: "center",
+		paddingVertical: verticalScale(24),
+	},
+	walletEmptyText: {
+		fontSize: moderateScale(13),
+		color: "#AAA",
+		marginTop: verticalScale(8),
 	},
 });

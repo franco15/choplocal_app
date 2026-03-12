@@ -18,7 +18,7 @@ const FAVORITES_KEY = "choplocal-favorites";
 export default function FavoritesScreen() {
 	const { user } = useUserContext();
 	const userApi = useUserApi();
-	const [favoriteIds, setFavoriteIds] = useState<number[]>([]);
+	const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
 
 	const { data: restaurants } = useQuery({
 		queryKey: [queryKeys.users.restaurants],
@@ -38,7 +38,7 @@ export default function FavoritesScreen() {
 		}, []),
 	);
 
-	const toggleFavorite = useCallback((id: number) => {
+	const toggleFavorite = useCallback((id: string) => {
 		setFavoriteIds((prev) => {
 			const next = prev.includes(id)
 				? prev.filter((fid) => fid !== id)
@@ -95,7 +95,7 @@ export default function FavoritesScreen() {
 					>
 						{favoriteRestaurants.length > 0
 							? `${favoriteRestaurants.length} bookmarked restaurants`
-							: "Bookmark restaurants you love"}
+							: "Your favorite spots live here"}
 					</Text>
 				</View>
 
@@ -137,7 +137,7 @@ export default function FavoritesScreen() {
 								marginBottom: verticalScale(6),
 							}}
 						>
-							No bookmarks yet
+							No restaurants saved
 						</TextBold>
 						<Text
 							style={{
@@ -147,8 +147,7 @@ export default function FavoritesScreen() {
 								lineHeight: moderateScale(20),
 							}}
 						>
-							Tap the bookmark icon on any{"\n"}restaurant to save
-							it here
+							Your future food obsessions go here!{"\n"}Tap the bookmark on any restaurant{"\n"}to start your collection
 						</Text>
 					</View>
 				)}

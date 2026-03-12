@@ -90,7 +90,7 @@ export default function Payment() {
 				amount,
 			);
 			const giftCard = await sendGiftCard({
-				restaurantId: Number(restaurantId),
+				restaurantId: (restaurantId ?? "") as string,
 				restaurantName: restaurantName ?? "",
 				value: amount,
 				recipientPhone: recipientPhone ?? "",

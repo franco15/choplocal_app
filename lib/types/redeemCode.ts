@@ -9,7 +9,7 @@ export type CodeType = "recommendation" | "giftcard";
 export interface IReferralRecord {
 	id: string;                     // Client-generated UUID for dedup on backend
 	code: string;                   // The recommendation code that was redeemed
-	restaurantId: number;
+	restaurantId: string;
 	restaurantName: string;
 	redeemedAt: string;             // ISO timestamp — when the redeemer used the code
 	firstCheckInAt: string | null;  // TODO: set by backend when redeemer visits for first time
@@ -21,7 +21,7 @@ export interface IReferralRecord {
 export interface IRedeemCode {
 	code: string;
 	type: CodeType;
-	restaurantId: number;
+	restaurantId: string;
 	restaurantName: string;
 	giftCardValue?: number;
 	rewardValue?: number;
@@ -31,14 +31,14 @@ export type RedeemResult =
 	| {
 			success: true;
 			type: "recommendation";
-			restaurantId: number;
+			restaurantId: string;
 			restaurantName: string;
 			rewardAmount: number;
 	  }
 	| {
 			success: true;
 			type: "giftcard";
-			restaurantId: number;
+			restaurantId: string;
 			restaurantName: string;
 			value: number;
 			senderName: string;

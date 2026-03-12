@@ -1,12 +1,9 @@
 import { CustomText as Text, CustomTextBold as TextBold } from "@/components/Texts";
-import GeneratingCodeModal from "@/components/GeneratingCodeModal";
 import { Bookmark, BookmarkSolid } from "@/constants/svgs";
-import { useRedeemCodeContext } from "@/contexts/RedeemCodeContext";
-import { MOCK_REDEEM_CODES } from "@/lib/mock/redeemCodes";
 import { moderateScale, verticalScale, horizontalScale } from "@/lib/metrics";
 import { IRestaurant } from "@/lib/types/restaurant";
 import { router } from "expo-router";
-import { useCallback, useState } from "react";
+import { useCallback } from "react";
 import {
 	Alert,
 	Pressable,
@@ -19,7 +16,7 @@ import {
 type Props = {
 	restaurant: IRestaurant;
 	isFavorited?: boolean;
-	onToggleFavorite?: (id: number) => void;
+	onToggleFavorite?: (id: string) => void;
 };
 
 export default function HomeRestaurantCard({
@@ -28,9 +25,6 @@ export default function HomeRestaurantCard({
 	onToggleFavorite,
 }: Props) {
 	const cardWidth = 270;
-	const { getOrCreateRecommendationCode, hasRecommendationCode } =
-		useRedeemCodeContext();
-	const [isGeneratingCode, setIsGeneratingCode] = useState(false);
 
 	const getInitials = (name: string) =>
 		name
@@ -53,33 +47,26 @@ export default function HomeRestaurantCard({
 			);
 			return;
 		}
-		const rewardValue =
-			MOCK_REDEEM_CODES.find((c) => c.restaurantId === restaurant.id && c.type === "recommendation")?.rewardValue ?? 0;
-		const alreadyGenerated = hasRecommendationCode(restaurant.id);
-		if (!alreadyGenerated) setIsGeneratingCode(true);
+		const code = restaurant.referralCode;
+		if (!code) return;
 		try {
-			const code = await getOrCreateRecommendationCode(restaurant.id);
-			const rewardText = rewardValue > 0 ? `\nYour friend will get a $${rewardValue} reward!` : "";
-			setIsGeneratingCode(false);
-			await new Promise((r) => setTimeout(r, 400));
 			await Share.share({
-				message: `Check out ${restaurant.name} on Chop Local! Use my recommendation code: ${code}${rewardText}`,
+				message: `Check out ${restaurant.name} on Chop Local! Use my recommendation code: ${code}`,
 			});
 		} catch {
-			setIsGeneratingCode(false);
+			// User cancelled share
 		}
-	}, [restaurant, hasRecommendationCode, getOrCreateRecommendationCode]);
+	}, [restaurant]);
 
 	const onVisit = useCallback(() => {
 		router.push({
 			pathname: "/restaurants/[id]",
-			params: { id: restaurant.id },
+			params: { id: restaurant.id, name: restaurant.name },
 		});
-	}, [restaurant.id]);
+	}, [restaurant.id, restaurant.name]);
 
 	return (
 		<View style={{ width: cardWidth }}>
-			<GeneratingCodeModal visible={isGeneratingCode} />
 			<Pressable
 				onPress={onVisit}
 				style={({ pressed }) => [

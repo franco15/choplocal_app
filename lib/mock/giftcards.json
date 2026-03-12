@@ -2,7 +2,7 @@
 	{
 		"id": "gc-001",
 		"code": "GC-TACO25",
-		"restaurantId": 1,
+		"restaurantId": "1",
 		"restaurantName": "El Taco Loco",
 		"value": 25,
 		"status": "Available",
@@ -17,7 +17,7 @@
 	{
 		"id": "gc-002",
 		"code": "GC-BURG50",
-		"restaurantId": 4,
+		"restaurantId": "4",
 		"restaurantName": "Burger Town",
 		"value": 50,
 		"status": "Used",
@@ -32,7 +32,7 @@
 	{
 		"id": "gc-003",
 		"code": "GC-PIZZ15",
-		"restaurantId": 8,
+		"restaurantId": "8",
 		"restaurantName": "Pizza Plaza",
 		"value": 15,
 		"status": "Available",
@@ -47,7 +47,7 @@
 	{
 		"id": "gc-004",
 		"code": "GC-SUSH30",
-		"restaurantId": 3,
+		"restaurantId": "3",
 		"restaurantName": "Sushi Heaven",
 		"value": 30,
 		"status": "Available",
@@ -62,7 +62,7 @@
 	{
 		"id": "gc-005",
 		"code": "GC-SUSH20",
-		"restaurantId": 3,
+		"restaurantId": "3",
 		"restaurantName": "Sushi Heaven",
 		"value": 20,
 		"status": "Available",
@@ -72,6 +72,36 @@
 		"message": "Try the salmon roll!",
 		"createdAt": "2026-03-05T16:00:00Z",
 		"expiresAt": "2026-06-05T16:00:00Z",
+		"usedAt": null
+	},
+	{
+		"id": "gc-006",
+		"code": "GC-SUSH15",
+		"restaurantId": "3",
+		"restaurantName": "Sushi Heaven",
+		"value": 15,
+		"status": "Available",
+		"senderPhone": "+15558889999",
+		"senderName": "Carlos Mendez",
+		"recipientPhone": "+15551234567",
+		"message": "Best sushi in town!",
+		"createdAt": "2026-03-10T11:00:00Z",
+		"expiresAt": "2026-06-10T11:00:00Z",
+		"usedAt": null
+	},
+	{
+		"id": "gc-007",
+		"code": "GC-TACO40",
+		"restaurantId": "1",
+		"restaurantName": "El Taco Loco",
+		"value": 40,
+		"status": "Available",
+		"senderPhone": "+15553334444",
+		"senderName": "Diego Lopez",
+		"recipientPhone": "+15559876543",
+		"message": "Taco Tuesday forever!",
+		"createdAt": "2026-03-08T08:00:00Z",
+		"expiresAt": "2026-06-08T08:00:00Z",
 		"usedAt": null
 	}
 ]

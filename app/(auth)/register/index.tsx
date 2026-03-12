@@ -206,7 +206,7 @@ export default function SignUpScreen() {
 						marginTop: verticalScale(150),
 						height: verticalScale(54),
 						borderRadius: moderateScale(30),
-						backgroundColor: "#96190F",
+						backgroundColor: "#b42406",
 					}}
 				>
 					<Text

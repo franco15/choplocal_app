@@ -29,7 +29,7 @@ export default function SearchScreen() {
 	const router = useRouter();
 	const userApi = useUserApi();
 	const { user } = useUserContext();
-	const [favoriteIds, setFavoriteIds] = useState<number[]>([]);
+	const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
 	const [search, setSearch] = useState("");
 
 	const { data: restaurants } = useQuery({
@@ -50,7 +50,7 @@ export default function SearchScreen() {
 		}, []),
 	);
 
-	const toggleFavorite = useCallback((id: number) => {
+	const toggleFavorite = useCallback((id: string) => {
 		setFavoriteIds((prev) => {
 			const next = prev.includes(id)
 				? prev.filter((fid) => fid !== id)

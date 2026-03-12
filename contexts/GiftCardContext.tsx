@@ -26,13 +26,13 @@ interface IGiftCardContext {
 	receivedGiftCards: IGiftCard[];
 	sendGiftCard: (payload: IGiftCardSend) => Promise<IGiftCard>;
 	addRedeemedGiftCard: (
-		restaurantId: number,
+		restaurantId: string,
 		restaurantName: string,
 		value: number,
 	) => Promise<IGiftCard>;
 	acceptGiftCard: (id: string) => Promise<void>;
 	declineGiftCard: (id: string) => Promise<void>;
-	getGiftCardsByRestaurant: (restaurantId: number) => IGiftCard[];
+	getGiftCardsByRestaurant: (restaurantId: string) => IGiftCard[];
 	getGiftCardById: (id: string) => IGiftCard | undefined;
 	getGiftCardByCode: (code: string) => IGiftCard | undefined;
 	processPayment: (
@@ -103,7 +103,7 @@ const GiftCardProvider = ({ children }: { children: React.ReactNode }) => {
 
 	const addRedeemedGiftCard = useCallback(
 		async (
-			restaurantId: number,
+			restaurantId: string,
 			restaurantName: string,
 			value: number,
 		): Promise<IGiftCard> => {
@@ -156,7 +156,7 @@ const GiftCardProvider = ({ children }: { children: React.ReactNode }) => {
 	);
 
 	const getGiftCardsByRestaurant = useCallback(
-		(restaurantId: number) =>
+		(restaurantId: string) =>
 			giftCards.filter((gc) => gc.restaurantId === restaurantId),
 		[giftCards],
 	);

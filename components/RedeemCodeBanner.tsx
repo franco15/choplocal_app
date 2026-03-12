@@ -15,7 +15,7 @@ export default function RedeemCodeBanner() {
 				<Ionicons
 					name="ticket-outline"
 					size={moderateScale(24)}
-					color="#96190F"
+					color="#b42406"
 				/>
 			</View>
 			<View style={{ flex: 1, marginLeft: horizontalScale(14) }}>

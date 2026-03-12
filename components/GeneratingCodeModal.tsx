@@ -46,7 +46,7 @@ export default function GeneratingCodeModal({ visible }: Props) {
 const styles = StyleSheet.create({
 	backdrop: {
 		flex: 1,
-		backgroundColor: "#96190F",
+		backgroundColor: "#b42406",
 		alignItems: "center",
 		justifyContent: "center",
 	},

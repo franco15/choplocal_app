@@ -41,7 +41,7 @@ const FILTER_TABS: { key: FilterTab; label: string }[] = [
 export default function Restaurants() {
 	const userApi = useUserApi();
 	const { user } = useUserContext();
-	const [favoriteIds, setFavoriteIds] = useState<number[]>([]);
+	const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
 	const [activeFilter, setActiveFilter] = useState<FilterTab>("all");
 	const [search, setSearch] = useState("");
 
@@ -63,7 +63,7 @@ export default function Restaurants() {
 		}, []),
 	);
 
-	const toggleFavorite = useCallback((id: number) => {
+	const toggleFavorite = useCallback((id: string) => {
 		setFavoriteIds((prev) => {
 			const next = prev.includes(id)
 				? prev.filter((fid) => fid !== id)

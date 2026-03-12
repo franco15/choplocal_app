@@ -4,6 +4,7 @@ import {
 	moderateScale,
 	verticalScale,
 } from "@/lib/metrics";
+import { formatPhoneNumber } from "@/lib/utils";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { MotiView } from "moti";
 import { useState } from "react";
@@ -13,10 +14,12 @@ import {
 	Pressable,
 	ScrollView,
 	StyleSheet,
+	Text as RNText,
 	TextInput,
 	TouchableOpacity,
 	View,
 } from "react-native";
+import CountrySelect, { ICountry } from "react-native-country-select";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const QUICK_MESSAGES = [
@@ -40,28 +43,33 @@ export default function GiftCardRecipient() {
 	const [phone, setPhone] = useState("");
 	const [message, setMessage] = useState("");
 	const [phoneError, setPhoneError] = useState("");
+	const [showPicker, setShowPicker] = useState(false);
+	const [selectedCountry, setSelectedCountry] = useState<ICountry | null>(null);
 
-	const formatPhone = (text: string) => {
-		const cleaned = text.replace(/\D/g, "");
-		if (cleaned.length <= 3) return cleaned;
-		if (cleaned.length <= 6)
-			return `(${cleaned.slice(0, 3)}) ${cleaned.slice(3)}`;
-		return `(${cleaned.slice(0, 3)}) ${cleaned.slice(3, 6)}-${cleaned.slice(6, 10)}`;
+	const handleCountrySelect = (country: ICountry) => {
+		setSelectedCountry(country);
 	};
 
 	const onSend = () => {
+		if (!selectedCountry) {
+			setPhoneError("Select a country code");
+			return;
+		}
 		if (phone.replace(/\D/g, "").length < 10) {
 			setPhoneError("Enter a valid phone number");
 			return;
 		}
 		setPhoneError("");
+		const fullPhone =
+			selectedCountry.idd.root.replace(/\D/g, "") +
+			phone.replace(/\D/g, "").slice(0, 10);
 		router.push({
 			pathname: "/gift-cards/payment",
 			params: {
 				restaurantId,
 				restaurantName,
 				value,
-				recipientPhone: phone,
+				recipientPhone: fullPhone,
 				message,
 				colorThemeId,
 			},
@@ -141,7 +149,7 @@ export default function GiftCardRecipient() {
 							</Text>
 						</MotiView>
 
-						{/* Phone input */}
+						{/* Phone input with country picker */}
 						<MotiView
 							from={{ opacity: 0, translateY: 8 }}
 							animate={{ opacity: 1, translateY: 0 }}
@@ -155,23 +163,67 @@ export default function GiftCardRecipient() {
 								<Text style={styles.inputLabel}>
 									Phone Number
 								</Text>
-								<TextInput
-									value={phone}
-									onChangeText={(t) => {
-										setPhone(formatPhone(t));
-										if (phoneError) setPhoneError("");
-									}}
-									placeholder="(555) 000-0000"
-									placeholderTextColor="#BBB"
-									keyboardType="phone-pad"
-									maxLength={14}
-									style={[
-										styles.input,
-										phoneError
-											? { borderColor: "#E53935" }
-											: {},
-									]}
-								/>
+								<View style={styles.phoneRow}>
+									{/* Country code picker */}
+									<TouchableOpacity
+										activeOpacity={0.8}
+										onPress={() => setShowPicker(true)}
+										style={styles.countryButton}
+									>
+										{selectedCountry ? (
+											<>
+												<RNText style={{ fontSize: moderateScale(16) }}>
+													{selectedCountry.flag}
+												</RNText>
+												<Text
+													style={{
+														fontSize: moderateScale(14),
+														color: "#1A1A1A",
+														marginLeft: horizontalScale(4),
+													}}
+												>
+													{selectedCountry.idd.root}
+												</Text>
+											</>
+										) : (
+											<Text
+												style={{
+													fontSize: moderateScale(14),
+													color: "#999",
+												}}
+											>
+												+1
+											</Text>
+										)}
+									</TouchableOpacity>
+									<CountrySelect
+										visible={showPicker}
+										onClose={() => setShowPicker(false)}
+										onSelect={handleCountrySelect}
+										popularCountries={["MX", "CA", "US"]}
+										isFullScreen
+										showCloseButton
+									/>
+
+									{/* Phone number input */}
+									<TextInput
+										value={phone}
+										onChangeText={(t) => {
+											setPhone(formatPhoneNumber(t));
+											if (phoneError) setPhoneError("");
+										}}
+										placeholder="(555) 000-0000"
+										placeholderTextColor="#BBB"
+										keyboardType="phone-pad"
+										maxLength={14}
+										style={[
+											styles.phoneInput,
+											phoneError
+												? { borderColor: "#E53935" }
+												: {},
+										]}
+									/>
+								</View>
 								{phoneError ? (
 									<Text
 										style={{
@@ -325,6 +377,34 @@ const styles = StyleSheet.create({
 		fontSize: moderateScale(13),
 		color: "#666",
 		marginBottom: verticalScale(8),
+	},
+	phoneRow: {
+		flexDirection: "row",
+		alignItems: "center",
+		gap: horizontalScale(10),
+	},
+	countryButton: {
+		flexDirection: "row",
+		alignItems: "center",
+		justifyContent: "center",
+		backgroundColor: "#FFFFFF",
+		borderRadius: moderateScale(14),
+		borderWidth: 1,
+		borderColor: "#EDEDED",
+		paddingHorizontal: horizontalScale(12),
+		height: verticalScale(50),
+		minWidth: horizontalScale(72),
+	},
+	phoneInput: {
+		flex: 1,
+		backgroundColor: "#FFFFFF",
+		borderRadius: moderateScale(14),
+		borderWidth: 1,
+		borderColor: "#EDEDED",
+		paddingHorizontal: horizontalScale(16),
+		paddingVertical: verticalScale(14),
+		fontSize: moderateScale(15),
+		color: "#1A1A1A",
 	},
 	input: {
 		backgroundColor: "#FFFFFF",

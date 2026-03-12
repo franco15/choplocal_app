@@ -71,7 +71,7 @@ export default function Transactions() {
 							<Ionicons
 								name="receipt-outline"
 								size={moderateScale(18)}
-								color="#96190F"
+								color="#b42406"
 							/>
 						</View>
 						<View style={{ flex: 1 }}>

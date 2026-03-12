@@ -7,7 +7,7 @@ export enum EGiftCardStatus {
 export interface IGiftCard {
 	id: string;
 	code: string;
-	restaurantId: number;
+	restaurantId: string;
 	restaurantName: string;
 	value: number;
 	status: EGiftCardStatus;
@@ -21,7 +21,7 @@ export interface IGiftCard {
 }
 
 export interface IGiftCardSend {
-	restaurantId: number;
+	restaurantId: string;
 	restaurantName: string;
 	value: number;
 	recipientPhone: string;

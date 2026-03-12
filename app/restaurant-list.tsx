@@ -41,7 +41,7 @@ export default function RestaurantListScreen() {
 	const { type } = useLocalSearchParams<{ type: string }>();
 	const { user } = useUserContext();
 	const userApi = useUserApi();
-	const [favoriteIds, setFavoriteIds] = useState<number[]>([]);
+	const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
 
 	const config = SECTION_CONFIG[type ?? "visited"] ?? SECTION_CONFIG.visited;
 
@@ -63,7 +63,7 @@ export default function RestaurantListScreen() {
 		}, []),
 	);
 
-	const toggleFavorite = useCallback((id: number) => {
+	const toggleFavorite = useCallback((id: string) => {
 		setFavoriteIds((prev) => {
 			const next = prev.includes(id)
 				? prev.filter((fid) => fid !== id)

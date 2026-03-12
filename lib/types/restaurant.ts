@@ -5,12 +5,15 @@ export enum ERestaurantStatus {
 }
 
 export interface IRestaurant {
-	id: number;
+	id: string;
 	name: string;
 	checkIns: number;
-	status: ERestaurantStatus;
 	balance: number;
+	logo: string;
 	image: string;
+	status: ERestaurantStatus;
+	totalCheckins: number;
+	referralCode: string;
 }
 
 export interface IRestaurantTransactions {

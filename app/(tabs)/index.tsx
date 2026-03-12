@@ -34,7 +34,7 @@ const FAVORITES_KEY = "choplocal-favorites";
 const MOCK_CITIES = ["Monterrey", "CDMX", "Guadalajara"];
 const getRestaurantCity = (restaurant: IRestaurant) => {
 	// TODO: When backend has city field, change to: return restaurant.city;
-	return MOCK_CITIES[restaurant.id % 3];
+	return MOCK_CITIES[parseInt(restaurant.id, 10) % 3];
 };
 
 const COLLAPSE_DISTANCE = 100;
@@ -42,7 +42,15 @@ const COLLAPSE_DISTANCE = 100;
 // TODO: Replace with real recommended data from API when backend supports it
 const MOCK_RECOMMENDED: IRestaurant[] = [
 	{
-		id: 9001,
+		id: "3",
+		name: "Sushi Heaven",
+		checkIns: 12,
+		status: ERestaurantStatus.Recommended,
+		balance: 0,
+		image: "",
+	},
+	{
+		id: "9001",
 		name: "La Nacional",
 		checkIns: 87,
 		status: ERestaurantStatus.Recommended,
@@ -50,7 +58,7 @@ const MOCK_RECOMMENDED: IRestaurant[] = [
 		image: "",
 	},
 	{
-		id: 9002,
+		id: "9002",
 		name: "Café Regina",
 		checkIns: 54,
 		status: ERestaurantStatus.Recommended,
@@ -63,7 +71,7 @@ export default function HomeScreen() {
 	const { profileComplete, user, isUserLoading } = useUserContext();
 	const userApi = useUserApi();
 	const insets = useSafeAreaInsets();
-	const [favoriteIds, setFavoriteIds] = useState<number[]>([]);
+	const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
 	const [selectedCity, setSelectedCity] = useState("All Cities");
 	const [cityModalOpen, setCityModalOpen] = useState(false);
 	const scrollY = useSharedValue(0);
@@ -90,7 +98,7 @@ export default function HomeScreen() {
 		}, []),
 	);
 
-	const toggleFavorite = useCallback((id: number) => {
+	const toggleFavorite = useCallback((id: string) => {
 		setFavoriteIds((prev) => {
 			const next = prev.includes(id)
 				? prev.filter((fid) => fid !== id)

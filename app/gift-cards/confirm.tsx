@@ -26,7 +26,7 @@ export default function GiftCardConfirm() {
 	const onConfirm = async () => {
 		setSending(true);
 		const giftCard = await sendGiftCard({
-			restaurantId: Number(restaurantId),
+			restaurantId: (restaurantId ?? "") as string,
 			restaurantName: restaurantName ?? "",
 			value: Number(value),
 			recipientPhone: recipientPhone ?? "",

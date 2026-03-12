@@ -1,5 +1,4 @@
 import { Text, TextBold } from "@/components";
-import GeneratingCodeModal from "@/components/GeneratingCodeModal";
 import GiftCardVisual, { CARD_THEMES } from "@/components/GiftCardVisual";
 import { useGiftCardContext } from "@/contexts/GiftCardContext";
 import { useRedeemCodeContext } from "@/contexts/RedeemCodeContext";
@@ -10,7 +9,6 @@ import { horizontalScale, moderateScale, verticalScale } from "@/lib/metrics";
 import { EGiftCardStatus } from "@/lib/types/giftcard";
 import { ERestaurantStatus } from "@/lib/types/restaurant";
 import { isImage } from "@/lib/utils";
-import { MOCK_REDEEM_CODES } from "@/lib/mock/redeemCodes";
 import { EmptyPlates } from "@/constants/svgs";
 import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
@@ -31,15 +29,14 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import RestaurantSkeleton from "../skeletons/restaurant";
 
 export default function Restaurant() {
-	const { id } = useLocalSearchParams();
+	const { id, name: paramName } = useLocalSearchParams<{ id: string; name?: string }>();
 	const router = useRouter();
 	const insets = useSafeAreaInsets();
 	const { user } = useUserContext();
 	const { getGiftCardsByRestaurant } = useGiftCardContext();
-	const { getRecommendationReward, getOrCreateRecommendationCode, hasRecommendationCode } = useRedeemCodeContext();
+	const { getRecommendationReward } = useRedeemCodeContext();
 	const restaurantApi = useRestaurantApi();
 	const [imageLoaded, setImageLoaded] = useState(false);
-	const [isGeneratingCode, setIsGeneratingCode] = useState(false);
 
 	const { data: rawRestaurant, isPending } = useQuery({
 		queryKey: [queryKeys.restaurants.byId(id as string)],
@@ -56,9 +53,10 @@ export default function Restaurant() {
 	});
 
 	const recentTransactions = (transactions ?? []).slice(0, 2);
-	const restaurantGiftCards = (getGiftCardsByRestaurant?.(Number(id)) ?? []).filter(
+	const restaurantGiftCards = (getGiftCardsByRestaurant?.(id as string) ?? []).filter(
 		(gc) => gc.status === EGiftCardStatus.Available,
 	);
+	const displayName = rawRestaurant?.name || paramName || "";
 
 	const onRecommend = async () => {
 		// Must have at least 1 visit to recommend
@@ -71,34 +69,15 @@ export default function Restaurant() {
 			return;
 		}
 
-		// TODO: rewardValue will come from restaurant API once backend is ready
-		const rewardValue = MOCK_REDEEM_CODES.find(
-			(c) => c.type === "recommendation" && c.restaurantId === Number(id),
-		)?.rewardValue;
-
-		const alreadyGenerated = hasRecommendationCode(Number(id));
-
-		// Show loading only for first-time code generation
-		if (!alreadyGenerated) {
-			setIsGeneratingCode(true);
-		}
+		const code = restaurant.referralCode;
+		if (!code) return;
 
 		try {
-			const code = await getOrCreateRecommendationCode(Number(id));
-			setIsGeneratingCode(false);
-			await new Promise((r) => setTimeout(r, 400));
-
-			if (rewardValue) {
-				await Share.share({
-					message: `I recommend ${restaurant?.name}! Use code: ${code} on Chop Local to get $${rewardValue.toFixed(2)} on your first visit.`,
-				});
-			} else {
-				await Share.share({
-					message: `Come visit ${restaurant?.name} on Chop Local! Use my code: ${code}`,
-				});
-			}
+			await Share.share({
+				message: `Come visit ${displayName} on Chop Local! Use my code: ${code}`,
+			});
 		} catch {
-			setIsGeneratingCode(false);
+			// User cancelled share
 		}
 	};
 
@@ -108,7 +87,7 @@ export default function Restaurant() {
 	const showHero = hasImageUrl && imageLoaded;
 	const isRecommended = restaurant?.status === ERestaurantStatus.Recommended;
 	const hasVisits = (restaurant?.checkIns ?? 0) > 0;
-	const recommendationReward = getRecommendationReward?.(Number(id)) ?? 0;
+	const recommendationReward = getRecommendationReward?.(id as string) ?? 0;
 	const totalBalance = (restaurant?.balance ?? 0) + recommendationReward;
 	const hasBalance = totalBalance > 0;
 
@@ -157,10 +136,10 @@ export default function Restaurant() {
 				)}
 
 				{/* ── Content ── */}
-				<View style={[styles.content, !showHero && { paddingTop: insets.top + verticalScale(12) }, !hasVisits && { flex: 1 }]}>
+				<View style={[styles.content, !showHero && { paddingTop: insets.top + verticalScale(12) }]}>
 					{/* Name */}
 					<TextBold style={styles.name}>
-						{restaurant?.name}
+						{displayName}
 					</TextBold>
 
 					{/* Recommended tag */}
@@ -194,23 +173,6 @@ export default function Restaurant() {
 									</TextBold>
 								</View>
 							</View>
-
-							{/* ── QR Code button ── */}
-							<Link href="/qr" asChild>
-								<TouchableOpacity
-									activeOpacity={0.8}
-									style={styles.qrButton}
-								>
-									<Text style={styles.qrButtonText}>
-										My QR Code
-									</Text>
-									<Ionicons
-										name="chevron-forward"
-										size={moderateScale(18)}
-										color="#999"
-									/>
-								</TouchableOpacity>
-							</Link>
 						</>
 					)}
 
@@ -226,92 +188,115 @@ export default function Restaurant() {
 						</View>
 					)}
 
-					{/* ── Gift Cards Section ── */}
-					{restaurantGiftCards.length > 0 && (
-						<View style={styles.section}>
-							<View style={styles.sectionHeader}>
-								<TextBold style={styles.sectionTitle}>
-									My Gift Cards
-								</TextBold>
-								<Text style={styles.sectionCount}>
-									{restaurantGiftCards.length}{" "}
-									{restaurantGiftCards.length === 1
-										? "card"
-										: "cards"}
-								</Text>
-							</View>
-							<ScrollView
-								horizontal
-								showsHorizontalScrollIndicator={false}
-								contentContainerStyle={styles.gcScroll}
+								{/* ── No visits placeholder ── */}
+				{!hasVisits && restaurantGiftCards.length === 0 && (
+					<View style={{ alignItems: "center", paddingVertical: verticalScale(24) }}>
+						<EmptyPlates
+							width={horizontalScale(140)}
+							height={verticalScale(110)}
+						/>
+						<TextBold style={styles.emptyTitle}>
+							You haven't visited yet
+						</TextBold>
+						<Text style={styles.emptySubtitle}>
+							Show your QR code at {displayName} to start earning cashback on every visit.
+						</Text>
+						<Link href="/qr" asChild>
+							<TouchableOpacity
+								activeOpacity={0.8}
+								style={styles.emptyQrButton}
 							>
-								{restaurantGiftCards.map((gc, index) => (
-									<View
+								<TextBold style={styles.emptyQrText}>
+									Show QR Code
+								</TextBold>
+							</TouchableOpacity>
+						</Link>
+					</View>
+				)}
+
+				{/* ── Gift Cards Wallet ── */}
+				{restaurantGiftCards.length > 0 && (
+					<View style={styles.section}>
+						<View style={styles.sectionHeader}>
+							<TextBold style={styles.sectionTitle}>
+								My Gift Cards
+							</TextBold>
+							<Text style={styles.sectionCount}>
+								{restaurantGiftCards.length}{" "}
+								{restaurantGiftCards.length === 1
+									? "card"
+									: "cards"} · ${restaurantGiftCards.reduce((sum, gc) => sum + gc.value, 0)}
+							</Text>
+						</View>
+						<View
+							style={{
+								height: verticalScale(200) + (restaurantGiftCards.length - 1) * verticalScale(42),
+							}}
+						>
+							{restaurantGiftCards.map((gc, ci) => {
+								const theme = CARD_THEMES[ci % CARD_THEMES.length];
+								return (
+									<TouchableOpacity
 										key={gc.id}
-										style={styles.gcCardWrapper}
+										activeOpacity={0.85}
+										onPress={() => router.push({
+											pathname: "/gift-cards/card-detail",
+											params: {
+												giftCardId: gc.id,
+												themeIndex: String(ci),
+												groupIds: restaurantGiftCards.map((g) => g.id).join(","),
+											},
+										})}
+										style={{
+											position: ci === 0 ? "relative" : "absolute",
+											top: ci * verticalScale(42),
+											left: 0,
+											right: 0,
+											zIndex: restaurantGiftCards.length - ci,
+											height: verticalScale(170),
+											borderRadius: moderateScale(16),
+											backgroundColor: theme.bg,
+											overflow: "hidden",
+											padding: moderateScale(16),
+											justifyContent: "space-between",
+											shadowColor: "#000",
+											shadowOffset: { width: 0, height: 2 },
+											shadowOpacity: 0.15,
+											shadowRadius: 6,
+											elevation: 4,
+										}}
 									>
-										<GiftCardVisual
-											restaurantName={gc.restaurantName}
-											amount={gc.value.toFixed(2)}
-											theme={
-												CARD_THEMES[
-													index %
-														CARD_THEMES.length
-												]
-											}
-										/>
-										<View style={styles.gcCardFooter}>
-											<Text style={styles.gcExpiry}>
-												Expires{" "}
-												{new Date(
-													gc.expiresAt,
-												).toLocaleDateString("en-US", {
-													month: "short",
-													day: "numeric",
-												})}
-											</Text>
-											<View style={styles.gcBadge}>
-												<View style={styles.gcDot} />
-												<Text
-													style={styles.gcBadgeText}
-												>
-													Available
+										<View style={{ position: "absolute", top: -20, right: -15, width: 100, height: 100, borderRadius: 50, backgroundColor: theme.blob1, opacity: 0.2 }} />
+										<View style={{ position: "absolute", bottom: -15, left: -10, width: 80, height: 80, borderRadius: 40, backgroundColor: theme.blob2, opacity: 0.2 }} />
+										<View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" }}>
+											<View>
+												<Text style={{ color: "rgba(255,255,255,0.7)", fontSize: moderateScale(11), textTransform: "uppercase", letterSpacing: 0.5 }}>
+													{gc.restaurantName}
+												</Text>
+												<Text style={{ color: "rgba(255,255,255,0.5)", fontSize: moderateScale(10), marginTop: verticalScale(2) }}>
+													from {gc.senderName}
 												</Text>
 											</View>
+											<TextBold style={{ color: "#FFFFFF", fontSize: moderateScale(24) }}>
+												${gc.value}
+											</TextBold>
 										</View>
-									</View>
-								))}
-							</ScrollView>
+										<View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-end" }}>
+											<TextBold style={{ color: "#FFFFFF", fontSize: moderateScale(22) }}>
+												Gift Card
+											</TextBold>
+											<Text style={{ color: "rgba(255,255,255,0.5)", fontSize: moderateScale(10) }}>
+												Expires {new Date(gc.expiresAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+											</Text>
+										</View>
+									</TouchableOpacity>
+								);
+							})}
 						</View>
-					)}
+					</View>
+				)}
 
-					{/* ── No visits placeholder ── */}
-					{!hasVisits && (
-						<View style={styles.emptyPlaceholder}>
-							<View style={styles.emptyCentered}>
-								<EmptyPlates
-									width={horizontalScale(160)}
-									height={verticalScale(130)}
-								/>
-								<TextBold style={styles.emptyTitle}>
-									You haven't visited yet
-								</TextBold>
-								<Text style={styles.emptySubtitle}>
-									Show your QR code at {restaurant?.name} to start earning cashback on every visit.
-								</Text>
-							</View>
-							<Link href="/qr" asChild>
-								<TouchableOpacity
-									activeOpacity={0.8}
-									style={styles.emptyQrButton}
-								>
-									<TextBold style={styles.emptyQrText}>
-										Show QR Code
-									</TextBold>
-								</TouchableOpacity>
-							</Link>
-						</View>
-					)}
+
 
 					{/* ── Recent Activity (only if visited) ── */}
 					{hasVisits && (
@@ -448,7 +433,7 @@ export default function Restaurant() {
 							pathname: "/gift-cards/choose-amount",
 							params: {
 								restaurantId: id as string,
-								restaurantName: restaurant?.name,
+								restaurantName: displayName,
 							},
 						})
 					}
@@ -461,7 +446,6 @@ export default function Restaurant() {
 			</View>
 		</View>
 
-		<GeneratingCodeModal visible={isGeneratingCode} />
 	</>
 	);
 }

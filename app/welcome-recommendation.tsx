@@ -53,7 +53,7 @@ export default function WelcomeRecommendationScreen() {
 						<Ionicons
 							name="ticket-outline"
 							size={moderateScale(48)}
-							color="#96190F"
+							color="#b42406"
 						/>
 					</View>
 				</MotiView>
@@ -106,7 +106,7 @@ export default function WelcomeRecommendationScreen() {
 					activeOpacity={0.8}
 					onPress={handleRedeem}
 					style={{
-						backgroundColor: "#96190F",
+						backgroundColor: "#b42406",
 						height: verticalScale(54),
 						borderRadius: moderateScale(30),
 						alignItems: "center",

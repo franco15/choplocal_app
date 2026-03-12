@@ -98,7 +98,7 @@ export default function VerifyScreen() {
 						marginTop: verticalScale(160),
 						height: verticalScale(54),
 						borderRadius: moderateScale(30),
-						backgroundColor: "#96190F",
+						backgroundColor: "#b42406",
 					}}
 				>
 					<Text

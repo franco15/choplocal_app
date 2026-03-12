@@ -26,7 +26,7 @@ const TYPE_CONFIG: Record<
 	NotificationType,
 	{ icon: keyof typeof Ionicons.glyphMap; bg: string; color: string }
 > = {
-	gift: { icon: "gift-outline", bg: "#FBF6F5", color: "#96190F" },
+	gift: { icon: "gift-outline", bg: "#FBF6F5", color: "#b42406" },
 	recommendation: { icon: "people-outline", bg: "#EEF7F7", color: "#438989" },
 	system: { icon: "megaphone-outline", bg: "#E8F0FE", color: "#3B6CD4" },
 };

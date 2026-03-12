@@ -90,6 +90,12 @@ export default function GiftCardsLayout() {
 			/>
 			<Stack.Screen name="received" />
 			<Stack.Screen name="accepted" />
+			<Stack.Screen
+				name="card-detail"
+				options={{
+					headerLeft: () => <BackButton />,
+				}}
+			/>
 		</Stack>
 	);
 }

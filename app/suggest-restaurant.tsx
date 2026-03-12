@@ -4,9 +4,9 @@ import { horizontalScale, moderateScale, verticalScale } from "@/lib/metrics";
 import { IRestaurantSuggestion } from "@/lib/types/suggestion";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
+import { useNavigation, useRouter } from "expo-router";
 import { MotiView } from "moti";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
 	Alert,
 	Keyboard,
@@ -26,6 +26,7 @@ const SUGGESTIONS_KEY = "choplocal-restaurant-suggestions";
 
 export default function SuggestRestaurantScreen() {
 	const router = useRouter();
+	const navigation = useNavigation();
 	const insets = useSafeAreaInsets();
 	const { user } = useUserContext();
 
@@ -34,6 +35,12 @@ export default function SuggestRestaurantScreen() {
 	const [reason, setReason] = useState("");
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [submitted, setSubmitted] = useState(false);
+
+	useEffect(() => {
+		if (submitted) {
+			navigation.setOptions({ headerShown: false });
+		}
+	}, [submitted]);
 
 	const canSubmit = name.trim().length > 0 && city.trim().length > 0;
 
@@ -71,56 +78,74 @@ export default function SuggestRestaurantScreen() {
 	if (submitted) {
 		return (
 			<View
-				style={[
-					styles.root,
-					{
-						paddingTop:
-							Platform.OS === "ios"
-								? 0
-								: insets.top + verticalScale(16),
-					},
-				]}
+				style={{
+					flex: 1,
+					backgroundColor: "#b42406",
+					paddingHorizontal: horizontalScale(32),
+				}}
 			>
-				<View style={styles.successContainer}>
+				<View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
 					<MotiView
 						from={{ scale: 0 }}
 						animate={{ scale: 1 }}
 						transition={{ type: "spring", damping: 12, stiffness: 120 }}
 					>
-						<View style={styles.successCircle}>
-							<Ionicons
-								name="checkmark"
-								size={moderateScale(48)}
-								color="#FFFFFF"
-							/>
-						</View>
+						<Ionicons
+							name="checkmark"
+							size={moderateScale(80)}
+							color="#FFFFFF"
+						/>
 					</MotiView>
 					<MotiView
 						from={{ opacity: 0, translateY: 10 }}
 						animate={{ opacity: 1, translateY: 0 }}
 						transition={{ type: "timing", duration: 300, delay: 200 }}
 					>
-						<TextBold style={styles.successTitle}>Thank you!</TextBold>
-						<Text style={styles.successSub}>
-							We'll review your suggestion and{"\n"}consider adding it to Chop Local.
+						<TextBold
+							style={{
+								fontSize: moderateScale(44),
+								color: "#FFFFFF",
+								textAlign: "center",
+								marginTop: verticalScale(24),
+							}}
+						>
+							Thank you!
+						</TextBold>
+						<Text
+							style={{
+								fontSize: moderateScale(16),
+								color: "rgba(255,255,255,0.85)",
+								textAlign: "center",
+								marginTop: verticalScale(14),
+								lineHeight: moderateScale(24),
+							}}
+						>
+							You're helping the foodie fam discover{"\n"}their next favorite spot!
 						</Text>
 					</MotiView>
-					<MotiView
-						from={{ opacity: 0 }}
-						animate={{ opacity: 1 }}
-						transition={{ type: "timing", duration: 300, delay: 500 }}
-					>
-						<TouchableOpacity
-							activeOpacity={0.8}
-							onPress={() => router.back()}
-							style={styles.successBtn}
-						>
-							<TextBold style={styles.successBtnText}>
-								Back to Profile
-							</TextBold>
-						</TouchableOpacity>
-					</MotiView>
 				</View>
+				<MotiView
+					from={{ opacity: 0 }}
+					animate={{ opacity: 1 }}
+					transition={{ type: "timing", duration: 300, delay: 500 }}
+				>
+					<TouchableOpacity
+						activeOpacity={0.8}
+						onPress={() => router.back()}
+						style={{
+							marginBottom: insets.bottom + verticalScale(20),
+							backgroundColor: "#FFFFFF",
+							height: verticalScale(50),
+							borderRadius: moderateScale(25),
+							alignItems: "center",
+							justifyContent: "center",
+						}}
+					>
+						<TextBold style={{ color: "#b42406", fontSize: moderateScale(15) }}>
+							Back to Profile
+						</TextBold>
+					</TouchableOpacity>
+				</MotiView>
 			</View>
 		);
 	}
@@ -289,7 +314,7 @@ const styles = StyleSheet.create({
 
 	/* Submit */
 	submitBtn: {
-		backgroundColor: "#96190F",
+		backgroundColor: "#b42406",
 		height: verticalScale(54),
 		borderRadius: moderateScale(30),
 		alignItems: "center",

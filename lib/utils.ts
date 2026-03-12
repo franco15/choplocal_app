@@ -109,7 +109,7 @@ export function generateRecommendationCode(): string {
  */
 export function generateStableRecommendationCode(
 	userId: string,
-	restaurantId: number,
+	restaurantId: string,
 ): string {
 	const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 	const seed = `${userId}:${restaurantId}`;

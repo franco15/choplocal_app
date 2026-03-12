@@ -32,11 +32,11 @@ interface IRedeemCodeContext {
 		restaurants: IRestaurant[],
 	) => Promise<RedeemResult>;
 	/** Get existing code or create a new one (calls API in the future). Returns null if not yet generated. */
-	getOrCreateRecommendationCode: (restaurantId: number) => Promise<string>;
+	getOrCreateRecommendationCode: (restaurantId: string) => Promise<string>;
 	/** Check if a code was already generated for this restaurant (sync, no loading) */
-	hasRecommendationCode: (restaurantId: number) => boolean;
+	hasRecommendationCode: (restaurantId: string) => boolean;
 	/** Earned balance from redeemed recommendation codes */
-	getRecommendationReward: (restaurantId: number) => number;
+	getRecommendationReward: (restaurantId: string) => number;
 	isLoading: boolean;
 }
 
@@ -52,7 +52,7 @@ const RedeemCodeProvider = ({ children }: { children: React.ReactNode }) => {
 	const [redeemedGiftCodes, setRedeemedGiftCodes] = useState<string[]>([]);
 	// Per-restaurant recommendation redemption (restaurantId)
 	const [redeemedRecRestaurantIds, setRedeemedRecRestaurantIds] = useState<
-		number[]
+		string[]
 	>([]);
 	// Earned rewards from redeemed recommendation codes: restaurantId → amount
 	const [recommendationRewards, setRecommendationRewards] = useState<
@@ -101,7 +101,7 @@ const RedeemCodeProvider = ({ children }: { children: React.ReactNode }) => {
 		);
 	};
 
-	const persistRecRestaurantIds = async (ids: number[]) => {
+	const persistRecRestaurantIds = async (ids: string[]) => {
 		setRedeemedRecRestaurantIds(ids);
 		await AsyncStorage.setItem(
 			REDEEMED_REC_RESTAURANT_IDS_KEY,
@@ -218,7 +218,7 @@ const RedeemCodeProvider = ({ children }: { children: React.ReactNode }) => {
 				if (rewardAmount > 0) {
 					await persistRewards({
 						...recommendationRewards,
-						[String(mockCode.restaurantId)]: rewardAmount,
+						[mockCode.restaurantId]: rewardAmount,
 					});
 				}
 
@@ -282,8 +282,8 @@ const RedeemCodeProvider = ({ children }: { children: React.ReactNode }) => {
 	 * Check if a recommendation code already exists for this restaurant (sync).
 	 */
 	const hasRecommendationCode = useCallback(
-		(restaurantId: number): boolean => {
-			return !!generatedRecCodes[String(restaurantId)];
+		(restaurantId: string): boolean => {
+			return !!generatedRecCodes[restaurantId];
 		},
 		[generatedRecCodes],
 	);
@@ -295,8 +295,8 @@ const RedeemCodeProvider = ({ children }: { children: React.ReactNode }) => {
 	 * TODO: Replace mock generation with actual API call when backend is ready.
 	 */
 	const getOrCreateRecommendationCode = useCallback(
-		async (restaurantId: number): Promise<string> => {
-			const existing = generatedRecCodes[String(restaurantId)];
+		async (restaurantId: string): Promise<string> => {
+			const existing = generatedRecCodes[restaurantId];
 			if (existing) return existing;
 
 			// Simulate API call to generate code
@@ -306,7 +306,7 @@ const RedeemCodeProvider = ({ children }: { children: React.ReactNode }) => {
 				restaurantId,
 			);
 
-			const updated = { ...generatedRecCodes, [String(restaurantId)]: code };
+			const updated = { ...generatedRecCodes, [restaurantId]: code };
 			setGeneratedRecCodes(updated);
 			await AsyncStorage.setItem(
 				GENERATED_REC_CODES_KEY,
@@ -319,8 +319,8 @@ const RedeemCodeProvider = ({ children }: { children: React.ReactNode }) => {
 	);
 
 	const getRecommendationReward = useCallback(
-		(restaurantId: number): number => {
-			return recommendationRewards[String(restaurantId)] ?? 0;
+		(restaurantId: string): number => {
+			return recommendationRewards[restaurantId] ?? 0;
 		},
 		[recommendationRewards],
 	);
