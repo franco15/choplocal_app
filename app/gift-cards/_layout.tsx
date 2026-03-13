@@ -96,6 +96,12 @@ export default function GiftCardsLayout() {
 					headerLeft: () => <BackButton />,
 				}}
 			/>
+			<Stack.Screen
+				name="notification-detail"
+				options={{
+					headerLeft: () => <BackButton />,
+				}}
+			/>
 		</Stack>
 	);
 }

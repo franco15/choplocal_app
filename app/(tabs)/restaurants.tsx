@@ -2,7 +2,7 @@ import { Container, Text, TextBold } from "@/components";
 import RestaurantCard from "@/components/RestaurantCard";
 import { SearchIcon } from "@/constants/svgs";
 import { useUserContext } from "@/contexts/UserContext";
-import { queryKeys } from "@/lib/api/queryClient";
+import { queryClient, queryKeys } from "@/lib/api/queryClient";
 import { useUserApi } from "@/lib/api/useApi";
 import {
 	horizontalScale,
@@ -18,6 +18,7 @@ import { useCallback, useMemo, useState } from "react";
 import {
 	FlatList,
 	Pressable,
+	RefreshControl,
 	ScrollView,
 	StyleSheet,
 	TextInput,
@@ -35,7 +36,7 @@ const FILTER_TABS: { key: FilterTab; label: string }[] = [
 	{ key: "all", label: "All" },
 	{ key: "visited", label: "Visited" },
 	{ key: "recommended", label: "Recommended" },
-	{ key: "new", label: "New" },
+	{ key: "new", label: "Not Visited" },
 ];
 
 export default function Restaurants() {
@@ -44,6 +45,7 @@ export default function Restaurants() {
 	const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
 	const [activeFilter, setActiveFilter] = useState<FilterTab>("all");
 	const [search, setSearch] = useState("");
+	const [refreshing, setRefreshing] = useState(false);
 
 	const { data: restaurants, isPending } = useQuery({
 		queryKey: [queryKeys.users.restaurants],
@@ -72,6 +74,12 @@ export default function Restaurants() {
 			AsyncStorage.setItem(FAVORITES_KEY, JSON.stringify(next));
 			return next;
 		});
+	}, []);
+
+	const onRefresh = useCallback(async () => {
+		setRefreshing(true);
+		await queryClient.invalidateQueries({ queryKey: [queryKeys.users.restaurants] });
+		setRefreshing(false);
 	}, []);
 
 	const filteredRestaurants = useMemo(() => {
@@ -127,6 +135,9 @@ export default function Restaurants() {
 			<FlatList
 				data={filteredRestaurants}
 				showsVerticalScrollIndicator={false}
+				refreshControl={
+					<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#b42406" progressViewOffset={100} />
+				}
 				keyExtractor={(item, index) =>
 					`${activeFilter}_${index}_${item.id}`
 				}
@@ -186,7 +197,11 @@ export default function Restaurants() {
 								gap: horizontalScale(10),
 							}}
 						>
-							{FILTER_TABS.map((tab) => {
+							{[...FILTER_TABS].sort((a, b) => {
+								if (a.key === activeFilter) return -1;
+								if (b.key === activeFilter) return 1;
+								return 0;
+							}).map((tab) => {
 								const isActive =
 									activeFilter === tab.key;
 								return (

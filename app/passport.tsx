@@ -1,15 +1,15 @@
-import { ScrollView, TouchableOpacity, View } from "react-native";
+import { RefreshControl, ScrollView, TouchableOpacity, View } from "react-native";
 
 import { Container, Text, TextBold } from "@/components";
 import { Bell, Stamp, TriangleLeft, TriangleRight } from "@/constants/svgs";
 import { useUserContext } from "@/contexts/UserContext";
-import { queryKeys } from "@/lib/api/queryClient";
+import { queryClient, queryKeys } from "@/lib/api/queryClient";
 import { useUserApi } from "@/lib/api/useApi";
 import { isNullOrWhitespace } from "@/lib/utils";
 import { ERestaurantStatus, IRestaurant } from "@/lib/types/restaurant";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "expo-router";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 export default function Index() {
 	const { user } = useUserContext();
@@ -25,6 +25,13 @@ export default function Index() {
 	});
 
 	const [tab, setTab] = useState<ERestaurantStatus | null>(null);
+	const [refreshing, setRefreshing] = useState(false);
+
+	const onRefresh = useCallback(async () => {
+		setRefreshing(true);
+		await queryClient.invalidateQueries({ queryKey: [queryKeys.users.restaurants] });
+		setRefreshing(false);
+	}, []);
 
 	const filteredRestaurants = useMemo(() => {
 		switch (tab) {
@@ -56,6 +63,9 @@ export default function Index() {
 			<ScrollView
 				stickyHeaderIndices={[0]}
 				showsVerticalScrollIndicator={false}
+				refreshControl={
+					<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#b42406" progressViewOffset={100} />
+				}
 			>
 				<View className="bg-background">
 					<View className="flex items-end">

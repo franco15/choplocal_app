@@ -206,6 +206,14 @@ export default function RedeemCodeScreen() {
 				}
 				swipeDirection="down"
 				backdropOpacity={0.4}
+				animationIn="slideInUp"
+				animationOut="slideOutDown"
+				animationInTiming={450}
+				animationOutTiming={400}
+				backdropTransitionInTiming={400}
+				backdropTransitionOutTiming={300}
+				useNativeDriverForBackdrop
+				hideModalContentWhileAnimating
 				style={styles.modal}
 			>
 				<View style={styles.modalSheet}>

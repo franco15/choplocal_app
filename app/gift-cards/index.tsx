@@ -8,8 +8,8 @@ import {
 	verticalScale,
 } from "@/lib/metrics";
 import { IGiftCard } from "@/lib/types/giftcard";
-import { useMemo, useState } from "react";
-import { FlatList, Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { useCallback, useMemo, useState } from "react";
+import { FlatList, Pressable, RefreshControl, ScrollView, StyleSheet, View } from "react-native";
 
 type FilterTab = "all" | "active" | "inactive";
 
@@ -20,8 +20,15 @@ const FILTER_TABS: { key: FilterTab; label: string }[] = [
 ];
 
 export default function GiftCardsList() {
-	const { giftCards, isLoading } = useGiftCardContext();
+	const { giftCards, isLoading, refreshGiftCards } = useGiftCardContext();
 	const [activeFilter, setActiveFilter] = useState<FilterTab>("all");
+	const [refreshing, setRefreshing] = useState(false);
+
+	const onRefresh = useCallback(async () => {
+		setRefreshing(true);
+		refreshGiftCards();
+		setTimeout(() => setRefreshing(false), 1000);
+	}, [refreshGiftCards]);
 
 	const filteredCards = useMemo(() => {
 		switch (activeFilter) {
@@ -52,6 +59,9 @@ export default function GiftCardsList() {
 			<FlatList
 				data={filteredCards}
 				showsVerticalScrollIndicator={false}
+				refreshControl={
+					<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#b42406" progressViewOffset={100} />
+				}
 				keyExtractor={(item) => item.id}
 				renderItem={renderItem}
 				contentContainerStyle={{

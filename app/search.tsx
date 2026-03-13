@@ -2,7 +2,7 @@ import { Container, Text, TextBold } from "@/components";
 import RestaurantCard from "@/components/RestaurantCard";
 import { SearchIcon } from "@/constants/svgs";
 import { useUserContext } from "@/contexts/UserContext";
-import { queryKeys } from "@/lib/api/queryClient";
+import { queryClient, queryKeys } from "@/lib/api/queryClient";
 import { useUserApi } from "@/lib/api/useApi";
 import {
 	horizontalScale,
@@ -17,6 +17,7 @@ import { useCallback, useMemo, useState } from "react";
 import {
 	FlatList,
 	Pressable,
+	RefreshControl,
 	StyleSheet,
 	TextInput,
 	View,
@@ -28,6 +29,7 @@ const FAVORITES_KEY = "choplocal-favorites";
 export default function SearchScreen() {
 	const router = useRouter();
 	const userApi = useUserApi();
+	const [refreshing, setRefreshing] = useState(false);
 	const { user } = useUserContext();
 	const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
 	const [search, setSearch] = useState("");
@@ -49,6 +51,12 @@ export default function SearchScreen() {
 			});
 		}, []),
 	);
+
+	const onRefresh = useCallback(async () => {
+		setRefreshing(true);
+		await queryClient.invalidateQueries({ queryKey: [queryKeys.users.restaurants] });
+		setRefreshing(false);
+	}, []);
 
 	const toggleFavorite = useCallback((id: string) => {
 		setFavoriteIds((prev) => {
@@ -136,6 +144,9 @@ export default function SearchScreen() {
 			<FlatList
 				data={filteredRestaurants}
 				showsVerticalScrollIndicator={false}
+				refreshControl={
+					<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#b42406" progressViewOffset={100} />
+				}
 				keyExtractor={(item, index) => `search_${index}_${item.id}`}
 				renderItem={renderItem}
 				contentContainerStyle={{

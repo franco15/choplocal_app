@@ -152,6 +152,8 @@ const RootComponent = () => {
 									headerShadowVisible: false,
 									headerTitle: "",
 									headerBackTitle: "Back",
+									headerTransparent: true,
+									headerStyle: { backgroundColor: "transparent" },
 								}}
 							/>
 							<Stack.Screen

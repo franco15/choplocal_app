@@ -1,29 +1,27 @@
 import { Text, TextBold } from "@/components";
-import GiftCardVisual, { CARD_THEMES } from "@/components/GiftCardVisual";
+import { CARD_THEMES } from "@/components/GiftCardVisual";
 import { useGiftCardContext } from "@/contexts/GiftCardContext";
 import { useUserContext } from "@/contexts/UserContext";
-import { queryKeys } from "@/lib/api/queryClient";
+import { queryClient, queryKeys } from "@/lib/api/queryClient";
 import { useRestaurantApi } from "@/lib/api/useApi";
 import { horizontalScale, moderateScale, verticalScale } from "@/lib/metrics";
 
-import { ERestaurantStatus } from "@/lib/types/restaurant";
-import { isImage } from "@/lib/utils";
-import { EmptyPlates } from "@/constants/svgs";
+import { ERestaurantStatus, IRestaurant } from "@/lib/types/restaurant";
 import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
-import { BlurView } from "expo-blur";
+import { LinearGradient } from "expo-linear-gradient";
 import { Link, useLocalSearchParams, useRouter } from "expo-router";
 import {
-	ActivityIndicator,
 	Alert,
 	Image,
+	RefreshControl,
 	ScrollView,
 	Share,
 	StyleSheet,
 	TouchableOpacity,
 	View,
 } from "react-native";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import RestaurantSkeleton from "../skeletons/restaurant";
 
@@ -34,7 +32,7 @@ export default function Restaurant() {
 	const { user } = useUserContext();
 	const { getGiftCardsByRestaurant } = useGiftCardContext();
 	const restaurantApi = useRestaurantApi();
-	const [imageLoaded, setImageLoaded] = useState(false);
+	const [refreshing, setRefreshing] = useState(false);
 
 	const { data: rawRestaurant, isPending } = useQuery({
 		queryKey: [queryKeys.restaurants.byId(id as string)],
@@ -50,12 +48,18 @@ export default function Restaurant() {
 		enabled: !!id && !!user,
 	});
 
+	const onRefresh = useCallback(async () => {
+		setRefreshing(true);
+		await queryClient.invalidateQueries({ queryKey: [queryKeys.restaurants.byId(id as string)] });
+		await queryClient.invalidateQueries({ queryKey: [queryKeys.restaurants.transactions(id as string)] });
+		setRefreshing(false);
+	}, [id]);
+
 	const recentTransactions = (transactions ?? []).slice(0, 2);
 	const restaurantGiftCards = getGiftCardsByRestaurant?.(id as string) ?? [];
 	const displayName = rawRestaurant?.name || paramName || "";
 
-	const onRecommend = async () => {
-		// Must have at least 1 visit to recommend
+	const onRecommend = useCallback(async () => {
 		if (!restaurant || (restaurant.checkIns ?? 0) < 1) {
 			Alert.alert(
 				"You haven't visited yet!",
@@ -64,343 +68,234 @@ export default function Restaurant() {
 			);
 			return;
 		}
-
-		const code = restaurant.referralCode;
+		// referralCode might not come from the byId endpoint,
+		// so fallback to the cached user restaurants list
+		let code = restaurant.referralCode;
+		if (!code) {
+			const cachedList = queryClient.getQueryData<IRestaurant[]>([queryKeys.users.restaurants]);
+			const cached = cachedList?.find((r) => r.id === id);
+			code = cached?.referralCode ?? null;
+		}
 		if (!code) return;
-
 		try {
 			await Share.share({
-				message: `Come visit ${displayName} on Chop Local! Use my code: ${code}`,
+				message: `Check out ${displayName} on Chop Local! Use my recommendation code: ${code}`,
 			});
 		} catch {
 			// User cancelled share
 		}
-	};
+	}, [restaurant, displayName, id]);
 
 	if (isPending) return <RestaurantSkeleton />;
 
-	const hasImageUrl = restaurant?.image && isImage(restaurant.image);
-	const showHero = hasImageUrl && imageLoaded;
 	const isRecommended = restaurant?.status === ERestaurantStatus.Recommended;
 	const hasVisits = (restaurant?.checkIns ?? 0) > 0;
 	const totalBalance = restaurant?.balance ?? 0;
-	const hasBalance = totalBalance > 0;
 
 	return (
-	<>
 		<View style={styles.root}>
 			<ScrollView
 				contentContainerStyle={{
 					flexGrow: 1,
-					paddingBottom: insets.bottom + verticalScale(90),
+					paddingBottom: insets.bottom + verticalScale(100),
 				}}
 				showsVerticalScrollIndicator={false}
+				refreshControl={
+					<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#b42406" progressViewOffset={100} />
+				}
 			>
-				{/* ── Hero: glass blur + image (only if image actually loads) ── */}
-				{showHero && (
-					<View style={styles.heroContainer}>
-						<Image
-							source={{ uri: restaurant.image }}
-							style={styles.heroBg}
-							blurRadius={25}
-							resizeMode="cover"
-						/>
-						<BlurView
-							intensity={60}
-							tint="light"
-							style={styles.heroBg}
-						/>
-						<View style={styles.heroImageWrapper}>
-							<Image
-								source={{ uri: restaurant.image }}
-								style={styles.heroImage}
-								resizeMode="cover"
-							/>
-						</View>
-					</View>
-				)}
+				<View style={[styles.cardList, { paddingTop: verticalScale(8) }]}>
 
-				{/* Hidden image to test if it loads */}
-				{hasImageUrl && !imageLoaded && (
-					<Image
-						source={{ uri: restaurant.image }}
-						style={{ width: 0, height: 0 }}
-						onLoad={() => setImageLoaded(true)}
-						onError={() => setImageLoaded(false)}
-					/>
-				)}
+					{/* ═══════════════════════════════════════════
+					    CARD 1 — Restaurant Info
+					    ═══════════════════════════════════════════ */}
+					<View style={styles.card}>
+						<View style={styles.cardBody}>
+							<TextBold style={styles.restaurantName}>{displayName}</TextBold>
 
-				{/* ── Content ── */}
-				<View style={[styles.content, !showHero && { paddingTop: insets.top + verticalScale(12) }]}>
-					{/* Name */}
-					<TextBold style={styles.name}>
-						{displayName}
-					</TextBold>
-
-					{/* Recommended tag */}
-					{isRecommended && (
-						<View style={styles.recommendedTag}>
-							<Ionicons
-								name="star"
-								size={12}
-								color="#856404"
-							/>
-							<Text style={styles.recommendedText}>
-								Recommended
-							</Text>
-						</View>
-					)}
-
-					{/* ── Stats row (full: balance + visits) ── */}
-					{hasVisits && (
-						<>
-							<View style={styles.statsRow}>
-								<View style={styles.statCard}>
-									<Text style={styles.statLabel}>Balance</Text>
-									<TextBold style={styles.statNumber}>
-										${totalBalance.toFixed(2)}
-									</TextBold>
+							{isRecommended && (
+								<View style={styles.recommendedTag}>
+									<Ionicons name="star" size={12} color="#b42406" />
+									<Text style={styles.recommendedText}>Recommended</Text>
 								</View>
-								<View style={styles.statCard}>
-									<Text style={styles.statLabel}>Visits</Text>
-									<TextBold style={styles.statNumber}>
-										{restaurant?.checkIns ?? 0}
-									</TextBold>
+							)}
+
+							{/* Stats row */}
+							<View style={styles.infoStatsRow}>
+								<View style={styles.infoStat}>
+									<Text style={styles.infoStatLabel}>Balance</Text>
+									<TextBold style={styles.infoStatValue}>${totalBalance.toFixed(2)}</TextBold>
+								</View>
+								<View style={styles.infoStatDivider} />
+								<View style={styles.infoStat}>
+									<Text style={styles.infoStatLabel}>Visits</Text>
+									<TextBold style={styles.infoStatValue}>{restaurant?.checkIns ?? 0}</TextBold>
 								</View>
 							</View>
-						</>
-					)}
-
-					{/* ── Balance only (recommended, no visits yet) ── */}
-					{!hasVisits && hasBalance && (
-						<View style={styles.statsRow}>
-							<View style={styles.statCard}>
-								<Text style={styles.statLabel}>Balance</Text>
-								<TextBold style={styles.statNumber}>
-									${totalBalance.toFixed(2)}
-								</TextBold>
-							</View>
 						</View>
-					)}
-
-								{/* ── No visits placeholder ── */}
-				{!hasVisits && restaurantGiftCards.length === 0 && (
-					<View style={{ alignItems: "center", paddingVertical: verticalScale(24) }}>
-						<EmptyPlates
-							width={horizontalScale(140)}
-							height={verticalScale(110)}
-						/>
-						<TextBold style={styles.emptyTitle}>
-							You haven't visited yet
-						</TextBold>
-						<Text style={styles.emptySubtitle}>
-							Show your QR code at {displayName} to start earning cashback on every visit.
-						</Text>
-						<Link href="/qr" asChild>
-							<TouchableOpacity
-								activeOpacity={0.8}
-								style={styles.emptyQrButton}
-							>
-								<TextBold style={styles.emptyQrText}>
-									Show QR Code
-								</TextBold>
-							</TouchableOpacity>
-						</Link>
 					</View>
-				)}
 
-				{/* ── Gift Cards Wallet ── */}
-				{restaurantGiftCards.length > 0 && (() => {
-					const visibleCards = restaurantGiftCards.slice(0, 3);
-					const totalAmount = restaurantGiftCards.reduce((sum, gc) => sum + (gc.amount ?? 0), 0);
-					return (
-					<View style={styles.section}>
-						<View style={styles.sectionHeader}>
-							<TextBold style={styles.sectionTitle}>
-								My Gift Cards
-							</TextBold>
-							<Text style={styles.sectionCount}>
-								{restaurantGiftCards.length}{" "}
-								{restaurantGiftCards.length === 1
-									? "card"
-									: "cards"} · ${totalAmount}
-							</Text>
-						</View>
-						<View
-							style={{
-								height: verticalScale(200) + (visibleCards.length - 1) * verticalScale(42),
-							}}
-						>
-							{visibleCards.map((gc, ci) => {
-								const theme = CARD_THEMES[ci % CARD_THEMES.length];
-								const cardAmount = gc.amount ?? 0;
-								return (
+					{/* ═══════════════════════════════════════════
+					    CARD 2 — Gift Cards Wallet
+					    ═══════════════════════════════════════════ */}
+					<View style={styles.card}>
+						<View style={styles.cardBody}>
+							<View style={styles.cardSectionHeader}>
+								<View>
+									<TextBold style={styles.cardSectionTitle}>My Gift Cards</TextBold>
+									{restaurantGiftCards.length > 0 && (
+										<Text style={styles.cardSectionMeta}>
+											{restaurantGiftCards.length} {restaurantGiftCards.length === 1 ? "card" : "cards"} · ${restaurantGiftCards.reduce((sum, gc) => sum + (gc.amount ?? 0), 0)}
+										</Text>
+									)}
+								</View>
+								{restaurantGiftCards.length > 3 && (
 									<TouchableOpacity
-										key={gc.id}
-										activeOpacity={0.85}
+										activeOpacity={0.7}
 										onPress={() => router.push({
 											pathname: "/gift-cards/card-detail",
 											params: {
-												giftCardId: gc.id,
-												themeIndex: String(ci),
+												giftCardId: restaurantGiftCards[0].id,
+												themeIndex: "0",
 												groupIds: restaurantGiftCards.map((g) => g.id).join(","),
 											},
 										})}
-										style={{
-											position: ci === 0 ? "relative" : "absolute",
-											top: ci * verticalScale(42),
-											left: 0,
-											right: 0,
-											zIndex: visibleCards.length - ci,
-											height: verticalScale(170),
-											borderRadius: moderateScale(16),
-											backgroundColor: theme.bg,
-											overflow: "hidden",
-											padding: moderateScale(16),
-											justifyContent: "space-between",
-											shadowColor: "#000",
-											shadowOffset: { width: 0, height: 2 },
-											shadowOpacity: 0.15,
-											shadowRadius: 6,
-											elevation: 4,
-										}}
 									>
-										<View style={{ position: "absolute", top: -20, right: -15, width: 100, height: 100, borderRadius: 50, backgroundColor: theme.blob1, opacity: 0.2 }} />
-										<View style={{ position: "absolute", bottom: -15, left: -10, width: 80, height: 80, borderRadius: 40, backgroundColor: theme.blob2, opacity: 0.2 }} />
-										<View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" }}>
-											<Text style={{ color: "rgba(255,255,255,0.7)", fontSize: moderateScale(11), textTransform: "uppercase", letterSpacing: 0.5 }}>
-												{displayName}
-											</Text>
-											<TextBold style={{ color: "#FFFFFF", fontSize: moderateScale(24) }}>
-												${cardAmount}
-											</TextBold>
-										</View>
-										<View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-end" }}>
-											<TextBold style={{ color: "#FFFFFF", fontSize: moderateScale(22) }}>
-												Gift Card
-											</TextBold>
-											<Text style={{ color: "rgba(255,255,255,0.5)", fontSize: moderateScale(10) }}>
-												{gc.code}
-											</Text>
-										</View>
+										<Text style={styles.seeAllLink}>See all</Text>
 									</TouchableOpacity>
-								);
-							})}
+								)}
+							</View>
+
+							{restaurantGiftCards.length > 0 ? (
+								<View
+									style={{
+										height: verticalScale(170) + (restaurantGiftCards.slice(0, 3).length - 1) * verticalScale(38),
+										marginTop: verticalScale(4),
+									}}
+								>
+									{restaurantGiftCards.slice(0, 3).map((gc, ci) => {
+										const theme = CARD_THEMES[ci % CARD_THEMES.length];
+										const cardAmount = gc.amount ?? 0;
+										return (
+											<TouchableOpacity
+												key={gc.id}
+												activeOpacity={0.85}
+												onPress={() => router.push({
+													pathname: "/gift-cards/card-detail",
+													params: {
+														giftCardId: gc.id,
+														themeIndex: String(ci),
+														groupIds: restaurantGiftCards.map((g) => g.id).join(","),
+													},
+												})}
+												style={{
+													position: ci === 0 ? "relative" : "absolute",
+													top: ci * verticalScale(38),
+													left: 0,
+													right: 0,
+													zIndex: restaurantGiftCards.slice(0, 3).length - ci,
+													height: verticalScale(160),
+													borderRadius: moderateScale(16),
+													overflow: "hidden",
+													shadowColor: "#000",
+													shadowOffset: { width: 0, height: 2 },
+													shadowOpacity: 0.15,
+													shadowRadius: 6,
+													elevation: 4,
+												}}
+											>
+												<LinearGradient
+													colors={theme.gradientColors ?? [theme.bg, theme.bg, theme.bg]}
+													start={{ x: 0, y: 0 }}
+													end={{ x: 1, y: 1 }}
+													style={{ flex: 1, padding: moderateScale(16), justifyContent: "space-between" }}
+												>
+													<Image
+														source={require("@/assets/images/noise.png")}
+														resizeMode="repeat"
+														style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, width: "100%", height: "100%", opacity: 0.12 }}
+													/>
+													<View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" }}>
+														<Text style={{ color: "rgba(255,255,255,0.7)", fontSize: moderateScale(11), textTransform: "uppercase", letterSpacing: 0.5 }}>
+															{displayName}
+														</Text>
+														<TextBold style={{ color: "#FFFFFF", fontSize: moderateScale(24) }}>
+															${cardAmount}
+														</TextBold>
+													</View>
+													<View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-end" }}>
+														<TextBold style={{ color: "#FFFFFF", fontSize: moderateScale(22) }}>
+															Gift Card
+														</TextBold>
+														<Text style={{ color: "rgba(255,255,255,0.5)", fontSize: moderateScale(10) }}>
+															{gc.code}
+														</Text>
+													</View>
+												</LinearGradient>
+											</TouchableOpacity>
+										);
+									})}
+								</View>
+							) : (
+								<View style={styles.emptyCardContent}>
+									<Ionicons name="gift-outline" size={moderateScale(32)} color="#D0D0D0" />
+									<Text style={styles.emptyCardText}>No gift cards yet — maybe someone will surprise you!</Text>
+								</View>
+							)}
 						</View>
 					</View>
-					);
-				})()}
 
-
-
-					{/* ── Recent Activity (only if visited) ── */}
-					{hasVisits && (
-						<View style={styles.section}>
-							<View style={styles.sectionHeader}>
-								<TextBold style={styles.sectionTitle}>
-									Recent Activity
-								</TextBold>
+					{/* ═══════════════════════════════════════════
+					    CARD 3 — Recent Activity
+					    ═══════════════════════════════════════════ */}
+					<View style={styles.card}>
+						<View style={styles.cardBody}>
+							<View style={styles.cardSectionHeader}>
+								<TextBold style={styles.cardSectionTitle}>Recent Activity</TextBold>
 								{(transactions ?? []).length > 2 && (
 									<Link
 										href={{
-											pathname:
-												"/restaurants/transactions",
+											pathname: "/restaurants/transactions",
 											params: { restaurantId: id },
 										}}
 									>
-										<Text style={styles.seeAll}>
-											See all
-										</Text>
+										<Text style={styles.seeAllLink}>See all</Text>
 									</Link>
 								)}
 							</View>
 
-							<View style={styles.activityCard}>
-								{recentTransactions.map((tx, i) => {
-									const spent = (
-										tx.cashback * 20
-									).toFixed(2);
+							{hasVisits ? (
+								recentTransactions.map((tx, i) => {
+									const spent = (tx.cashback * 20).toFixed(2);
 									return (
-										<View key={i}>
-											{i > 0 && (
-												<View
-													style={styles.divider}
-												/>
-											)}
-											<View
-												style={styles.activityRow}
-											>
-												<View
-													style={
-														styles.activityDateCol
-													}
-												>
-													<Text
-														style={
-															styles.activityDate
-														}
-													>
-														{new Date(
-															tx.date,
-														).toLocaleDateString(
-															"en-US",
-															{
-																month: "short",
-																day: "numeric",
-															},
-														)}
-													</Text>
-												</View>
-												<View
-													style={
-														styles.activitySpentCol
-													}
-												>
-													<Text
-														style={
-															styles.activitySpent
-														}
-													>
-														${spent}
-													</Text>
-													<Text
-														style={
-															styles.activitySpentLabel
-														}
-													>
-														spent
-													</Text>
-												</View>
-												<View
-													style={
-														styles.activityCashbackCol
-													}
-												>
-													<TextBold
-														style={
-															styles.activityCashback
-														}
-													>
-														+$
-														{tx.cashback.toFixed(
-															2,
-														)}
-													</TextBold>
-													<Text
-														style={
-															styles.activityCashbackLabel
-														}
-													>
-														cashback
-													</Text>
-												</View>
+										<View key={i} style={[styles.txRow, i > 0 && styles.txRowBorder]}>
+											<View style={styles.txIconCircle}>
+												<Ionicons name="receipt-outline" size={moderateScale(16)} color="#888" />
 											</View>
+											<View style={styles.txInfo}>
+												<Text style={styles.txDate}>
+													{new Date(tx.date).toLocaleDateString("en-US", {
+														month: "short",
+														day: "numeric",
+														year: "numeric",
+													})}
+												</Text>
+												<Text style={styles.txSpent}>${spent} spent</Text>
+											</View>
+											<TextBold style={styles.txCashback}>
+												+${tx.cashback.toFixed(2)}
+											</TextBold>
 										</View>
 									);
-								})}
-							</View>
+								})
+							) : (
+								<View style={styles.emptyCardContent}>
+									<Ionicons name="time-outline" size={moderateScale(32)} color="#D0D0D0" />
+									<Text style={styles.emptyCardText}>Nothing here yet — your first visit will be legendary!</Text>
+								</View>
+							)}
 						</View>
-					)}
+					</View>
 				</View>
 			</ScrollView>
 
@@ -416,9 +311,7 @@ export default function Restaurant() {
 					onPress={onRecommend}
 					style={styles.footerBtnOutline}
 				>
-					<TextBold style={styles.footerBtnOutlineText}>
-						Recommend
-					</TextBold>
+					<TextBold style={styles.footerBtnOutlineText}>Recommend</TextBold>
 				</TouchableOpacity>
 
 				<TouchableOpacity
@@ -434,266 +327,160 @@ export default function Restaurant() {
 					}
 					style={styles.footerBtnFilled}
 				>
-					<TextBold style={styles.footerBtnFilledText}>
-						Send Gift Card
-					</TextBold>
+					<TextBold style={styles.footerBtnFilledText}>Send Gift Card</TextBold>
 				</TouchableOpacity>
 			</View>
 		</View>
-
-	</>
 	);
 }
-
-const HERO_HEIGHT = verticalScale(350);
-const IMAGE_MARGIN = horizontalScale(20);
 
 const styles = StyleSheet.create({
 	root: {
 		flex: 1,
+		backgroundColor: "#F2F2F7",
+	},
+
+	cardList: {
+		paddingHorizontal: horizontalScale(16),
+		gap: verticalScale(14),
+	},
+
+	/* ── Card base ── */
+	card: {
 		backgroundColor: "#FFFFFF",
-	},
-
-	/* ── Hero with glass blur ── */
-	heroContainer: {
-		width: "100%",
-		height: HERO_HEIGHT,
+		borderRadius: moderateScale(22),
 		overflow: "hidden",
+		shadowColor: "#000",
+		shadowOffset: { width: 0, height: 2 },
+		shadowOpacity: 0.05,
+		shadowRadius: 10,
+		elevation: 3,
 	},
-	heroBg: {
-		...StyleSheet.absoluteFillObject,
-	},
-	heroImageWrapper: {
-		position: "absolute",
-		top: verticalScale(16),
-		left: IMAGE_MARGIN,
-		right: IMAGE_MARGIN,
-		bottom: verticalScale(16),
-		borderRadius: moderateScale(16),
-		overflow: "hidden",
-	},
-	heroImage: {
-		width: "100%",
-		height: "100%",
+	cardBody: {
+		padding: moderateScale(20),
 	},
 
-	/* ── Content ── */
-	content: {
-		paddingHorizontal: horizontalScale(20),
-		paddingTop: verticalScale(20),
-	},
-
-	/* ── Name ── */
-	name: {
-		fontSize: moderateScale(26),
+	/* ── Card 1 — Restaurant info ── */
+	restaurantName: {
+		fontSize: moderateScale(24),
 		color: "#1A1A1A",
-		lineHeight: moderateScale(32),
-		marginBottom: verticalScale(12),
+		lineHeight: moderateScale(30),
 	},
 	recommendedTag: {
 		flexDirection: "row",
 		alignItems: "center",
 		alignSelf: "flex-start",
-		backgroundColor: "#FFF3CD",
+		backgroundColor: "rgba(180, 36, 6, 0.08)",
 		paddingHorizontal: horizontalScale(10),
-		paddingVertical: verticalScale(3),
-		borderRadius: moderateScale(12),
+		paddingVertical: verticalScale(4),
+		borderRadius: moderateScale(20),
 		gap: horizontalScale(4),
-		marginBottom: verticalScale(16),
+		marginTop: verticalScale(10),
 	},
 	recommendedText: {
-		fontSize: moderateScale(11),
-		color: "#856404",
-		fontWeight: "600",
-	},
-
-	/* ── Stats ── */
-	statsRow: {
-		flexDirection: "row",
-		gap: horizontalScale(12),
-		marginBottom: verticalScale(16),
-	},
-	statCard: {
-		flex: 1,
-		paddingVertical: verticalScale(8),
-	},
-	statLabel: {
 		fontSize: moderateScale(12),
-		color: "#999",
-		marginBottom: verticalScale(4),
-	},
-	statNumber: {
-		fontSize: moderateScale(22),
-		color: "#1A1A1A",
+		color: "#b42406",
 	},
 
-	/* ── QR Button ── */
-	qrButton: {
+	/* Stats inside card 1 */
+	infoStatsRow: {
 		flexDirection: "row",
 		alignItems: "center",
-		backgroundColor: "#FFFFFF",
-		borderRadius: moderateScale(28),
-		borderWidth: 1.5,
-		borderColor: "#1A1A1A",
-		paddingVertical: verticalScale(14),
-		paddingHorizontal: horizontalScale(16),
-		marginBottom: verticalScale(24),
+		marginTop: verticalScale(20),
+		paddingTop: verticalScale(18),
+		borderTopWidth: 1,
+		borderTopColor: "#F0F0F0",
 	},
-	qrButtonText: {
+	infoStat: {
 		flex: 1,
-		fontSize: moderateScale(15),
-		color: "#1A1A1A",
-	},
-
-	/* ── Sections ── */
-	section: {
-		marginBottom: verticalScale(24),
-	},
-	sectionHeader: {
-		flexDirection: "row",
-		justifyContent: "space-between",
 		alignItems: "center",
-		marginBottom: verticalScale(12),
 	},
-	sectionTitle: {
-		fontSize: moderateScale(18),
-		color: "#1A1A1A",
-	},
-	sectionCount: {
-		fontSize: moderateScale(12),
-		color: "#999",
-	},
-	seeAll: {
-		fontSize: moderateScale(13),
-		color: "#438989",
-		fontWeight: "600",
-	},
-
-	/* ── Gift Cards ── */
-	gcScroll: {
-		gap: horizontalScale(12),
-	},
-	gcCardWrapper: {
-		width: horizontalScale(220),
-	},
-	gcCardFooter: {
-		flexDirection: "row",
-		justifyContent: "space-between",
-		alignItems: "center",
-		marginTop: verticalScale(8),
-		paddingHorizontal: horizontalScale(2),
-	},
-	gcExpiry: {
+	infoStatLabel: {
 		fontSize: moderateScale(11),
 		color: "#999",
+		textTransform: "uppercase",
+		letterSpacing: 1,
 	},
-	gcBadge: {
-		flexDirection: "row",
-		alignItems: "center",
-		backgroundColor: "#E6F9E6",
-		paddingHorizontal: horizontalScale(8),
-		paddingVertical: verticalScale(2),
-		borderRadius: moderateScale(8),
-		gap: horizontalScale(4),
+	infoStatValue: {
+		fontSize: moderateScale(26),
+		color: "#1A1A1A",
+		marginTop: verticalScale(4),
 	},
-	gcDot: {
-		width: moderateScale(6),
-		height: moderateScale(6),
-		borderRadius: moderateScale(3),
-		backgroundColor: "#22C55E",
-	},
-	gcBadgeText: {
-		fontSize: moderateScale(10),
-		color: "#2D6A3F",
-		fontWeight: "600",
+	infoStatDivider: {
+		width: 1,
+		height: moderateScale(36),
+		backgroundColor: "#F0F0F0",
 	},
 
-	/* ── Empty placeholder ── */
-	emptyPlaceholder: {
-		flex: 1,
-		paddingHorizontal: horizontalScale(24),
-		marginBottom: verticalScale(24),
-	},
-	emptyCentered: {
-		flex: 1,
+	/* Empty card state */
+	emptyCardContent: {
 		alignItems: "center",
-		justifyContent: "center",
+		paddingVertical: verticalScale(24),
+		gap: verticalScale(10),
 	},
-	emptyTitle: {
-		fontSize: moderateScale(18),
-		color: "#1A1A1A",
-		marginTop: verticalScale(12),
-		marginBottom: verticalScale(6),
-	},
-	emptySubtitle: {
+	emptyCardText: {
 		fontSize: moderateScale(13),
-		color: "#999",
+		color: "#BBB",
 		textAlign: "center",
-		lineHeight: moderateScale(18),
-		marginBottom: verticalScale(24),
-	},
-	emptyQrButton: {
-		alignItems: "center",
-		justifyContent: "center",
-		backgroundColor: "#FFFFFF",
-		paddingHorizontal: horizontalScale(28),
-		paddingVertical: verticalScale(14),
-		borderRadius: moderateScale(28),
-		borderWidth: 1.5,
-		borderColor: "#1A1A1A",
-		width: "100%",
-	},
-	emptyQrText: {
-		fontSize: moderateScale(15),
-		color: "#1A1A1A",
+		lineHeight: moderateScale(19),
+		paddingHorizontal: horizontalScale(12),
 	},
 
-	/* ── Activity ── */
-	activityCard: {
-		backgroundColor: "#F8F8F8",
-		borderRadius: moderateScale(14),
-		overflow: "hidden",
+	/* ── Card section headers (cards 2 & 3) ── */
+	cardSectionHeader: {
+		flexDirection: "row",
+		justifyContent: "space-between",
+		alignItems: "flex-start",
+		marginBottom: verticalScale(14),
 	},
-	divider: {
-		height: 1,
-		backgroundColor: "#EEEEEE",
-		marginHorizontal: moderateScale(16),
+	cardSectionTitle: {
+		fontSize: moderateScale(18),
+		color: "#1A1A1A",
 	},
-	activityRow: {
+	cardSectionMeta: {
+		fontSize: moderateScale(12),
+		color: "#999",
+		marginTop: verticalScale(3),
+	},
+	seeAllLink: {
+		fontSize: moderateScale(13),
+		color: "#b42406",
+	},
+
+	/* ── Card 3 — Transactions ── */
+	txRow: {
 		flexDirection: "row",
 		alignItems: "center",
 		paddingVertical: verticalScale(14),
-		paddingHorizontal: moderateScale(16),
 	},
-	activityDateCol: {
+	txRowBorder: {
+		borderTopWidth: 1,
+		borderTopColor: "#F5F5F5",
+	},
+	txIconCircle: {
+		width: moderateScale(38),
+		height: moderateScale(38),
+		borderRadius: moderateScale(19),
+		backgroundColor: "#F5F5F5",
+		alignItems: "center",
+		justifyContent: "center",
+		marginRight: horizontalScale(12),
+	},
+	txInfo: {
 		flex: 1,
 	},
-	activityDate: {
+	txDate: {
 		fontSize: moderateScale(14),
 		color: "#1A1A1A",
 	},
-	activitySpentCol: {
-		alignItems: "center",
-		marginRight: horizontalScale(20),
+	txSpent: {
+		fontSize: moderateScale(12),
+		color: "#999",
+		marginTop: verticalScale(2),
 	},
-	activitySpent: {
-		fontSize: moderateScale(14),
-		color: "#1A1A1A",
-	},
-	activitySpentLabel: {
-		fontSize: moderateScale(10),
-		color: "#BBB",
-	},
-	activityCashbackCol: {
-		alignItems: "flex-end",
-	},
-	activityCashback: {
-		fontSize: moderateScale(14),
+	txCashback: {
+		fontSize: moderateScale(15),
 		color: "#22C55E",
-	},
-	activityCashbackLabel: {
-		fontSize: moderateScale(10),
-		color: "#BBB",
 	},
 
 	/* ── Footer ── */

@@ -5,12 +5,12 @@ import { ERestaurantStatus, IRestaurant } from "@/lib/types/restaurant";
 import { router } from "expo-router";
 import { MotiView } from "moti";
 import { useCallback } from "react";
-import { Alert, Pressable, Share, StyleSheet, TouchableOpacity, View } from "react-native";
+import { Pressable, Share, StyleSheet, TouchableOpacity, View } from "react-native";
 
 const STATUS_LABELS: Record<number, string> = {
 	[ERestaurantStatus.Visited]: "Visited",
 	[ERestaurantStatus.Recommended]: "Recommended",
-	[ERestaurantStatus.NotVisited]: "New",
+	[ERestaurantStatus.NotVisited]: "Not Visited",
 };
 
 const STATUS_COLORS: Record<number, { bg: string; text: string }> = {
@@ -53,14 +53,6 @@ export default function RestaurantCard({
 	}, [restaurant.id, onToggleFavorite]);
 
 	const onRecommend = useCallback(async () => {
-		if ((restaurant.checkIns ?? 0) < 1) {
-			Alert.alert(
-				"You haven't visited yet!",
-				"Visit this restaurant at least once before recommending it to your friends.",
-				[{ text: "Got it" }],
-			);
-			return;
-		}
 		const code = restaurant.referralCode;
 		if (!code) return;
 		try {
@@ -79,7 +71,6 @@ export default function RestaurantCard({
 		});
 	}, [restaurant.id, restaurant.name]);
 
-	console.log("Rendering card for", restaurant.name, "checkins:", restaurant.checkIns);
 	return (
 		<MotiView
 			from={{ opacity: 0, translateY: 12 }}
@@ -125,9 +116,9 @@ export default function RestaurantCard({
 					</View>
 
 					{/* Center: Info */}
-					<View style={{ flex: 1, justifyContent: "center" }}>
+					<View style={{ flex: 1, justifyContent: "center", paddingRight: horizontalScale(8) }}>
 						<TextBold
-							numberOfLines={2}
+							numberOfLines={1}
 							style={{
 								fontSize: moderateScale(15),
 								color: "#1A1A1A",
@@ -141,48 +132,14 @@ export default function RestaurantCard({
 								flexDirection: "row",
 								alignItems: "center",
 								marginTop: verticalScale(6),
-							}}
-						>
-							<Text
-								style={{
-									fontSize: moderateScale(13),
-									color: "#888",
-								}}
-							>
-								{restaurant.checkIns} visitas
-							</Text>
-							<Text
-								style={{
-									fontSize: moderateScale(13),
-									color: "#888",
-									marginLeft: horizontalScale(14),
-								}}
-							>
-								${restaurant.balance.toFixed(2)}
-							</Text>
-						</View>
-					</View>
-
-					{/* Right: Tag + Bookmark in a row */}
-					<View
-						style={{
-							alignItems: "flex-end",
-							justifyContent: "center",
-						}}
-					>
-						<View
-							style={{
-								flexDirection: "row",
-								alignItems: "center",
-								gap: horizontalScale(8),
+								gap: horizontalScale(10),
 							}}
 						>
 							<View
 								style={[
 									styles.statusTag,
 									{
-										paddingHorizontal:
-											horizontalScale(10),
+										paddingHorizontal: horizontalScale(10),
 										paddingVertical: verticalScale(4),
 										borderRadius: moderateScale(10),
 										backgroundColor: statusColor.bg,
@@ -198,46 +155,72 @@ export default function RestaurantCard({
 									{statusLabel}
 								</Text>
 							</View>
-							<Pressable
-								onPress={onFavorite}
-								hitSlop={14}
-								style={({ pressed }) => ({
-									transform: [
-										{ scale: pressed ? 0.8 : 1 },
-									],
-								})}
+							<Text
+								style={{
+									fontSize: moderateScale(13),
+									color: "#888",
+								}}
 							>
-								{isFavorited ? (
-									<BookmarkSolid
-										width={horizontalScale(22)}
-										height={verticalScale(22)}
-										fill="#1A1A1A"
-									/>
-								) : (
-									<Bookmark
-										width={horizontalScale(22)}
-										height={verticalScale(22)}
-										fill="#CCC"
-									/>
-								)}
-							</Pressable>
+								{restaurant.checkIns} visitas
+							</Text>
+							<Text
+								style={{
+									fontSize: moderateScale(13),
+									color: "#888",
+								}}
+							>
+								${restaurant.balance.toFixed(2)}
+							</Text>
 						</View>
+					</View>
+
+					{/* Right: Bookmark */}
+					<View
+						style={{
+							alignItems: "flex-end",
+							justifyContent: "center",
+						}}
+					>
+						<Pressable
+							onPress={onFavorite}
+							hitSlop={14}
+							style={({ pressed }) => ({
+								transform: [
+									{ scale: pressed ? 0.8 : 1 },
+								],
+							})}
+						>
+							{isFavorited ? (
+								<BookmarkSolid
+									width={horizontalScale(22)}
+									height={verticalScale(22)}
+									fill="#1A1A1A"
+								/>
+							) : (
+								<Bookmark
+									width={horizontalScale(22)}
+									height={verticalScale(22)}
+									fill="#CCC"
+								/>
+							)}
+						</Pressable>
 					</View>
 				</View>
 
 				{/* Bottom action row */}
-				<View style={styles.actionRow}>
-					<TouchableOpacity
-						activeOpacity={0.7}
-						onPress={onRecommend}
-						style={styles.actionBtnOutline}
-					>
-						<TextBold style={styles.actionTextOutline}>
-							Recommend
-						</TextBold>
-					</TouchableOpacity>
-
-				</View>
+				{(restaurant.checkIns ?? 0) >= 1 && !!restaurant.referralCode && (
+					<View style={styles.actionRow}>
+						<TouchableOpacity
+							activeOpacity={0.7}
+							onPress={onRecommend}
+							style={styles.actionBtnOutline}
+						>
+							<TextBold style={styles.actionTextOutline}>
+								Recommend
+							</TextBold>
+						</TouchableOpacity>
+					</View>
+				)}
 			</Pressable>
 		</MotiView>
 	);

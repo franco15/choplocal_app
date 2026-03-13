@@ -2,7 +2,7 @@ import { Container, Text, TextBold } from "@/components";
 import RestaurantCard from "@/components/RestaurantCard";
 import { Bookmark } from "@/constants/svgs";
 import { useUserContext } from "@/contexts/UserContext";
-import { queryKeys } from "@/lib/api/queryClient";
+import { queryClient, queryKeys } from "@/lib/api/queryClient";
 import { useUserApi } from "@/lib/api/useApi";
 import { horizontalScale, moderateScale, verticalScale } from "@/lib/metrics";
 import { isNullOrWhitespace } from "@/lib/utils";
@@ -11,7 +11,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useQuery } from "@tanstack/react-query";
 import { useFocusEffect } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
-import { FlatList, StyleSheet, View } from "react-native";
+import { FlatList, RefreshControl, StyleSheet, View } from "react-native";
 
 const FAVORITES_KEY = "choplocal-favorites";
 
@@ -19,6 +19,7 @@ export default function FavoritesScreen() {
 	const { user } = useUserContext();
 	const userApi = useUserApi();
 	const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
+	const [refreshing, setRefreshing] = useState(false);
 
 	const { data: restaurants } = useQuery({
 		queryKey: [queryKeys.users.restaurants],
@@ -37,6 +38,12 @@ export default function FavoritesScreen() {
 			});
 		}, []),
 	);
+
+	const onRefresh = useCallback(async () => {
+		setRefreshing(true);
+		await queryClient.invalidateQueries({ queryKey: [queryKeys.users.restaurants] });
+		setRefreshing(false);
+	}, []);
 
 	const toggleFavorite = useCallback((id: string) => {
 		setFavoriteIds((prev) => {
@@ -103,6 +110,9 @@ export default function FavoritesScreen() {
 					<FlatList
 						data={favoriteRestaurants}
 						showsVerticalScrollIndicator={false}
+						refreshControl={
+							<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#b42406" progressViewOffset={100} />
+						}
 						keyExtractor={(item, index) =>
 							`fav_${index}_${item.id}`
 						}

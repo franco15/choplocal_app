@@ -1,7 +1,7 @@
 import { Container, Text, TextBold } from "@/components";
 import RestaurantCard from "@/components/RestaurantCard";
 import { useUserContext } from "@/contexts/UserContext";
-import { queryKeys } from "@/lib/api/queryClient";
+import { queryClient, queryKeys } from "@/lib/api/queryClient";
 import { useUserApi } from "@/lib/api/useApi";
 import { horizontalScale, moderateScale, verticalScale } from "@/lib/metrics";
 import { isNullOrWhitespace } from "@/lib/utils";
@@ -9,7 +9,7 @@ import { ERestaurantStatus, IRestaurant } from "@/lib/types/restaurant";
 import { useQuery } from "@tanstack/react-query";
 import { useLocalSearchParams } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
-import { FlatList, StyleSheet, View } from "react-native";
+import { FlatList, RefreshControl, StyleSheet, View } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "expo-router";
 
@@ -42,6 +42,7 @@ export default function RestaurantListScreen() {
 	const { user } = useUserContext();
 	const userApi = useUserApi();
 	const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
+	const [refreshing, setRefreshing] = useState(false);
 
 	const config = SECTION_CONFIG[type ?? "visited"] ?? SECTION_CONFIG.visited;
 
@@ -62,6 +63,12 @@ export default function RestaurantListScreen() {
 			});
 		}, []),
 	);
+
+	const onRefresh = useCallback(async () => {
+		setRefreshing(true);
+		await queryClient.invalidateQueries({ queryKey: [queryKeys.users.restaurants] });
+		setRefreshing(false);
+	}, []);
 
 	const toggleFavorite = useCallback((id: string) => {
 		setFavoriteIds((prev) => {
@@ -86,9 +93,9 @@ export default function RestaurantListScreen() {
 					(a, b) => b.checkIns - a.checkIns,
 				);
 			case "new":
-				return restaurants.filter(
-					(r) => r.status === ERestaurantStatus.NotVisited,
-				);
+				return [...restaurants]
+					.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+					.slice(0, 15);
 			case "recommended":
 				return restaurants.filter(
 					(r) => r.status === ERestaurantStatus.Recommended,
@@ -118,6 +125,9 @@ export default function RestaurantListScreen() {
 			<FlatList
 				data={filtered}
 				showsVerticalScrollIndicator={false}
+				refreshControl={
+					<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#b42406" progressViewOffset={100} />
+				}
 				keyExtractor={(item) => String(item.id)}
 				renderItem={renderItem}
 				contentContainerStyle={styles.listContent}

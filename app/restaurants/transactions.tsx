@@ -1,12 +1,13 @@
 import { Text, TextBold } from "@/components";
 import { useUserContext } from "@/contexts/UserContext";
-import { queryKeys } from "@/lib/api/queryClient";
+import { queryClient, queryKeys } from "@/lib/api/queryClient";
 import { useRestaurantApi } from "@/lib/api/useApi";
 import { horizontalScale, moderateScale, verticalScale } from "@/lib/metrics";
 import { Ionicons } from "@expo/vector-icons";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { FlatList, StyleSheet, TouchableOpacity, View } from "react-native";
+import { useCallback, useState } from "react";
+import { FlatList, RefreshControl, StyleSheet, TouchableOpacity, View } from "react-native";
 import TransactionsSkeleton from "../skeletons/transactions";
 
 export default function Transactions() {
@@ -14,6 +15,13 @@ export default function Transactions() {
 	const { user } = useUserContext();
 	const restaurantApi = useRestaurantApi();
 	const router = useRouter();
+	const [refreshing, setRefreshing] = useState(false);
+
+	const onRefresh = useCallback(async () => {
+		setRefreshing(true);
+		await queryClient.invalidateQueries({ queryKey: [queryKeys.restaurants.transactions(restaurantId as string)] });
+		setRefreshing(false);
+	}, [restaurantId]);
 
 	const { data: transactions, isPending } = useSuspenseQuery({
 		queryKey: [queryKeys.restaurants.transactions(restaurantId as string)],
@@ -38,6 +46,9 @@ export default function Transactions() {
 			<FlatList
 				data={transactions}
 				showsVerticalScrollIndicator={false}
+				refreshControl={
+					<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#b42406" progressViewOffset={100} />
+				}
 				initialNumToRender={10}
 				contentContainerStyle={{
 					paddingHorizontal: horizontalScale(16),

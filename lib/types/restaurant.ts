@@ -14,6 +14,7 @@ export interface IRestaurant {
 	status: ERestaurantStatus;
 	totalCheckins: number;
 	referralCode: string;
+	createdAt: string;
 }
 
 export interface IRestaurantTransactions {

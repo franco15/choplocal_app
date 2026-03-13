@@ -1,15 +1,18 @@
 import { Text, TextBold } from "@/components";
 import { useUserContext } from "@/contexts/UserContext";
-import { queryKeys } from "@/lib/api/queryClient";
+import { queryClient, queryKeys } from "@/lib/api/queryClient";
 import { useNotificationsApi } from "@/lib/api/useApi";
 import { horizontalScale, moderateScale, verticalScale } from "@/lib/metrics";
 import { INotification, NotificationType } from "@/lib/types/notification";
 import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
-import { useMemo } from "react";
+import { useRouter } from "expo-router";
+import { useCallback, useMemo, useState } from "react";
 import {
 	ActivityIndicator,
 	Platform,
+	Pressable,
+	RefreshControl,
 	SectionList,
 	StyleSheet,
 	View,
@@ -27,29 +30,48 @@ const TYPE_CONFIG: Record<
 
 function getRelativeTime(dateStr: string): string {
 	const date = new Date(dateStr);
+	if (isNaN(date.getTime())) return "";
 	const now = new Date();
 	const diffMs = now.getTime() - date.getTime();
 	const diffMins = Math.floor(diffMs / 60000);
+	if (diffMins < 1) return "Just now";
 	if (diffMins < 60) return `${diffMins}m ago`;
 	const diffHours = Math.floor(diffMins / 60);
 	if (diffHours < 24) return `${diffHours}h ago`;
 	const diffDays = Math.floor(diffHours / 24);
 	if (diffDays === 1) return "Yesterday";
-	return `${diffDays}d ago`;
+	if (diffDays < 7) return `${diffDays}d ago`;
+	return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
 
 function getSectionTitle(dateStr: string): string {
 	const date = new Date(dateStr);
+	if (isNaN(date.getTime())) return "Before That";
 	const now = new Date();
-	const diffMs = now.getTime() - date.getTime();
-	const diffHours = diffMs / (60 * 60 * 1000);
-	if (diffHours < 24) return "Today";
-	if (diffHours < 48) return "Yesterday";
-	return "Earlier";
+	const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+	const notifDay = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+	const diffDays = Math.floor((today.getTime() - notifDay.getTime()) / (24 * 60 * 60 * 1000));
+	if (diffDays === 0) return "Today";
+	if (diffDays <= 7) return "This Week";
+	return "Before That";
+}
+
+function getNotificationIcon(item: INotification): {
+	icon: keyof typeof Ionicons.glyphMap;
+	bg: string;
+	color: string;
+} {
+	// If the description mentions gift card, use gift icon regardless of type
+	const desc = item.description?.toLowerCase() ?? "";
+	if (desc.includes("gift card") || desc.includes("regalo") || item.type === "gift") {
+		return TYPE_CONFIG.gift;
+	}
+	return TYPE_CONFIG[item.type] ?? TYPE_CONFIG.system;
 }
 
 export default function NotificationsScreen() {
 	const insets = useSafeAreaInsets();
+	const router = useRouter();
 	const { user } = useUserContext();
 	const notificationsApi = useNotificationsApi();
 
@@ -62,7 +84,7 @@ export default function NotificationsScreen() {
 
 	const sections = useMemo(() => {
 		const grouped: Record<string, INotification[]> = {};
-		const order = ["Today", "Yesterday", "Earlier"];
+		const order = ["Today", "This Week", "Before That"];
 
 		for (const n of notifications) {
 			const section = getSectionTitle(n.timestamp);
@@ -75,7 +97,39 @@ export default function NotificationsScreen() {
 			.map((title) => ({ title, data: grouped[title] }));
 	}, [notifications]);
 
+	const [refreshing, setRefreshing] = useState(false);
+
+	const onRefresh = useCallback(async () => {
+		setRefreshing(true);
+		await queryClient.invalidateQueries({ queryKey: queryKeys.notifications.byUser(user.id) });
+		setRefreshing(false);
+	}, [user.id]);
+
 	const unreadCount = notifications.filter((n) => !n.read).length;
+
+	const onNotificationPress = useCallback(async (item: INotification) => {
+		// Mark as read
+		if (!item.read) {
+			try {
+				await notificationsApi.markAsRead(item.id);
+				queryClient.invalidateQueries({
+					queryKey: queryKeys.notifications.byUser(user.id),
+				});
+			} catch (_) {
+				// Continue navigating even if mark-as-read fails
+			}
+		}
+
+		router.push({
+			pathname: "/gift-cards/notification-detail",
+			params: {
+				giftCardId: item.giftCardId ?? "",
+				restaurantId: item.restaurantId ?? "",
+				notificationTitle: item.title,
+				notificationDescription: item.description,
+			},
+		});
+	}, [router, notificationsApi, user.id]);
 
 	return (
 		<View
@@ -95,6 +149,9 @@ export default function NotificationsScreen() {
 				<SectionList
 					sections={sections}
 					showsVerticalScrollIndicator={false}
+					refreshControl={
+						<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#b42406" progressViewOffset={100} />
+					}
 					stickySectionHeadersEnabled={false}
 					keyExtractor={(item) => item.id}
 					contentContainerStyle={{
@@ -117,9 +174,12 @@ export default function NotificationsScreen() {
 						</View>
 					)}
 					renderItem={({ item }) => {
-						const config = TYPE_CONFIG[item.type] ?? TYPE_CONFIG.system;
+						const config = getNotificationIcon(item);
 						return (
-							<View style={styles.card}>
+							<Pressable
+								onPress={() => onNotificationPress(item)}
+								style={styles.card}
+							>
 								{/* Unread dot */}
 								{!item.read && <View style={styles.unreadDot} />}
 
@@ -157,7 +217,7 @@ export default function NotificationsScreen() {
 										{item.description}
 									</Text>
 								</View>
-							</View>
+							</Pressable>
 						);
 					}}
 					ListEmptyComponent={

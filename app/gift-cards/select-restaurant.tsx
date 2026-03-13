@@ -16,7 +16,6 @@ import { MotiView } from "moti";
 import { useMemo, useState } from "react";
 import {
 	FlatList,
-	Platform,
 	Pressable,
 	StyleSheet,
 	TextInput,
@@ -72,62 +71,55 @@ export default function SelectRestaurant() {
 		item: IRestaurant;
 		index: number;
 	}) => {
-		const isLeft = index % 2 === 0;
-
 		return (
 			<MotiView
-				from={{ opacity: 0, translateY: 14 }}
+				from={{ opacity: 0, translateY: 12 }}
 				animate={{ opacity: 1, translateY: 0 }}
 				transition={{
 					type: "timing",
 					duration: 280,
-					delay: index * 60,
+					delay: index * 40,
 				}}
-				style={[
-					styles.cardWrapper,
-					{
-						paddingRight: isLeft
-							? horizontalScale(5)
-							: 0,
-						paddingLeft: isLeft
-							? 0
-							: horizontalScale(5),
-					},
-				]}
 			>
 				<Pressable
 					onPress={() => onSelect(item)}
-					style={({ pressed }) => [
-						styles.card,
-						{
-							transform: [
-								{ scale: pressed ? 0.96 : 1 },
-							],
-						},
-					]}
+					style={({ pressed }) => ({
+						transform: [{ scale: pressed ? 0.98 : 1 }],
+					})}
 				>
-					<View style={styles.cardTop}>
-						<TextBold
-							style={{
-								fontSize: moderateScale(26),
-								color: "#CCC",
-							}}
-						>
-							{getInitials(item.name)}
-						</TextBold>
-					</View>
+					<View style={styles.card}>
+						<View style={styles.avatar}>
+							<TextBold
+								style={{
+									fontSize: moderateScale(16),
+									color: "#999",
+								}}
+							>
+								{getInitials(item.name)}
+							</TextBold>
+						</View>
 
-					<View style={styles.cardBottom}>
-						<TextBold
-							numberOfLines={2}
-							style={{
-								fontSize: moderateScale(14),
-								color: "#1A1A1A",
-								lineHeight: moderateScale(18),
-							}}
-						>
-							{item.name}
-						</TextBold>
+						<View style={{ flex: 1 }}>
+							<TextBold
+								numberOfLines={1}
+								style={{
+									fontSize: moderateScale(15),
+									color: "#1A1A1A",
+									lineHeight: moderateScale(20),
+								}}
+							>
+								{item.name}
+							</TextBold>
+							<Text
+								style={{
+									fontSize: moderateScale(13),
+									color: "#888",
+									marginTop: verticalScale(2),
+								}}
+							>
+								{item.checkIns} visitas · ${item.balance.toFixed(2)}
+							</Text>
+						</View>
 					</View>
 				</Pressable>
 			</MotiView>
@@ -138,7 +130,6 @@ export default function SelectRestaurant() {
 		<Container style={{ paddingTop: 0 }}>
 			<FlatList
 				data={filtered}
-				numColumns={2}
 				showsVerticalScrollIndicator={false}
 				keyExtractor={(item) => String(item.id)}
 				renderItem={renderItem}
@@ -241,35 +232,23 @@ const styles = StyleSheet.create({
 		marginLeft: horizontalScale(10),
 		padding: 0,
 	},
-	cardWrapper: {
-		flex: 1,
-		maxWidth: "50%",
-	},
 	card: {
-		backgroundColor: "#FFFFFF",
-		borderRadius: moderateScale(16),
-		overflow: "hidden",
-		marginBottom: verticalScale(10),
-		...Platform.select({
-			ios: {
-				shadowColor: "#000000",
-				shadowOffset: { width: 0, height: 3 },
-				shadowOpacity: 0.12,
-				shadowRadius: 10,
-			},
-			android: {
-				elevation: 4,
-			},
-		}),
+		flexDirection: "row",
+		alignItems: "center",
+		paddingVertical: verticalScale(12),
+		paddingHorizontal: horizontalScale(4),
+		borderBottomWidth: 1,
+		borderBottomColor: "#F0F0F0",
 	},
-	cardTop: {
-		height: verticalScale(90),
+	avatar: {
+		width: moderateScale(50),
+		height: moderateScale(50),
+		borderRadius: moderateScale(12),
+		backgroundColor: "#F5F5F5",
+		borderWidth: 0.5,
+		borderColor: "#E0E0E0",
 		alignItems: "center",
 		justifyContent: "center",
-		backgroundColor: "#FAFAFA",
-	},
-	cardBottom: {
-		padding: moderateScale(12),
-		backgroundColor: "#FFFFFF",
+		marginRight: horizontalScale(12),
 	},
 });

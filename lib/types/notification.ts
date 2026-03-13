@@ -7,4 +7,6 @@ export interface INotification {
 	description: string;
 	timestamp: string;
 	read: boolean;
+	giftCardId?: string;
+	restaurantId?: string;
 }

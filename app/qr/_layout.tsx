@@ -6,9 +6,11 @@ export default function QrLayout() {
 		<Stack>
 			<Stack.Screen
 				options={{
-					headerShown: Platform.OS === "ios" ? false : true,
 					headerTitle: "",
 					headerShadowVisible: false,
+					headerTransparent: true,
+					headerStyle: { backgroundColor: "transparent" },
+					headerBlurEffect: undefined,
 				}}
 				name="index"
 			/>

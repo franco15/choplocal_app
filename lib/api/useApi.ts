@@ -76,6 +76,8 @@ export const useNotificationsApi = () => {
 	return {
 		byUser: async (userId: string): Promise<INotification[]> =>
 			api.get(`api/app/notifications/user/${userId}`),
+		markAsRead: async (notificationId: string): Promise<void> =>
+			api.put(`api/app/notifications/${notificationId}/read`),
 	};
 };
 

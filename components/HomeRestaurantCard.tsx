@@ -5,7 +5,6 @@ import { IRestaurant } from "@/lib/types/restaurant";
 import { router } from "expo-router";
 import { useCallback } from "react";
 import {
-	Alert,
 	Pressable,
 	Share,
 	StyleSheet,
@@ -17,12 +16,14 @@ type Props = {
 	restaurant: IRestaurant;
 	isFavorited?: boolean;
 	onToggleFavorite?: (id: string) => void;
+	variant?: "default" | "popular";
 };
 
 export default function HomeRestaurantCard({
 	restaurant,
 	isFavorited = false,
 	onToggleFavorite,
+	variant = "default",
 }: Props) {
 	const cardWidth = 270;
 
@@ -39,14 +40,6 @@ export default function HomeRestaurantCard({
 	}, [restaurant.id, onToggleFavorite]);
 
 	const onRecommend = useCallback(async () => {
-		if ((restaurant.checkIns ?? 0) < 1) {
-			Alert.alert(
-				"You haven't visited yet!",
-				"Visit this restaurant at least once before recommending it to your friends.",
-				[{ text: "Got it" }],
-			);
-			return;
-		}
 		const code = restaurant.referralCode;
 		if (!code) return;
 		try {
@@ -109,21 +102,24 @@ export default function HomeRestaurantCard({
 						{restaurant.name}
 					</TextBold>
 					<Text numberOfLines={1} style={styles.details}>
-						{restaurant.checkIns} visitas · ${restaurant.balance.toFixed(2)}
+						{variant === "popular"
+							? `Total of Chop Local visits: ${restaurant.totalCheckins}`
+							: `${restaurant.checkIns} visitas · $${restaurant.balance.toFixed(2)}`}
 					</Text>
 				</View>
 
 				{/* Action row */}
-				<View style={styles.actionRow}>
-					<TouchableOpacity
-						activeOpacity={0.7}
-						onPress={onRecommend}
-						style={styles.actionBtnOutline}
-					>
-						<TextBold style={styles.actionTextOutline}>Recommend</TextBold>
-					</TouchableOpacity>
-
-				</View>
+				{(restaurant.checkIns ?? 0) >= 1 && !!restaurant.referralCode && (
+					<View style={styles.actionRow}>
+						<TouchableOpacity
+							activeOpacity={0.7}
+							onPress={onRecommend}
+							style={styles.actionBtnOutline}
+						>
+							<TextBold style={styles.actionTextOutline}>Recommend</TextBold>
+						</TouchableOpacity>
+					</View>
+				)}
 			</Pressable>
 		</View>
 	);

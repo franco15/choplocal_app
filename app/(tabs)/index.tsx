@@ -7,15 +7,15 @@ import SectionHeader from "@/components/SectionHeader";
 import { TextBold, Text } from "@/components";
 import { Bell } from "@/constants/svgs";
 import { useUserContext } from "@/contexts/UserContext";
-import { queryKeys } from "@/lib/api/queryClient";
-import { useUserApi } from "@/lib/api/useApi";
+import { queryClient, queryKeys } from "@/lib/api/queryClient";
+import { useUserApi, useNotificationsApi } from "@/lib/api/useApi";
 import { horizontalScale, moderateScale, verticalScale } from "@/lib/metrics";
 import { isNullOrWhitespace } from "@/lib/utils";
 import { ERestaurantStatus, IRestaurant } from "@/lib/types/restaurant";
 import { useQuery } from "@tanstack/react-query";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { FlatList, Pressable, StyleSheet, View } from "react-native";
+import { FlatList, Pressable, RefreshControl, StyleSheet, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import Animated, {
 	useAnimatedScrollHandler,
@@ -36,11 +36,13 @@ const COLLAPSE_DISTANCE = 100;
 export default function HomeScreen() {
 	const { profileComplete, user, isUserLoading } = useUserContext();
 	const userApi = useUserApi();
+	const notificationsApi = useNotificationsApi();
 	const insets = useSafeAreaInsets();
 	const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
 	const [selectedCity, setSelectedCity] = useState(AVAILABLE_CITIES[0]);
 	const [cityModalOpen, setCityModalOpen] = useState(false);
 	const scrollY = useSharedValue(0);
+	const [refreshing, setRefreshing] = useState(false);
 
 	const { data: restaurants } = useQuery({
 		queryKey: [queryKeys.users.restaurants],
@@ -50,6 +52,15 @@ export default function HomeScreen() {
 		},
 		enabled: !!user && !isNullOrWhitespace(user?.id),
 	});
+
+	const { data: notifications = [] } = useQuery({
+		queryKey: queryKeys.notifications.byUser(user?.id ?? ""),
+		queryFn: () => notificationsApi.byUser(user!.id),
+		enabled: !!user && !isNullOrWhitespace(user?.id),
+		staleTime: 10000,
+	});
+
+	const hasUnread = notifications.some((n) => !n.read);
 
 	useEffect(() => {
 		if (!profileComplete) router.replace("/complete-profile");
@@ -74,6 +85,13 @@ export default function HomeScreen() {
 		});
 	}, []);
 
+	const onRefresh = useCallback(async () => {
+		setRefreshing(true);
+		await queryClient.invalidateQueries({ queryKey: [queryKeys.users.restaurants] });
+		await queryClient.invalidateQueries({ queryKey: queryKeys.notifications.byUser(user?.id ?? "") });
+		setRefreshing(false);
+	}, [user?.id]);
+
 	// Group restaurants by category
 	const groups = useMemo(() => {
 		if (!restaurants)
@@ -89,9 +107,9 @@ export default function HomeScreen() {
 			popular: [...restaurants]
 				.sort((a, b) => b.checkIns - a.checkIns)
 				.slice(0, 10),
-			new: restaurants.filter(
-				(r) => r.status === ERestaurantStatus.NotVisited,
-			),
+			new: [...restaurants]
+				.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+				.slice(0, 15),
 		};
 	}, [restaurants]);
 
@@ -145,10 +163,9 @@ export default function HomeScreen() {
 		data: IRestaurant[],
 		keyPrefix: string,
 		type: string,
+		variant?: "default" | "popular",
 	) => {
 		const limited = data.slice(0, MAX_CAROUSEL);
-		const hasMore = data.length > MAX_CAROUSEL;
-
 		return (
 			<FlatList
 				data={limited}
@@ -161,28 +178,10 @@ export default function HomeScreen() {
 						restaurant={item}
 						isFavorited={favoriteIds.includes(item.id)}
 						onToggleFavorite={toggleFavorite}
+						variant={variant}
 					/>
 				)}
-				ListFooterComponent={
-					hasMore ? (
-						<Pressable
-							onPress={() => goToSeeAll(type)}
-							style={({ pressed }) => [
-								styles.seeAllCard,
-								{ opacity: pressed ? 0.6 : 1 },
-							]}
-						>
-							<Ionicons
-								name="arrow-forward-circle"
-								size={moderateScale(36)}
-								color="#CCC"
-							/>
-							<Text style={styles.seeAllCardText}>
-								See all
-							</Text>
-						</Pressable>
-					) : null
-				}
+
 			/>
 		);
 	};
@@ -204,7 +203,8 @@ export default function HomeScreen() {
 					style={{ flexDirection: "row", alignItems: "center", flex: 1 }}
 				>
 					<Text style={styles.stickyText}>Ready to explore </Text>
-					<TextBold style={styles.stickyCity}>{selectedCity}</TextBold>
+					<TextBold style={styles.stickyCity}>City</TextBold>
+					<Ionicons name="chevron-down" size={moderateScale(16)} color="#1A1A1A" style={{ marginLeft: 4 }} />
 				</Pressable>
 
 				<Pressable
@@ -219,6 +219,7 @@ export default function HomeScreen() {
 						width={horizontalScale(24)}
 						height={verticalScale(24)}
 					/>
+					{hasUnread && <View style={styles.notifDot} />}
 				</Pressable>
 			</Animated.View>
 
@@ -227,6 +228,9 @@ export default function HomeScreen() {
 				onScroll={scrollHandler}
 				scrollEventThrottle={16}
 				showsVerticalScrollIndicator={false}
+				refreshControl={
+					<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#b42406" progressViewOffset={100} />
+				}
 				contentContainerStyle={[
 					styles.scrollContent,
 					{
@@ -250,6 +254,7 @@ export default function HomeScreen() {
 							width={horizontalScale(26)}
 							height={verticalScale(26)}
 						/>
+						{hasUnread && <View style={styles.notifDot} />}
 					</Pressable>
 
 					{/* "Hello, Name." — fades on scroll */}
@@ -259,12 +264,15 @@ export default function HomeScreen() {
 						</TextBold>
 					</Animated.View>
 
-					<Pressable onPress={() => setCityModalOpen(true)}>
+					<View>
 						<Text style={styles.heroSubtitle}>
-							Ready to explore{" "}
-							<TextBold style={styles.heroCity}>{selectedCity}</TextBold>
+							Ready to explore
 						</Text>
-					</Pressable>
+						<Pressable onPress={() => setCityModalOpen(true)} style={{ flexDirection: "row", alignItems: "center" }}>
+							<TextBold style={styles.heroCity}>City</TextBold>
+							<Ionicons name="chevron-down" size={moderateScale(18)} color="rgba(0,0,0,0.5)" style={{ marginLeft: 4 }} />
+						</Pressable>
+					</View>
 				</View>
 
 				{/* ── Restaurant Sections ── */}
@@ -329,7 +337,7 @@ export default function HomeScreen() {
 							subtitle="Most visited by the community"
 							onSeeAll={() => goToSeeAll("popular")}
 						/>
-						{renderCarousel(groups.popular, "popular", "popular")}
+						{renderCarousel(groups.popular, "popular", "popular", "popular")}
 					</View>
 				)}
 
@@ -396,6 +404,17 @@ const styles = StyleSheet.create({
 		right: 0,
 		zIndex: 2,
 	},
+	notifDot: {
+		position: "absolute",
+		top: -2,
+		right: -2,
+		width: 12,
+		height: 12,
+		borderRadius: 6,
+		backgroundColor: "#E53935",
+		borderWidth: 1.5,
+		borderColor: "#FFFFFF",
+	},
 	heroHello: {
 		fontSize: moderateScale(34),
 		color: "#1A1A1A",
@@ -424,22 +443,6 @@ const styles = StyleSheet.create({
 		paddingHorizontal: horizontalScale(4),
 		gap: horizontalScale(12),
 	},
-	seeAllCard: {
-		width: horizontalScale(120),
-		backgroundColor: "#FFFFFF",
-		borderRadius: moderateScale(16),
-		borderWidth: 1,
-		borderColor: "#EDEDED",
-		alignItems: "center",
-		justifyContent: "center",
-		marginLeft: horizontalScale(4),
-	},
-	seeAllCardText: {
-		fontSize: moderateScale(14),
-		color: "#999",
-		marginTop: verticalScale(8),
-	},
-
 	/* ── Stats ── */
 	statsSection: {
 		marginTop: verticalScale(24),
