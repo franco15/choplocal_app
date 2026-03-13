@@ -1,6 +1,8 @@
 import { Container, Text, TextBold } from "@/components";
 import { Lock } from "@/constants/svgs";
 import { useGiftCardContext } from "@/contexts/GiftCardContext";
+import { useUserContext } from "@/contexts/UserContext";
+import { useGiftCardApi } from "@/lib/api/useApi";
 import {
 	horizontalScale,
 	moderateScale,
@@ -37,7 +39,9 @@ const formatExpiry = (text: string) => {
 export default function Payment() {
 	const router = useRouter();
 	const insets = useSafeAreaInsets();
-	const { processPayment, sendGiftCard } = useGiftCardContext();
+	const { user } = useUserContext();
+	const { refreshGiftCards } = useGiftCardContext();
+	const giftCardApi = useGiftCardApi();
 
 	const {
 		restaurantId,
@@ -80,22 +84,14 @@ export default function Payment() {
 		if (!validate()) return;
 		setProcessing(true);
 		try {
-			await processPayment(
-				{
-					cardNumber,
-					expiryDate: expiry,
-					cvv,
-					cardholderName,
-				},
+			const giftCard = await giftCardApi.create({
 				amount,
-			);
-			const giftCard = await sendGiftCard({
-				restaurantId: (restaurantId ?? "") as string,
-				restaurantName: restaurantName ?? "",
-				value: amount,
-				recipientPhone: recipientPhone ?? "",
+				restaurantId: restaurantId ?? "",
+				senderId: user.id,
+				receiverPhoneNumber: recipientPhone ?? "",
 				message: message ?? "",
 			});
+			refreshGiftCards();
 			router.replace({
 				pathname: "/gift-cards/success",
 				params: {
@@ -107,8 +103,9 @@ export default function Payment() {
 					message: message ?? "",
 				},
 			});
-		} catch {
-			setErrors({ general: "Payment failed. Please try again." });
+		} catch (err: any) {
+			const apiMessage = err?.response?.data?.message;
+			setErrors({ general: apiMessage ?? "Payment failed. Please try again." });
 		} finally {
 			setProcessing(false);
 		}

@@ -1,13 +1,7 @@
 import { Text, TextBold } from "@/components";
 import { useRedeemCodeContext } from "@/contexts/RedeemCodeContext";
-import { useUserContext } from "@/contexts/UserContext";
-import { queryClient, queryKeys } from "@/lib/api/queryClient";
-import { useUserApi } from "@/lib/api/useApi";
 import { horizontalScale, moderateScale, verticalScale } from "@/lib/metrics";
-import { isNullOrWhitespace } from "@/lib/utils";
-import { ERestaurantStatus, IRestaurant } from "@/lib/types/restaurant";
 import { Ionicons } from "@expo/vector-icons";
-import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import * as Haptics from "expo-haptics";
 import { MotiView } from "moti";
@@ -28,8 +22,6 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 export default function RedeemCodeScreen() {
 	const router = useRouter();
 	const insets = useSafeAreaInsets();
-	const { user } = useUserContext();
-	const userApi = useUserApi();
 	const { redeemCode } = useRedeemCodeContext();
 
 	const [code, setCode] = useState("");
@@ -40,48 +32,15 @@ export default function RedeemCodeScreen() {
 		message: "",
 	});
 
-	const { data: restaurants } = useQuery({
-		queryKey: [queryKeys.users.restaurants],
-		queryFn: async () => {
-			const data = await userApi.restaurants(user.id);
-			return data;
-		},
-		enabled: !!user && !isNullOrWhitespace(user?.id),
-	});
-
 	const handleRedeem = async () => {
 		if (!code.trim() || isValidating) return;
 		Keyboard.dismiss();
 		setIsValidating(true);
 
-		const result = await redeemCode(code, restaurants ?? []);
+		const result = await redeemCode(code);
 		setIsValidating(false);
 
 		if (result.success) {
-			if (result.type === "recommendation") {
-				// Update restaurant list cache
-				queryClient.setQueryData(
-					[queryKeys.users.restaurants],
-					(old: IRestaurant[] | undefined) =>
-						old?.map((r) =>
-							r.id === result.restaurantId
-								? {
-										...r,
-										status: ERestaurantStatus.Recommended,
-									}
-								: r,
-						),
-				);
-				// Update individual restaurant cache
-				queryClient.setQueryData(
-					[queryKeys.restaurants.byId(String(result.restaurantId))],
-					(old: IRestaurant | undefined) =>
-						old
-							? { ...old, status: ERestaurantStatus.Recommended }
-							: old,
-				);
-			}
-
 			Haptics.notificationAsync(
 				Haptics.NotificationFeedbackType.Success,
 			);
@@ -89,21 +48,11 @@ export default function RedeemCodeScreen() {
 			router.push({
 				pathname: "/redeem-code/success",
 				params: {
-					restaurantName: result.restaurantName,
-					restaurantId: String(result.restaurantId),
-					codeType: result.type,
-					value:
-						result.type === "giftcard"
-							? String(result.value)
-							: String(result.rewardAmount),
-					senderName:
-						result.type === "giftcard"
-							? result.senderName
-							: "",
-					senderMessage:
-						result.type === "giftcard"
-							? result.senderMessage
-							: "",
+					type: String(result.data.type),
+					restaurantName: result.data.restaurantName,
+					amount: result.data.amount != null ? String(result.data.amount) : "",
+					senderName: result.data.senderName ?? "",
+					code: result.data.code,
 				},
 			});
 		} else {
@@ -111,30 +60,11 @@ export default function RedeemCodeScreen() {
 				Haptics.NotificationFeedbackType.Error,
 			);
 
-			const errors: Record<string, { title: string; message: string }> =
-				{
-					invalid_code: {
-						title: "Invalid Code",
-						message:
-							"We couldn't find a match for this code. Double-check and try again!",
-					},
-					already_redeemed: {
-						title: "Already Redeemed",
-						message:
-							"You've already used this code. Each code can only be used once.",
-					},
-					already_visited: {
-						title: "Already Visited!",
-						message: `You've already been to ${(result as any).restaurantName}, so this recommendation code can't be applied.`,
-					},
-					already_recommended: {
-						title: "Already Recommended!",
-						message: `You already have a recommendation for ${(result as any).restaurantName}. Only one recommendation per restaurant!`,
-					},
-				};
-
-			const err = errors[result.error] ?? errors.invalid_code;
-			setErrorModal({ visible: true, ...err });
+			setErrorModal({
+				visible: true,
+				title: "Error",
+				message: result.error,
+			});
 		}
 	};
 
@@ -164,8 +94,7 @@ export default function RedeemCodeScreen() {
 							Redeem a Code
 						</TextBold>
 						<Text style={styles.heroSubtitle}>
-							Enter your recommendation or{"\n"}gift card code
-							below
+							Enter your gift card code{"\n"}below
 						</Text>
 					</MotiView>
 
@@ -186,7 +115,7 @@ export default function RedeemCodeScreen() {
 						<View style={styles.inputRow}>
 							<TextInput
 								style={styles.textInput}
-								placeholder="e.g. REC-001"
+								placeholder="e.g. ABC123"
 								placeholderTextColor="rgba(0,0,0,0.25)"
 								value={code}
 								onChangeText={setCode}

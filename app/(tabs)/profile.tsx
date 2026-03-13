@@ -15,7 +15,7 @@ import { CARD_THEMES } from "@/components/GiftCardVisual";
 
 export default function ProfileScreen() {
 	const { user } = useUserContext();
-	const { receivedGiftCards } = useGiftCardContext();
+	const { giftCards } = useGiftCardContext();
 	const userApi = useUserApi();
 	const insets = useSafeAreaInsets();
 
@@ -51,17 +51,18 @@ export default function ProfileScreen() {
 	}, [restaurants]);
 
 	const groupedGiftCards = useMemo(() => {
-		const available = (receivedGiftCards ?? []).filter((gc) => gc.status === "Available");
-		const groups: Record<string, { restaurantName: string; cards: typeof available; total: number }> = {};
-		available.forEach((gc) => {
+		const allCards = giftCards ?? [];
+		const groups: Record<string, { restaurantId: string; restaurantName: string; cards: typeof allCards; total: number }> = {};
+		allCards.forEach((gc) => {
 			if (!groups[gc.restaurantId]) {
-				groups[gc.restaurantId] = { restaurantName: gc.restaurantName, cards: [], total: 0 };
+				const restaurant = restaurants?.find((r) => r.id === gc.restaurantId);
+				groups[gc.restaurantId] = { restaurantId: gc.restaurantId, restaurantName: restaurant?.name ?? "Restaurant", cards: [], total: 0 };
 			}
 			groups[gc.restaurantId].cards.push(gc);
-			groups[gc.restaurantId].total += gc.value;
+			groups[gc.restaurantId].total += gc.amount ?? 0;
 		});
 		return Object.values(groups).sort((a, b) => b.cards.length - a.cards.length);
-	}, [receivedGiftCards]);
+	}, [giftCards, restaurants]);
 
 	if (!user) return null;
 
@@ -276,10 +277,10 @@ export default function ProfileScreen() {
 													<View style={{ position: "absolute", bottom: -15, left: -10, width: 70, height: 70, borderRadius: 35, backgroundColor: theme.blob2, opacity: 0.2 }} />
 													<View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" }}>
 														<Text style={{ color: "rgba(255,255,255,0.7)", fontSize: moderateScale(11), textTransform: "uppercase", letterSpacing: 0.5 }}>
-															{gc.restaurantName}
+															{group.restaurantName}
 														</Text>
 														<TextBold style={{ color: "#FFFFFF", fontSize: moderateScale(22) }}>
-															${gc.value}
+															${gc.amount}
 														</TextBold>
 													</View>
 													<View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-end" }}>
@@ -287,7 +288,7 @@ export default function ProfileScreen() {
 															Gift Card
 														</TextBold>
 														<Text style={{ color: "rgba(255,255,255,0.6)", fontSize: moderateScale(10) }}>
-															from {gc.senderName}
+															{gc.code}
 														</Text>
 													</View>
 												</TouchableOpacity>

@@ -1,5 +1,7 @@
 import { Container, Text, TextBold } from "@/components";
 import { useGiftCardContext } from "@/contexts/GiftCardContext";
+import { useUserContext } from "@/contexts/UserContext";
+import { useGiftCardApi } from "@/lib/api/useApi";
 import {
 	horizontalScale,
 	moderateScale,
@@ -11,8 +13,11 @@ import { ActivityIndicator, StyleSheet, TouchableOpacity, View } from "react-nat
 
 export default function GiftCardConfirm() {
 	const router = useRouter();
-	const { sendGiftCard } = useGiftCardContext();
+	const { user } = useUserContext();
+	const { refreshGiftCards } = useGiftCardContext();
+	const giftCardApi = useGiftCardApi();
 	const [sending, setSending] = useState(false);
+	const [error, setError] = useState("");
 
 	const { restaurantId, restaurantName, value, recipientPhone, message } =
 		useLocalSearchParams<{
@@ -25,24 +30,32 @@ export default function GiftCardConfirm() {
 
 	const onConfirm = async () => {
 		setSending(true);
-		const giftCard = await sendGiftCard({
-			restaurantId: (restaurantId ?? "") as string,
-			restaurantName: restaurantName ?? "",
-			value: Number(value),
-			recipientPhone: recipientPhone ?? "",
-			message: message ?? "",
-		});
-		setSending(false);
-		router.replace({
-			pathname: "/gift-cards/success",
-			params: {
-				restaurantName,
-				value,
-				recipientPhone,
-				code: giftCard.code,
+		setError("");
+		try {
+			const giftCard = await giftCardApi.create({
+				amount: Number(value),
+				restaurantId: restaurantId ?? "",
+				senderId: user.id,
+				receiverPhoneNumber: recipientPhone ?? "",
 				message: message ?? "",
-			},
-		});
+			});
+			refreshGiftCards();
+			router.replace({
+				pathname: "/gift-cards/success",
+				params: {
+					restaurantName,
+					value,
+					recipientPhone,
+					code: giftCard.code,
+					message: message ?? "",
+				},
+			});
+		} catch (err: any) {
+			const apiMessage = err?.response?.data?.message;
+			setError(apiMessage ?? "Something went wrong. Please try again.");
+		} finally {
+			setSending(false);
+		}
 	};
 
 	return (

@@ -27,52 +27,18 @@ import Animated, {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import HomeSkeleton from "../skeletons/home";
+import { AVAILABLE_CITIES } from "@/components/CityDropdown";
 
 const FAVORITES_KEY = "choplocal-favorites";
 
-// Mock: replace with restaurant.city when backend supports it
-const MOCK_CITIES = ["Monterrey", "CDMX", "Guadalajara"];
-const getRestaurantCity = (restaurant: IRestaurant) => {
-	// TODO: When backend has city field, change to: return restaurant.city;
-	return MOCK_CITIES[parseInt(restaurant.id, 10) % 3];
-};
-
 const COLLAPSE_DISTANCE = 100;
-
-// TODO: Replace with real recommended data from API when backend supports it
-const MOCK_RECOMMENDED: IRestaurant[] = [
-	{
-		id: "3",
-		name: "Sushi Heaven",
-		checkIns: 12,
-		status: ERestaurantStatus.Recommended,
-		balance: 0,
-		image: "",
-	},
-	{
-		id: "9001",
-		name: "La Nacional",
-		checkIns: 87,
-		status: ERestaurantStatus.Recommended,
-		balance: 0,
-		image: "",
-	},
-	{
-		id: "9002",
-		name: "Café Regina",
-		checkIns: 54,
-		status: ERestaurantStatus.Recommended,
-		balance: 0,
-		image: "",
-	},
-];
 
 export default function HomeScreen() {
 	const { profileComplete, user, isUserLoading } = useUserContext();
 	const userApi = useUserApi();
 	const insets = useSafeAreaInsets();
 	const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
-	const [selectedCity, setSelectedCity] = useState("All Cities");
+	const [selectedCity, setSelectedCity] = useState(AVAILABLE_CITIES[0]);
 	const [cityModalOpen, setCityModalOpen] = useState(false);
 	const scrollY = useSharedValue(0);
 
@@ -108,36 +74,26 @@ export default function HomeScreen() {
 		});
 	}, []);
 
-	// Display name for city in header
-	const cityDisplay =
-		selectedCity === "All Cities" ? "the city" : selectedCity;
-
-	// Group restaurants by category, filtered by city
+	// Group restaurants by category
 	const groups = useMemo(() => {
 		if (!restaurants)
 			return { visited: [], recommended: [], popular: [], new: [] };
 
-		const filtered =
-			selectedCity === "All Cities"
-				? restaurants
-				: restaurants.filter(
-						(r) => getRestaurantCity(r) === selectedCity,
-					);
-
 		return {
-			visited: filtered.filter(
+			visited: restaurants.filter(
 				(r) => r.status === ERestaurantStatus.Visited,
 			),
-			// TODO: Replace MOCK_RECOMMENDED with API data when backend is ready
-			recommended: MOCK_RECOMMENDED,
-			popular: [...filtered]
+			recommended: restaurants.filter(
+				(r) => r.status === ERestaurantStatus.Recommended,
+			),
+			popular: [...restaurants]
 				.sort((a, b) => b.checkIns - a.checkIns)
 				.slice(0, 10),
-			new: filtered.filter(
+			new: restaurants.filter(
 				(r) => r.status === ERestaurantStatus.NotVisited,
 			),
 		};
-	}, [restaurants, selectedCity]);
+	}, [restaurants]);
 
 	// Navigate to independent "See All" page
 	const goToSeeAll = useCallback(
@@ -245,29 +201,10 @@ export default function HomeScreen() {
 			>
 				<Pressable
 					onPress={() => setCityModalOpen(true)}
-					style={({ pressed }) => ({
-						flexDirection: "row",
-						alignItems: "center",
-						flex: 1,
-						opacity: pressed ? 0.6 : 1,
-					})}
+					style={{ flexDirection: "row", alignItems: "center", flex: 1 }}
 				>
 					<Text style={styles.stickyText}>Ready to explore </Text>
-					<TextBold
-						style={styles.stickyCity}
-						numberOfLines={1}
-					>
-						{cityDisplay}
-					</TextBold>
-					<Ionicons
-						name="chevron-down"
-						size={moderateScale(16)}
-						color="#999"
-						style={{
-							marginLeft: horizontalScale(4),
-							flexShrink: 0,
-						}}
-					/>
+					<TextBold style={styles.stickyCity}>{selectedCity}</TextBold>
 				</Pressable>
 
 				<Pressable
@@ -322,34 +259,11 @@ export default function HomeScreen() {
 						</TextBold>
 					</Animated.View>
 
-					{/* "Ready to explore City ▼" */}
-					<Text style={styles.heroSubtitle}>
-						Ready to explore
-					</Text>
-					<Pressable
-						onPress={() => setCityModalOpen(true)}
-						style={({ pressed }) => ({
-							flexDirection: "row",
-							alignItems: "center",
-							opacity: pressed ? 0.6 : 1,
-							maxWidth: "85%",
-						})}
-					>
-						<TextBold
-							style={styles.heroCity}
-							numberOfLines={1}
-						>
-							{cityDisplay}
-						</TextBold>
-						<Ionicons
-							name="chevron-down"
-							size={moderateScale(24)}
-							color="#999"
-							style={{
-								marginLeft: horizontalScale(6),
-								flexShrink: 0,
-							}}
-						/>
+					<Pressable onPress={() => setCityModalOpen(true)}>
+						<Text style={styles.heroSubtitle}>
+							Ready to explore{" "}
+							<TextBold style={styles.heroCity}>{selectedCity}</TextBold>
+						</Text>
 					</Pressable>
 				</View>
 
@@ -432,7 +346,6 @@ export default function HomeScreen() {
 				)}
 			</Animated.ScrollView>
 
-			{/* ── City Picker Modal ── */}
 			<CityDropdown
 				isOpen={cityModalOpen}
 				onClose={() => setCityModalOpen(false)}

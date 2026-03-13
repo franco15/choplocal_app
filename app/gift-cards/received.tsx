@@ -6,7 +6,6 @@ import {
 	moderateScale,
 	verticalScale,
 } from "@/lib/metrics";
-import { EGiftCardStatus } from "@/lib/types/giftcard";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { MotiView } from "moti";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
@@ -16,8 +15,7 @@ export default function GiftCardReceived() {
 	const { giftCardId } = useLocalSearchParams<{
 		giftCardId: string;
 	}>();
-	const { getGiftCardById, acceptGiftCard, declineGiftCard } =
-		useGiftCardContext();
+	const { getGiftCardById } = useGiftCardContext();
 
 	const giftCard = getGiftCardById(giftCardId ?? "");
 
@@ -39,21 +37,18 @@ export default function GiftCardReceived() {
 		);
 	}
 
-	const isAvailable = giftCard.status === EGiftCardStatus.Available;
+	const isAvailable = giftCard.isActive;
 
 	const onAccept = async () => {
-		await acceptGiftCard(giftCard.id);
 		router.replace({
 			pathname: "/gift-cards/accepted",
 			params: {
 				restaurantId: String(giftCard.restaurantId),
-				restaurantName: giftCard.restaurantName,
 			},
 		});
 	};
 
 	const onDecline = async () => {
-		await declineGiftCard(giftCard.id);
 		router.back();
 	};
 
@@ -80,7 +75,7 @@ export default function GiftCardReceived() {
 								marginTop: verticalScale(14),
 							}}
 						>
-							{giftCard.restaurantName}
+							{giftCard.code}
 						</TextBold>
 						<TextBold
 							style={{
@@ -89,7 +84,7 @@ export default function GiftCardReceived() {
 								marginTop: verticalScale(6),
 							}}
 						>
-							${giftCard.value}.00
+							${giftCard.amount}.00
 						</TextBold>
 
 						{/* Status badge */}
@@ -99,10 +94,7 @@ export default function GiftCardReceived() {
 								{
 									backgroundColor: isAvailable
 										? "#D4EDDA"
-										: giftCard.status ===
-											  EGiftCardStatus.Used
-											? "#E8E8E8"
-											: "#FFF3CD",
+										: "#E8E8E8",
 								},
 							]}
 						>
@@ -111,13 +103,10 @@ export default function GiftCardReceived() {
 									fontSize: moderateScale(12),
 									color: isAvailable
 										? "#2D6A3F"
-										: giftCard.status ===
-											  EGiftCardStatus.Used
-											? "#666"
-											: "#856404",
+										: "#666",
 								}}
 							>
-								{giftCard.status}
+								{isAvailable ? "Active" : "Inactive"}
 							</Text>
 						</View>
 					</View>
@@ -132,10 +121,8 @@ export default function GiftCardReceived() {
 							lineHeight: moderateScale(20),
 						}}
 					>
-						{giftCard.senderName} sent you this gift card
-						{giftCard.message
-							? `: "${giftCard.message}"`
-							: "."}
+						You received this gift card
+						{"."}
 					</Text>
 				</View>
 

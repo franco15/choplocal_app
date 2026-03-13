@@ -79,6 +79,7 @@ export default function RestaurantCard({
 		});
 	}, [restaurant.id, restaurant.name]);
 
+	console.log("Rendering card for", restaurant.name, "checkins:", restaurant.checkIns);
 	return (
 		<MotiView
 			from={{ opacity: 0, translateY: 12 }}

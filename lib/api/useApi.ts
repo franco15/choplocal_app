@@ -1,3 +1,5 @@
+import { IGiftCard, IGiftCardCreate, IRedeemCodeResult } from "../types/giftcard";
+import { INotification } from "../types/notification";
 import { IRestaurant, IRestaurantTransactions } from "../types/restaurant";
 import { ISuggestion } from "../types/suggestions";
 import { IUser, IUserPut } from "../types/user";
@@ -54,6 +56,26 @@ export const useRestaurantApi = () => {
 			userId: string,
 		): Promise<Array<IRestaurantTransactions>> =>
 			api.get(`api/app/restaurant/${id}/user/${userId}/transactions`),
+	};
+};
+
+export const useGiftCardApi = () => {
+	const api = useAxios();
+	return {
+		byUser: async (userId: string): Promise<IGiftCard[]> =>
+			api.get(`api/app/gift-card/user/${userId}`),
+		create: async (params: IGiftCardCreate): Promise<IGiftCard> =>
+			api.post("api/app/gift-card/restaurant", params),
+		redeem: async (params: { code: string; userId: string }): Promise<IRedeemCodeResult> =>
+			api.post("api/app/gift-card/redeem", params),
+	};
+};
+
+export const useNotificationsApi = () => {
+	const api = useAxios();
+	return {
+		byUser: async (userId: string): Promise<INotification[]> =>
+			api.get(`api/app/notifications/user/${userId}`),
 	};
 };
 

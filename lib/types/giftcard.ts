@@ -1,36 +1,34 @@
-export enum EGiftCardStatus {
-	Available = "Available",
-	Used = "Used",
-	Expired = "Expired",
-}
-
 export interface IGiftCard {
 	id: string;
 	code: string;
+	amount: number;
+	isActive: boolean;
+	giftCardType: number;
 	restaurantId: string;
-	restaurantName: string;
-	value: number;
-	status: EGiftCardStatus;
-	senderPhone: string;
-	senderName: string;
-	recipientPhone: string;
-	message: string;
+	senderId: string;
+	receiverId: string;
 	createdAt: string;
-	expiresAt: string;
-	usedAt: string | null;
+	updatedAt: string;
+	isDeleted: boolean;
 }
 
-export interface IGiftCardSend {
-	restaurantId: string;
+export enum RedeemType {
+	GiftCard = 0,
+	ReferralCode = 1,
+}
+
+export interface IRedeemCodeResult {
+	type: RedeemType;
 	restaurantName: string;
-	value: number;
-	recipientPhone: string;
-	message: string;
+	amount: number | null;
+	senderName: string;
+	code: string;
 }
 
-export interface IPaymentInfo {
-	cardNumber: string;
-	expiryDate: string;
-	cvv: string;
-	cardholderName: string;
+export interface IGiftCardCreate {
+	amount: number;
+	restaurantId: string;
+	senderId: string;
+	receiverPhoneNumber: string;
+	message: string;
 }

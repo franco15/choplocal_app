@@ -7,17 +7,16 @@ import {
 	moderateScale,
 	verticalScale,
 } from "@/lib/metrics";
-import { EGiftCardStatus, IGiftCard } from "@/lib/types/giftcard";
+import { IGiftCard } from "@/lib/types/giftcard";
 import { useMemo, useState } from "react";
 import { FlatList, Pressable, ScrollView, StyleSheet, View } from "react-native";
 
-type FilterTab = "all" | "available" | "used" | "expired";
+type FilterTab = "all" | "active" | "inactive";
 
 const FILTER_TABS: { key: FilterTab; label: string }[] = [
 	{ key: "all", label: "All" },
-	{ key: "available", label: "Available" },
-	{ key: "used", label: "Used" },
-	{ key: "expired", label: "Expired" },
+	{ key: "active", label: "Active" },
+	{ key: "inactive", label: "Inactive" },
 ];
 
 export default function GiftCardsList() {
@@ -26,28 +25,17 @@ export default function GiftCardsList() {
 
 	const filteredCards = useMemo(() => {
 		switch (activeFilter) {
-			case "available":
-				return giftCards.filter(
-					(gc) => gc.status === EGiftCardStatus.Available,
-				);
-			case "used":
-				return giftCards.filter(
-					(gc) => gc.status === EGiftCardStatus.Used,
-				);
-			case "expired":
-				return giftCards.filter(
-					(gc) => gc.status === EGiftCardStatus.Expired,
-				);
+			case "active":
+				return giftCards.filter((gc) => gc.isActive);
+			case "inactive":
+				return giftCards.filter((gc) => !gc.isActive);
 			default:
 				return giftCards;
 		}
 	}, [giftCards, activeFilter]);
 
-	const availableCount = useMemo(
-		() =>
-			giftCards.filter(
-				(gc) => gc.status === EGiftCardStatus.Available,
-			).length,
+	const activeCount = useMemo(
+		() => giftCards.filter((gc) => gc.isActive).length,
 		[giftCards],
 	);
 
@@ -91,7 +79,7 @@ export default function GiftCardsList() {
 								marginTop: verticalScale(4),
 							}}
 						>
-							{availableCount} available
+							{activeCount} active
 						</Text>
 
 						{/* Filter tabs */}

@@ -1,4 +1,5 @@
 import { Text, TextBold } from "@/components";
+import { RedeemType } from "@/lib/types/giftcard";
 import { Ionicons } from "@expo/vector-icons";
 import {
 	horizontalScale,
@@ -15,27 +16,28 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 export default function RedeemCodeSuccess() {
 	const router = useRouter();
 	const insets = useSafeAreaInsets();
+
 	const {
+		type: typeStr,
 		restaurantName,
-		restaurantId,
-		codeType,
-		value,
+		amount,
 		senderName,
-		senderMessage,
+		code,
 	} = useLocalSearchParams<{
+		type: string;
 		restaurantName: string;
-		restaurantId: string;
-		codeType: string;
-		value: string;
+		amount: string;
 		senderName: string;
-		senderMessage: string;
+		code: string;
 	}>();
+
+	const redeemType = Number(typeStr) as RedeemType;
+	const isGiftCard = redeemType === RedeemType.GiftCard;
+	const typeLabel = isGiftCard ? "Gift Card" : "Referral Code";
 
 	useEffect(() => {
 		Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
 	}, []);
-
-	const isRecommendation = codeType === "recommendation";
 
 	return (
 		<View style={[styles.container, { paddingTop: insets.top }]}>
@@ -54,16 +56,7 @@ export default function RedeemCodeSuccess() {
 						delay: 50,
 					}}
 				>
-					<View
-						style={[
-							styles.heroCard,
-							{
-								backgroundColor: isRecommendation
-									? "#C6F6D5"
-									: "#FED7AA",
-							},
-						]}
-					>
+					<View style={[styles.heroCard, { backgroundColor: "#FED7AA" }]}>
 						{/* Decorative sparkles */}
 						<MotiView
 							from={{ rotate: "0deg", scale: 0 }}
@@ -76,13 +69,7 @@ export default function RedeemCodeSuccess() {
 							}}
 							style={styles.sparkle1}
 						>
-							<Ionicons
-								name="sparkles"
-								size={28}
-								color={
-									isRecommendation ? "#22C55E" : "#F59E0B"
-								}
-							/>
+							<Ionicons name="sparkles" size={28} color="#F59E0B" />
 						</MotiView>
 						<MotiView
 							from={{ rotate: "0deg", scale: 0 }}
@@ -95,13 +82,7 @@ export default function RedeemCodeSuccess() {
 							}}
 							style={styles.sparkle2}
 						>
-							<Ionicons
-								name="star"
-								size={22}
-								color={
-									isRecommendation ? "#22C55E" : "#F59E0B"
-								}
-							/>
+							<Ionicons name="star" size={22} color="#F59E0B" />
 						</MotiView>
 						<MotiView
 							from={{ scale: 0 }}
@@ -114,13 +95,7 @@ export default function RedeemCodeSuccess() {
 							}}
 							style={styles.sparkle3}
 						>
-							<Ionicons
-								name="star-outline"
-								size={18}
-								color={
-									isRecommendation ? "#22C55E" : "#F59E0B"
-								}
-							/>
+							<Ionicons name="star-outline" size={18} color="#F59E0B" />
 						</MotiView>
 
 						{/* Main check icon */}
@@ -134,16 +109,7 @@ export default function RedeemCodeSuccess() {
 								delay: 150,
 							}}
 						>
-							<View
-								style={[
-									styles.checkCircle,
-									{
-										backgroundColor: isRecommendation
-											? "#22C55E"
-											: "#F59E0B",
-									},
-								]}
-							>
+							<View style={[styles.checkCircle, { backgroundColor: "#F59E0B" }]}>
 								<Ionicons
 									name="checkmark-sharp"
 									size={56}
@@ -162,11 +128,7 @@ export default function RedeemCodeSuccess() {
 								delay: 400,
 							}}
 						>
-							<TextBold style={styles.heroTitle}>
-								{isRecommendation
-									? "All Done!"
-									: "All Done!"}
-							</TextBold>
+							<TextBold style={styles.heroTitle}>All Done!</TextBold>
 						</MotiView>
 					</View>
 				</MotiView>
@@ -182,11 +144,9 @@ export default function RedeemCodeSuccess() {
 					}}
 				>
 					<Text style={styles.subtitle}>
-						{isRecommendation
-							? `You earned a $${Number(value).toFixed(2)} reward\nfor ${restaurantName}! Visit to use your balance.`
-							: senderName
-								? `${senderName} sent you a $${Number(value).toFixed(2)} gift card\nfor ${restaurantName}!`
-								: `A $${Number(value).toFixed(2)} gift card for ${restaurantName}\nhas been added to your account.`}
+						{isGiftCard
+							? `A $${Number(amount).toFixed(2)} gift card for ${restaurantName}\nhas been added to your account.`
+							: `Your referral code for ${restaurantName}\nhas been redeemed successfully!`}
 					</Text>
 				</MotiView>
 
@@ -210,75 +170,41 @@ export default function RedeemCodeSuccess() {
 						<View style={styles.divider} />
 						<View style={styles.detailRow}>
 							<Text style={styles.detailLabel}>Type</Text>
-							<View
-								style={[
-									styles.badge,
-									{
-										backgroundColor: isRecommendation
-											? "#E6F9E6"
-											: "#FEF3E2",
-									},
-								]}
-							>
-								<TextBold
-									style={[
-										styles.badgeText,
-										{
-											color: isRecommendation
-												? "#22C55E"
-												: "#F59E0B",
-										},
-									]}
-								>
-									{isRecommendation
-										? "Recommended"
-										: "Gift Card"}
+							<View style={[styles.badge, { backgroundColor: "#FEF3E2" }]}>
+								<TextBold style={[styles.badgeText, { color: "#F59E0B" }]}>
+									{typeLabel}
 								</TextBold>
 							</View>
 						</View>
-						<View style={styles.divider} />
-						<View style={styles.detailRow}>
-							<Text style={styles.detailLabel}>Reward</Text>
-							<TextBold style={styles.detailValue}>
-								{isRecommendation
-									? `$${Number(value).toFixed(2)} reward`
-									: `$${Number(value).toFixed(2)} gift card`}
-							</TextBold>
-						</View>
-						{!isRecommendation && senderName ? (
+						{!!amount && (
 							<>
 								<View style={styles.divider} />
 								<View style={styles.detailRow}>
-									<Text style={styles.detailLabel}>
-										From
-									</Text>
+									<Text style={styles.detailLabel}>Amount</Text>
+									<TextBold style={styles.detailValue}>
+										${Number(amount).toFixed(2)}
+									</TextBold>
+								</View>
+							</>
+						)}
+						{!!senderName && (
+							<>
+								<View style={styles.divider} />
+								<View style={styles.detailRow}>
+									<Text style={styles.detailLabel}>From</Text>
 									<TextBold style={styles.detailValue}>
 										{senderName}
 									</TextBold>
 								</View>
 							</>
-						) : null}
-						{!isRecommendation && senderMessage ? (
-							<>
-								<View style={styles.divider} />
-								<View style={styles.detailRow}>
-									<Text style={styles.detailLabel}>
-										Message
-									</Text>
-									<Text
-										style={[
-											styles.detailValue,
-											{
-												fontStyle: "italic",
-												color: "#666",
-											},
-										]}
-									>
-										&ldquo;{senderMessage}&rdquo;
-									</Text>
-								</View>
-							</>
-						) : null}
+						)}
+						<View style={styles.divider} />
+						<View style={styles.detailRow}>
+							<Text style={styles.detailLabel}>Code</Text>
+							<TextBold style={styles.detailValue}>
+								{code}
+							</TextBold>
+						</View>
 					</View>
 				</MotiView>
 			</ScrollView>
@@ -307,16 +233,11 @@ export default function RedeemCodeSuccess() {
 
 				<TouchableOpacity
 					activeOpacity={0.8}
-					onPress={() =>
-						router.replace({
-							pathname: "/restaurants/[id]",
-							params: { id: restaurantId },
-						})
-					}
+					onPress={() => router.replace("/gift-cards")}
 					style={styles.secondaryButton}
 				>
 					<Text style={styles.secondaryButtonText}>
-						View Restaurant
+						View My Cards
 					</Text>
 				</TouchableOpacity>
 			</MotiView>

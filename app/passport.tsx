@@ -2,46 +2,54 @@ import { ScrollView, TouchableOpacity, View } from "react-native";
 
 import { Container, Text, TextBold } from "@/components";
 import { Bell, Stamp, TriangleLeft, TriangleRight } from "@/constants/svgs";
-import { default as rawRestaurants } from "@/lib/mock/restaurantsHome.json";
+import { useUserContext } from "@/contexts/UserContext";
+import { queryKeys } from "@/lib/api/queryClient";
+import { useUserApi } from "@/lib/api/useApi";
+import { isNullOrWhitespace } from "@/lib/utils";
 import { ERestaurantStatus, IRestaurant } from "@/lib/types/restaurant";
+import { useQuery } from "@tanstack/react-query";
 import { Link } from "expo-router";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 export default function Index() {
-	const restaurants: IRestaurant[] = rawRestaurants as IRestaurant[];
-	const [filteredRestaurants, setFilteredRestaurants] = useState<IRestaurant[]>(
-		[]
-	);
-	const [total, setTotal] = useState(0);
+	const { user } = useUserContext();
+	const userApi = useUserApi();
+
+	const { data: restaurants = [] } = useQuery({
+		queryKey: [queryKeys.users.restaurants],
+		queryFn: async () => {
+			const data = await userApi.restaurants(user.id);
+			return data;
+		},
+		enabled: !!user && !isNullOrWhitespace(user?.id),
+	});
+
 	const [tab, setTab] = useState<ERestaurantStatus | null>(null);
 
-	useEffect(() => {
-		let rests: IRestaurant[] = [];
+	const filteredRestaurants = useMemo(() => {
 		switch (tab) {
 			case ERestaurantStatus.Visited:
-				rests = restaurants.filter(
-					(x) => x.status === ERestaurantStatus.Visited
+				return restaurants.filter(
+					(x) => x.status === ERestaurantStatus.Visited,
 				);
-				break;
 			case ERestaurantStatus.NotVisited:
-				rests = restaurants.filter(
-					(x) => x.status === ERestaurantStatus.NotVisited
+				return restaurants.filter(
+					(x) => x.status === ERestaurantStatus.NotVisited,
 				);
-				break;
 			case ERestaurantStatus.Recommended:
-				rests = restaurants.filter(
-					(x) => x.status === ERestaurantStatus.Recommended
+				return restaurants.filter(
+					(x) => x.status === ERestaurantStatus.Recommended,
 				);
-				break;
 			default:
-				rests = restaurants;
-				break;
+				return restaurants;
 		}
-		setFilteredRestaurants(rests);
-		setTotal(
-			tab === null ? rests.filter((x) => x.checkIns > 0).length : rests.length
-		);
-	}, [tab]);
+	}, [restaurants, tab]);
+
+	const total = useMemo(() => {
+		return tab === null
+			? filteredRestaurants.filter((x) => x.checkIns > 0).length
+			: filteredRestaurants.length;
+	}, [filteredRestaurants, tab]);
 
 	return (
 		<Container style={{}}>

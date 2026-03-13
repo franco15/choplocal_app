@@ -49,6 +49,7 @@ export default function Restaurants() {
 		queryKey: [queryKeys.users.restaurants],
 		queryFn: async () => {
 			const data = await userApi.restaurants(user.id);
+			console.log("restauratns", data)
 			return data;
 		},
 		enabled: !isNullOrWhitespace(user?.id),

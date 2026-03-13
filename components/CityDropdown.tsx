@@ -3,12 +3,9 @@ import { horizontalScale, moderateScale, verticalScale } from "@/lib/metrics";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
 import Modal from "react-native-modal";
 
-// Mock cities — will be replaced by API data when backend supports it
+// Will be populated by API when backend supports cities
 export const AVAILABLE_CITIES = [
-	"All Cities",
-	"Monterrey",
-	"CDMX",
-	"Guadalajara",
+	"All",
 ];
 
 type Props = {

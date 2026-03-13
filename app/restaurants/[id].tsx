@@ -1,12 +1,11 @@
 import { Text, TextBold } from "@/components";
 import GiftCardVisual, { CARD_THEMES } from "@/components/GiftCardVisual";
 import { useGiftCardContext } from "@/contexts/GiftCardContext";
-import { useRedeemCodeContext } from "@/contexts/RedeemCodeContext";
 import { useUserContext } from "@/contexts/UserContext";
 import { queryKeys } from "@/lib/api/queryClient";
 import { useRestaurantApi } from "@/lib/api/useApi";
 import { horizontalScale, moderateScale, verticalScale } from "@/lib/metrics";
-import { EGiftCardStatus } from "@/lib/types/giftcard";
+
 import { ERestaurantStatus } from "@/lib/types/restaurant";
 import { isImage } from "@/lib/utils";
 import { EmptyPlates } from "@/constants/svgs";
@@ -34,7 +33,6 @@ export default function Restaurant() {
 	const insets = useSafeAreaInsets();
 	const { user } = useUserContext();
 	const { getGiftCardsByRestaurant } = useGiftCardContext();
-	const { getRecommendationReward } = useRedeemCodeContext();
 	const restaurantApi = useRestaurantApi();
 	const [imageLoaded, setImageLoaded] = useState(false);
 
@@ -53,9 +51,7 @@ export default function Restaurant() {
 	});
 
 	const recentTransactions = (transactions ?? []).slice(0, 2);
-	const restaurantGiftCards = (getGiftCardsByRestaurant?.(id as string) ?? []).filter(
-		(gc) => gc.status === EGiftCardStatus.Available,
-	);
+	const restaurantGiftCards = getGiftCardsByRestaurant?.(id as string) ?? [];
 	const displayName = rawRestaurant?.name || paramName || "";
 
 	const onRecommend = async () => {
@@ -87,8 +83,7 @@ export default function Restaurant() {
 	const showHero = hasImageUrl && imageLoaded;
 	const isRecommended = restaurant?.status === ERestaurantStatus.Recommended;
 	const hasVisits = (restaurant?.checkIns ?? 0) > 0;
-	const recommendationReward = getRecommendationReward?.(id as string) ?? 0;
-	const totalBalance = (restaurant?.balance ?? 0) + recommendationReward;
+	const totalBalance = restaurant?.balance ?? 0;
 	const hasBalance = totalBalance > 0;
 
 	return (
@@ -215,7 +210,10 @@ export default function Restaurant() {
 				)}
 
 				{/* ── Gift Cards Wallet ── */}
-				{restaurantGiftCards.length > 0 && (
+				{restaurantGiftCards.length > 0 && (() => {
+					const visibleCards = restaurantGiftCards.slice(0, 3);
+					const totalAmount = restaurantGiftCards.reduce((sum, gc) => sum + (gc.amount ?? 0), 0);
+					return (
 					<View style={styles.section}>
 						<View style={styles.sectionHeader}>
 							<TextBold style={styles.sectionTitle}>
@@ -225,16 +223,17 @@ export default function Restaurant() {
 								{restaurantGiftCards.length}{" "}
 								{restaurantGiftCards.length === 1
 									? "card"
-									: "cards"} · ${restaurantGiftCards.reduce((sum, gc) => sum + gc.value, 0)}
+									: "cards"} · ${totalAmount}
 							</Text>
 						</View>
 						<View
 							style={{
-								height: verticalScale(200) + (restaurantGiftCards.length - 1) * verticalScale(42),
+								height: verticalScale(200) + (visibleCards.length - 1) * verticalScale(42),
 							}}
 						>
-							{restaurantGiftCards.map((gc, ci) => {
+							{visibleCards.map((gc, ci) => {
 								const theme = CARD_THEMES[ci % CARD_THEMES.length];
+								const cardAmount = gc.amount ?? 0;
 								return (
 									<TouchableOpacity
 										key={gc.id}
@@ -252,7 +251,7 @@ export default function Restaurant() {
 											top: ci * verticalScale(42),
 											left: 0,
 											right: 0,
-											zIndex: restaurantGiftCards.length - ci,
+											zIndex: visibleCards.length - ci,
 											height: verticalScale(170),
 											borderRadius: moderateScale(16),
 											backgroundColor: theme.bg,
@@ -269,16 +268,11 @@ export default function Restaurant() {
 										<View style={{ position: "absolute", top: -20, right: -15, width: 100, height: 100, borderRadius: 50, backgroundColor: theme.blob1, opacity: 0.2 }} />
 										<View style={{ position: "absolute", bottom: -15, left: -10, width: 80, height: 80, borderRadius: 40, backgroundColor: theme.blob2, opacity: 0.2 }} />
 										<View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" }}>
-											<View>
-												<Text style={{ color: "rgba(255,255,255,0.7)", fontSize: moderateScale(11), textTransform: "uppercase", letterSpacing: 0.5 }}>
-													{gc.restaurantName}
-												</Text>
-												<Text style={{ color: "rgba(255,255,255,0.5)", fontSize: moderateScale(10), marginTop: verticalScale(2) }}>
-													from {gc.senderName}
-												</Text>
-											</View>
+											<Text style={{ color: "rgba(255,255,255,0.7)", fontSize: moderateScale(11), textTransform: "uppercase", letterSpacing: 0.5 }}>
+												{displayName}
+											</Text>
 											<TextBold style={{ color: "#FFFFFF", fontSize: moderateScale(24) }}>
-												${gc.value}
+												${cardAmount}
 											</TextBold>
 										</View>
 										<View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-end" }}>
@@ -286,7 +280,7 @@ export default function Restaurant() {
 												Gift Card
 											</TextBold>
 											<Text style={{ color: "rgba(255,255,255,0.5)", fontSize: moderateScale(10) }}>
-												Expires {new Date(gc.expiresAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+												{gc.code}
 											</Text>
 										</View>
 									</TouchableOpacity>
@@ -294,7 +288,8 @@ export default function Restaurant() {
 							})}
 						</View>
 					</View>
-				)}
+					);
+				})()}
 
 
 

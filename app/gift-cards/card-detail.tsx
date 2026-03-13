@@ -1,12 +1,17 @@
 import { Text, TextBold } from "@/components";
 import GiftCardVisual, { CARD_THEMES } from "@/components/GiftCardVisual";
 import { useGiftCardContext } from "@/contexts/GiftCardContext";
+import { useUserContext } from "@/contexts/UserContext";
+import { queryKeys } from "@/lib/api/queryClient";
+import { useUserApi } from "@/lib/api/useApi";
 import {
 	horizontalScale,
 	moderateScale,
 	verticalScale,
 } from "@/lib/metrics";
+import { isNullOrWhitespace } from "@/lib/utils";
 import { Ionicons } from "@expo/vector-icons";
+import { useQuery } from "@tanstack/react-query";
 import { useLocalSearchParams } from "expo-router";
 import { MotiView } from "moti";
 import { useState } from "react";
@@ -31,7 +36,19 @@ export default function GiftCardDetail() {
 		groupIds?: string;
 	}>();
 	const { getGiftCardById } = useGiftCardContext();
+	const { user } = useUserContext();
+	const userApi = useUserApi();
 	const insets = useSafeAreaInsets();
+
+	const { data: restaurants } = useQuery({
+		queryKey: [queryKeys.users.restaurants],
+		queryFn: async () => userApi.restaurants(user.id),
+		enabled: !!user && !isNullOrWhitespace(user?.id),
+	});
+
+	const getRestaurantName = (restaurantId: string) => {
+		return restaurants?.find((r) => r.id === restaurantId)?.name ?? "Restaurant";
+	};
 
 	const ids = groupIds ? groupIds.split(",") : [giftCardId ?? ""];
 	const cards = ids.map((id) => getGiftCardById(id)).filter(Boolean);
@@ -60,11 +77,13 @@ export default function GiftCardDetail() {
 	const currentCard = cards[activeIndex]!;
 	const currentTheme = CARD_THEMES[activeIndex % CARD_THEMES.length];
 
-	const expiryDate = new Date(currentCard.expiresAt).toLocaleDateString("en-US", {
+	const createdDate = new Date(currentCard.createdAt).toLocaleDateString("en-US", {
 		month: "long",
 		day: "numeric",
 		year: "numeric",
 	});
+
+	const displayName = getRestaurantName(currentCard.restaurantId);
 
 	return (
 		<View style={styles.root}>
@@ -103,8 +122,8 @@ export default function GiftCardDetail() {
 										transition={{ type: "timing", duration: 200 }}
 									>
 										<GiftCardVisual
-											restaurantName={currentCard.restaurantName}
-											amount={currentCard.value}
+											restaurantName={displayName}
+											amount={currentCard.amount}
 											size="large"
 											theme={currentTheme}
 										/>
@@ -138,8 +157,8 @@ export default function GiftCardDetail() {
 					) : (
 						<View style={{ paddingHorizontal: horizontalScale(20) }}>
 							<GiftCardVisual
-								restaurantName={currentCard.restaurantName}
-								amount={currentCard.value}
+								restaurantName={displayName}
+								amount={currentCard.amount}
 								size="large"
 								theme={currentTheme}
 							/>
@@ -160,7 +179,7 @@ export default function GiftCardDetail() {
 						<View style={styles.infoRow}>
 							<Text style={styles.infoLabel}>Card balance</Text>
 							<TextBold style={styles.infoValueLarge}>
-								${currentCard.value}.00
+								${currentCard.amount}.00
 							</TextBold>
 						</View>
 
@@ -184,25 +203,13 @@ export default function GiftCardDetail() {
 						<View style={styles.divider} />
 
 						<View style={styles.infoRow}>
-							<Text style={styles.infoLabel}>From</Text>
+							<Text style={styles.infoLabel}>Restaurant</Text>
 							<TextBold style={styles.infoValue}>
-								{currentCard.senderName}
+								{displayName}
 							</TextBold>
 						</View>
 
 						<View style={styles.divider} />
-
-						{currentCard.message ? (
-							<>
-								<View style={styles.infoRow}>
-									<Text style={styles.infoLabel}>Message</Text>
-									<Text style={styles.infoValue}>
-										"{currentCard.message}"
-									</Text>
-								</View>
-								<View style={styles.divider} />
-							</>
-						) : null}
 
 						<View style={styles.infoRow}>
 							<Text style={styles.infoLabel}>Status</Text>
@@ -210,27 +217,21 @@ export default function GiftCardDetail() {
 								style={[
 									styles.statusBadge,
 									{
-										backgroundColor:
-											currentCard.status === "Available"
-												? "#D4EDDA"
-												: currentCard.status === "Used"
-													? "#E8E8E8"
-													: "#FFF3CD",
+										backgroundColor: currentCard.isActive
+											? "#D4EDDA"
+											: "#E8E8E8",
 									},
 								]}
 							>
 								<TextBold
 									style={{
 										fontSize: moderateScale(12),
-										color:
-											currentCard.status === "Available"
-												? "#2D6A3F"
-												: currentCard.status === "Used"
-													? "#666"
-													: "#856404",
+										color: currentCard.isActive
+											? "#2D6A3F"
+											: "#666",
 									}}
 								>
-									{currentCard.status}
+									{currentCard.isActive ? "Active" : "Inactive"}
 								</TextBold>
 							</View>
 						</View>
@@ -238,8 +239,8 @@ export default function GiftCardDetail() {
 						<View style={styles.divider} />
 
 						<View style={styles.infoRow}>
-							<Text style={styles.infoLabel}>Expires</Text>
-							<Text style={styles.infoValue}>{expiryDate}</Text>
+							<Text style={styles.infoLabel}>Created</Text>
+							<Text style={styles.infoValue}>{createdDate}</Text>
 						</View>
 					</View>
 				</MotiView>

@@ -19,6 +19,12 @@ export const queryKeys = {
 		byId: (id: string) => ["restaurant", id] as const,
 		transactions: (id: string) => ["transactions", id] as const,
 	},
+	giftCards: {
+		byUser: (userId: string) => ["giftCards", userId] as const,
+	},
+	notifications: {
+		byUser: (userId: string) => ["notifications", userId] as const,
+	},
 	suggestions: {
 		create: ["new suggestion"] as const,
 	},

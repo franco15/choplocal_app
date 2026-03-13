@@ -8,16 +8,15 @@ import {
 	moderateScale,
 	verticalScale,
 } from "@/lib/metrics";
-import { EGiftCardStatus, IGiftCard } from "@/lib/types/giftcard";
+import { IGiftCard } from "@/lib/types/giftcard";
 import { router } from "expo-router";
 import { MotiView } from "moti";
 import { useCallback } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 
-const STATUS_COLORS: Record<string, { bg: string; text: string }> = {
-	[EGiftCardStatus.Available]: { bg: "#D4EDDA", text: "#2D6A3F" },
-	[EGiftCardStatus.Used]: { bg: "#E8E8E8", text: "#666666" },
-	[EGiftCardStatus.Expired]: { bg: "#FFF3CD", text: "#856404" },
+const STATUS_COLORS = {
+	active: { bg: "#D4EDDA", text: "#2D6A3F" },
+	inactive: { bg: "#E8E8E8", text: "#666666" },
 };
 
 type Props = {
@@ -27,9 +26,9 @@ type Props = {
 };
 
 export default function GiftCardItem({ giftCard, index, type }: Props) {
-	const statusColor =
-		STATUS_COLORS[giftCard.status] ??
-		STATUS_COLORS[EGiftCardStatus.Available];
+	const statusColor = giftCard.isActive
+		? STATUS_COLORS.active
+		: STATUS_COLORS.inactive;
 
 	const onPress = useCallback(() => {
 		router.push({
@@ -102,7 +101,7 @@ export default function GiftCardItem({ giftCard, index, type }: Props) {
 								color: "#1A1A1A",
 							}}
 						>
-							{giftCard.restaurantName}
+							{giftCard.code}
 						</TextBold>
 						<Text
 							style={{
@@ -112,8 +111,8 @@ export default function GiftCardItem({ giftCard, index, type }: Props) {
 							}}
 						>
 							{type === "sent"
-								? `To: ${giftCard.recipientPhone}`
-								: `From: ${giftCard.senderName}`}
+								? `To: ${giftCard.receiverId}`
+								: `Gift Card`}
 						</Text>
 						<Text
 							style={{
@@ -139,7 +138,7 @@ export default function GiftCardItem({ giftCard, index, type }: Props) {
 								color: "#1A1A1A",
 							}}
 						>
-							${giftCard.value}
+							${giftCard.amount}
 						</TextBold>
 						<View
 							style={[
@@ -160,7 +159,7 @@ export default function GiftCardItem({ giftCard, index, type }: Props) {
 									color: statusColor.text,
 								}}
 							>
-								{giftCard.status}
+								{giftCard.isActive ? "Active" : "Inactive"}
 							</Text>
 						</View>
 					</View>
