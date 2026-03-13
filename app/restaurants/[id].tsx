@@ -10,7 +10,7 @@ import { ERestaurantStatus, IRestaurant } from "@/lib/types/restaurant";
 import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
 import { LinearGradient } from "expo-linear-gradient";
-import { Link, useLocalSearchParams, useRouter } from "expo-router";
+import { Link, useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import {
 	Alert,
 	Image,
@@ -48,12 +48,24 @@ export default function Restaurant() {
 		enabled: !!id && !!user,
 	});
 
+	// Refresh gift cards every time screen gains focus (e.g. after notification)
+	useFocusEffect(
+		useCallback(() => {
+			if (user?.id) {
+				queryClient.invalidateQueries({ queryKey: queryKeys.giftCards.byUser(user.id) });
+			}
+		}, [user?.id]),
+	);
+
 	const onRefresh = useCallback(async () => {
 		setRefreshing(true);
-		await queryClient.invalidateQueries({ queryKey: [queryKeys.restaurants.byId(id as string)] });
-		await queryClient.invalidateQueries({ queryKey: [queryKeys.restaurants.transactions(id as string)] });
+		await Promise.all([
+			queryClient.invalidateQueries({ queryKey: [queryKeys.restaurants.byId(id as string)] }),
+			queryClient.invalidateQueries({ queryKey: [queryKeys.restaurants.transactions(id as string)] }),
+			queryClient.invalidateQueries({ queryKey: queryKeys.giftCards.byUser(user?.id ?? "") }),
+		]);
 		setRefreshing(false);
-	}, [id]);
+	}, [id, user?.id]);
 
 	const recentTransactions = (transactions ?? []).slice(0, 2);
 	const restaurantGiftCards = getGiftCardsByRestaurant?.(id as string) ?? [];
@@ -213,7 +225,7 @@ export default function Restaurant() {
 													<Image
 														source={require("@/assets/images/noise.png")}
 														resizeMode="repeat"
-														style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, width: "100%", height: "100%", opacity: 0.12 }}
+														style={{ position: "absolute", top: 0, left: 0, width: 1000, height: 1000, opacity: 0.12 }}
 													/>
 													<View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" }}>
 														<Text style={{ color: "rgba(255,255,255,0.7)", fontSize: moderateScale(11), textTransform: "uppercase", letterSpacing: 0.5 }}>

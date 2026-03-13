@@ -5,7 +5,7 @@ import { ERestaurantStatus, IRestaurant } from "@/lib/types/restaurant";
 import { router } from "expo-router";
 import { MotiView } from "moti";
 import { useCallback } from "react";
-import { Pressable, Share, StyleSheet, TouchableOpacity, View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
 
 const STATUS_LABELS: Record<number, string> = {
 	[ERestaurantStatus.Visited]: "Visited",
@@ -51,18 +51,6 @@ export default function RestaurantCard({
 	const onFavorite = useCallback(() => {
 		onToggleFavorite?.(restaurant.id);
 	}, [restaurant.id, onToggleFavorite]);
-
-	const onRecommend = useCallback(async () => {
-		const code = restaurant.referralCode;
-		if (!code) return;
-		try {
-			await Share.share({
-				message: `Check out ${restaurant.name} on Chop Local! Use my recommendation code: ${code}`,
-			});
-		} catch {
-			// User cancelled share
-		}
-	}, [restaurant]);
 
 	const onVisit = useCallback(() => {
 		router.push({
@@ -207,21 +195,7 @@ export default function RestaurantCard({
 					</View>
 				</View>
 
-				{/* Bottom action row */}
-				{(restaurant.checkIns ?? 0) >= 1 && !!restaurant.referralCode && (
-					<View style={styles.actionRow}>
-						<TouchableOpacity
-							activeOpacity={0.7}
-							onPress={onRecommend}
-							style={styles.actionBtnOutline}
-						>
-							<TextBold style={styles.actionTextOutline}>
-								Recommend
-							</TextBold>
-						</TouchableOpacity>
-					</View>
-				)}
-			</Pressable>
+				</Pressable>
 		</MotiView>
 	);
 }
@@ -240,26 +214,5 @@ const styles = StyleSheet.create({
 	},
 	statusTag: {
 		backgroundColor: "#F0F0F0",
-	},
-	actionRow: {
-		flexDirection: "row",
-		alignItems: "center",
-		paddingHorizontal: horizontalScale(14),
-		paddingBottom: moderateScale(14),
-		gap: horizontalScale(10),
-	},
-	actionBtnOutline: {
-		flex: 1,
-		alignItems: "center",
-		justifyContent: "center",
-		paddingVertical: verticalScale(10),
-		borderRadius: moderateScale(12),
-		borderWidth: 0.5,
-		borderColor: "#CCCCCC",
-		backgroundColor: "transparent",
-	},
-	actionTextOutline: {
-		fontSize: moderateScale(13),
-		color: "#1A1A1A",
 	},
 });

@@ -7,6 +7,7 @@ import {
 } from "@/lib/metrics";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import * as Clipboard from "expo-clipboard";
 import * as Haptics from "expo-haptics";
 import { MotiView } from "moti";
 import { useEffect, useMemo } from "react";
@@ -82,7 +83,8 @@ export default function GiftCardSuccess() {
 	);
 
 	const onCopyCode = async () => {
-		await Share.share({ message: code ?? "" });
+		await Clipboard.setStringAsync(code ?? "");
+		Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
 	};
 
 	const onShare = async () => {

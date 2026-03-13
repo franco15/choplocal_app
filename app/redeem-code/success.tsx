@@ -230,16 +230,6 @@ export default function RedeemCodeSuccess() {
 				>
 					<TextBold style={styles.primaryButtonText}>Done</TextBold>
 				</TouchableOpacity>
-
-				<TouchableOpacity
-					activeOpacity={0.8}
-					onPress={() => router.replace("/gift-cards")}
-					style={styles.secondaryButton}
-				>
-					<Text style={styles.secondaryButtonText}>
-						View My Cards
-					</Text>
-				</TouchableOpacity>
 			</MotiView>
 		</View>
 	);

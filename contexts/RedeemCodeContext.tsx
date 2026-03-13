@@ -32,19 +32,14 @@ const RedeemCodeProvider = ({ children }: { children: React.ReactNode }) => {
 		async (code: string): Promise<RedeemCodeResult> => {
 			try {
 				const normalized = code.trim().toUpperCase();
-				const giftCard = await giftCardApi.redeem({
+				const result = await giftCardApi.redeem({
 					code: normalized,
 					userId: user?.id ?? "",
 				});
 				refreshGiftCards();
 				return {
 					success: true,
-					giftCard: {
-						id: giftCard.id,
-						code: giftCard.code,
-						amount: giftCard.amount,
-						restaurantId: giftCard.restaurantId,
-					},
+					data: result,
 				};
 			} catch (err: any) {
 				const apiMessage =
