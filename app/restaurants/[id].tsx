@@ -1,5 +1,5 @@
 import { Text, TextBold } from "@/components";
-import { CARD_THEMES } from "@/components/GiftCardVisual";
+import GiftCardVisual, { CARD_THEMES } from "@/components/GiftCardVisual";
 import { useGiftCardContext } from "@/contexts/GiftCardContext";
 import { useUserContext } from "@/contexts/UserContext";
 import { queryClient, queryKeys } from "@/lib/api/queryClient";
@@ -181,7 +181,7 @@ export default function Restaurant() {
 							{restaurantGiftCards.length > 0 ? (
 								<View
 									style={{
-										height: verticalScale(170) + (restaurantGiftCards.slice(0, 3).length - 1) * verticalScale(38),
+										height: verticalScale(210) + (restaurantGiftCards.slice(0, 3).length - 1) * verticalScale(38),
 										marginTop: verticalScale(4),
 									}}
 								>
@@ -206,7 +206,7 @@ export default function Restaurant() {
 													left: 0,
 													right: 0,
 													zIndex: restaurantGiftCards.slice(0, 3).length - ci,
-													height: verticalScale(160),
+													height: verticalScale(200),
 													borderRadius: moderateScale(16),
 													overflow: "hidden",
 													shadowColor: "#000",
@@ -216,34 +216,12 @@ export default function Restaurant() {
 													elevation: 4,
 												}}
 											>
-												<LinearGradient
-													colors={theme.gradientColors ?? [theme.bg, theme.bg, theme.bg]}
-													start={{ x: 0, y: 0 }}
-													end={{ x: 1, y: 1 }}
-													style={{ flex: 1, padding: moderateScale(16), justifyContent: "space-between" }}
-												>
-													<Image
-														source={require("@/assets/images/noise.png")}
-														resizeMode="repeat"
-														style={{ position: "absolute", top: 0, left: 0, width: 1000, height: 1000, opacity: 0.12 }}
-													/>
-													<View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" }}>
-														<Text style={{ color: "rgba(255,255,255,0.7)", fontSize: moderateScale(11), textTransform: "uppercase", letterSpacing: 0.5 }}>
-															{displayName}
-														</Text>
-														<TextBold style={{ color: "#FFFFFF", fontSize: moderateScale(24) }}>
-															${cardAmount}
-														</TextBold>
-													</View>
-													<View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-end" }}>
-														<TextBold style={{ color: "#FFFFFF", fontSize: moderateScale(22) }}>
-															Gift Card
-														</TextBold>
-														<Text style={{ color: "rgba(255,255,255,0.5)", fontSize: moderateScale(10) }}>
-															{gc.code}
-														</Text>
-													</View>
-												</LinearGradient>
+												<GiftCardVisual
+													restaurantName={displayName}
+													amount={cardAmount}
+													theme={theme}
+													fill
+												/>
 											</TouchableOpacity>
 										);
 									})}

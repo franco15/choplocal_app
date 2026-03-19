@@ -277,15 +277,15 @@ export default function HomeScreen() {
 
 				{/* ── Restaurant Sections ── */}
 
-				{/* Recently Visited */}
-				{groups.visited.length > 0 && (
+				{/* Popular */}
+				{groups.popular.length > 0 && (
 					<View style={styles.section}>
 						<SectionHeader
-							title="Recently Visited"
-							subtitle="Your latest check-ins"
-							onSeeAll={() => goToSeeAll("visited")}
+							title="Popular"
+							subtitle="Most visited by the community"
+							onSeeAll={() => goToSeeAll("popular")}
 						/>
-						{renderCarousel(groups.visited, "visited", "visited")}
+						{renderCarousel(groups.popular, "popular", "popular", "popular")}
 					</View>
 				)}
 
@@ -301,45 +301,35 @@ export default function HomeScreen() {
 					</View>
 				)}
 
-				{/* Gift Card & Redeem Code Banners */}
+				{/* Redeem Code & Gift Card Banners */}
 				<View style={styles.bannerSection}>
-					<GiftCardBanner />
 					<RedeemCodeBanner />
+					<GiftCardBanner />
 				</View>
 
 				{/* Stats */}
-				<View style={styles.statsSection}>
-					<View style={styles.statsRow}>
-						<View style={styles.statCard}>
-							<TextBold style={styles.statNumber}>
-								{restaurants?.length ?? 0}
-							</TextBold>
-							<Text style={styles.statLabel}>
-								Restaurants{"\n"}on Chop Local
-							</Text>
-						</View>
-						<View style={styles.statCard}>
-							<TextBold style={styles.statNumber}>
-								{restaurants?.filter((r) => r.checkIns >= 1).length ?? 0}
-							</TextBold>
-							<Text style={styles.statLabel}>
-								Restaurants{"\n"}you've visited
-							</Text>
-						</View>
+				<View style={styles.statsRow}>
+					<View style={styles.statItem}>
+						<TextBold style={styles.statNumber}>
+							{restaurants?.filter((r) => r.checkIns >= 1).length ?? 0}
+						</TextBold>
+						<Text style={styles.statLabel}>Visited</Text>
+					</View>
+					<View style={styles.statDivider} />
+					<View style={styles.statItem}>
+						<TextBold style={styles.statNumber}>
+							{(restaurants?.length ?? 0) - (restaurants?.filter((r) => r.checkIns >= 1).length ?? 0)}
+						</TextBold>
+						<Text style={styles.statLabel}>To Explore</Text>
+					</View>
+					<View style={styles.statDivider} />
+					<View style={styles.statItem}>
+						<TextBold style={styles.statNumber}>
+							{restaurants?.length ?? 0}
+						</TextBold>
+						<Text style={styles.statLabel}>Total</Text>
 					</View>
 				</View>
-
-				{/* Popular */}
-				{groups.popular.length > 0 && (
-					<View style={styles.section}>
-						<SectionHeader
-							title="Popular"
-							subtitle="Most visited by the community"
-							onSeeAll={() => goToSeeAll("popular")}
-						/>
-						{renderCarousel(groups.popular, "popular", "popular", "popular")}
-					</View>
-				)}
 
 				{/* New on Chop Local */}
 				{groups.new.length > 0 && (
@@ -350,6 +340,18 @@ export default function HomeScreen() {
 							onSeeAll={() => goToSeeAll("new")}
 						/>
 						{renderCarousel(groups.new, "new", "new")}
+					</View>
+				)}
+
+				{/* Recently Visited */}
+				{groups.visited.length > 0 && (
+					<View style={styles.section}>
+						<SectionHeader
+							title="Recently Visited"
+							subtitle="Your latest check-ins"
+							onSeeAll={() => goToSeeAll("visited")}
+						/>
+						{renderCarousel(groups.visited, "visited", "visited")}
 					</View>
 				)}
 			</Animated.ScrollView>
@@ -444,33 +446,32 @@ const styles = StyleSheet.create({
 		gap: horizontalScale(12),
 	},
 	/* ── Stats ── */
-	statsSection: {
-		marginTop: verticalScale(24),
-	},
 	statsRow: {
 		flexDirection: "row",
-		gap: horizontalScale(12),
+		alignItems: "center",
+		justifyContent: "center",
+		marginTop: verticalScale(24),
+		paddingVertical: verticalScale(6),
 	},
-	statCard: {
+	statItem: {
 		flex: 1,
-		backgroundColor: "#FFFFFF",
-		borderRadius: moderateScale(16),
-		borderWidth: 1,
-		borderColor: "#EDEDED",
-		paddingVertical: verticalScale(20),
-		paddingHorizontal: horizontalScale(16),
 		alignItems: "center",
 	},
+	statDivider: {
+		width: 1,
+		height: moderateScale(32),
+		backgroundColor: "#EDEDED",
+	},
 	statNumber: {
-		fontSize: moderateScale(32),
+		fontSize: moderateScale(34),
 		color: "#1A1A1A",
-		lineHeight: moderateScale(38),
+		lineHeight: moderateScale(40),
 	},
 	statLabel: {
-		fontSize: moderateScale(13),
-		color: "#888",
-		textAlign: "center",
-		marginTop: verticalScale(4),
-		lineHeight: moderateScale(18),
+		fontSize: moderateScale(11),
+		color: "#BBB",
+		marginTop: verticalScale(2),
+		textTransform: "uppercase",
+		letterSpacing: 0.5,
 	},
 });

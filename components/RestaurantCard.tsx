@@ -120,21 +120,24 @@ export default function RestaurantCard({
 								flexDirection: "row",
 								alignItems: "center",
 								marginTop: verticalScale(6),
-								gap: horizontalScale(10),
+								gap: horizontalScale(8),
+								flexWrap: "nowrap",
 							}}
 						>
 							<View
 								style={[
 									styles.statusTag,
 									{
-										paddingHorizontal: horizontalScale(10),
+										paddingHorizontal: horizontalScale(8),
 										paddingVertical: verticalScale(4),
 										borderRadius: moderateScale(10),
 										backgroundColor: statusColor.bg,
+										flexShrink: 1,
 									},
 								]}
 							>
 								<Text
+									numberOfLines={1}
 									style={{
 										fontSize: moderateScale(11),
 										color: statusColor.text,
@@ -144,17 +147,21 @@ export default function RestaurantCard({
 								</Text>
 							</View>
 							<Text
+								numberOfLines={1}
 								style={{
 									fontSize: moderateScale(13),
 									color: "#888",
+									flexShrink: 0,
 								}}
 							>
 								{restaurant.checkIns} visitas
 							</Text>
 							<Text
+								numberOfLines={1}
 								style={{
 									fontSize: moderateScale(13),
 									color: "#888",
+									flexShrink: 0,
 								}}
 							>
 								${restaurant.balance.toFixed(2)}

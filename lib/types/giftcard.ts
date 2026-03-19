@@ -25,6 +25,17 @@ export interface IRedeemCodeResult {
 	code: string;
 }
 
+export interface IGiftCardDetail {
+	id: string;
+	code: string;
+	amount: number;
+	isActive: boolean;
+	restaurantId: string;
+	restaurantName: string;
+	senderName: string;
+	createdAt: string;
+}
+
 export interface IGiftCardCreate {
 	amount: number;
 	restaurantId: string;

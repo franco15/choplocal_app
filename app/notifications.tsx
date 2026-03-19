@@ -3,7 +3,7 @@ import { useUserContext } from "@/contexts/UserContext";
 import { queryClient, queryKeys } from "@/lib/api/queryClient";
 import { useNotificationsApi } from "@/lib/api/useApi";
 import { horizontalScale, moderateScale, verticalScale } from "@/lib/metrics";
-import { INotification, NotificationType } from "@/lib/types/notification";
+import { INotification, IGiftCardNotificationData, NotificationType } from "@/lib/types/notification";
 import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
@@ -20,12 +20,11 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const TYPE_CONFIG: Record<
-	NotificationType,
+	string,
 	{ icon: keyof typeof Ionicons.glyphMap; bg: string; color: string }
 > = {
-	gift: { icon: "gift-outline", bg: "#FBF6F5", color: "#b42406" },
-	recommendation: { icon: "people-outline", bg: "#EEF7F7", color: "#438989" },
-	system: { icon: "megaphone-outline", bg: "#E8F0FE", color: "#3B6CD4" },
+	[NotificationType.GiftCard]: { icon: "gift-outline", bg: "#FBF6F5", color: "#b42406" },
+	default: { icon: "megaphone-outline", bg: "#E8F0FE", color: "#3B6CD4" },
 };
 
 function getRelativeTime(dateStr: string): string {
@@ -61,12 +60,16 @@ function getNotificationIcon(item: INotification): {
 	bg: string;
 	color: string;
 } {
-	// If the description mentions gift card, use gift icon regardless of type
-	const desc = item.description?.toLowerCase() ?? "";
-	if (desc.includes("gift card") || desc.includes("regalo") || item.type === "gift") {
-		return TYPE_CONFIG.gift;
+	return TYPE_CONFIG[item.type] ?? TYPE_CONFIG.default;
+}
+
+function parseNotificationData<T>(data?: string): T | null {
+	if (!data) return null;
+	try {
+		return JSON.parse(data) as T;
+	} catch {
+		return null;
 	}
-	return TYPE_CONFIG[item.type] ?? TYPE_CONFIG.system;
 }
 
 export default function NotificationsScreen() {
@@ -76,9 +79,9 @@ export default function NotificationsScreen() {
 	const notificationsApi = useNotificationsApi();
 
 	const { data: notifications = [], isPending } = useQuery({
-		queryKey: queryKeys.notifications.byUser(user.id),
-		queryFn: () => notificationsApi.byUser(user.id),
-		enabled: !!user,
+		queryKey: queryKeys.notifications.byUser(user?.id ?? ""),
+		queryFn: () => notificationsApi.byUser(user!.id),
+		enabled: !!user?.id,
 		staleTime: 10000
 	});
 
@@ -120,13 +123,21 @@ export default function NotificationsScreen() {
 			}
 		}
 
+		if (item.type === NotificationType.GiftCard) {
+			const parsed = parseNotificationData<IGiftCardNotificationData>(item.data);
+			const giftCardId = parsed?.GiftCardId ?? item.giftCardId ?? "";
+
+			router.push({
+				pathname: "/gift-cards/notification-detail",
+				params: { giftCardId },
+			});
+			return;
+		}
+
 		router.push({
 			pathname: "/gift-cards/notification-detail",
 			params: {
 				giftCardId: item.giftCardId ?? "",
-				restaurantId: item.restaurantId ?? "",
-				notificationTitle: item.title,
-				notificationDescription: item.description,
 			},
 		});
 	}, [router, notificationsApi, user.id]);

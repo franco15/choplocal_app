@@ -42,6 +42,7 @@ type Props = {
 	amount: number | string;
 	size?: "normal" | "large";
 	theme?: CardTheme;
+	fill?: boolean;
 };
 
 export default function GiftCardVisual({
@@ -49,6 +50,7 @@ export default function GiftCardVisual({
 	amount,
 	size = "normal",
 	theme = CARD_THEMES[0],
+	fill = false,
 }: Props) {
 	const isLarge = size === "large";
 	const cardHeight = isLarge ? verticalScale(230) : verticalScale(215);
@@ -61,7 +63,7 @@ export default function GiftCardVisual({
 			colors={theme.gradientColors ?? [theme.bg, theme.bg, theme.bg]}
 			start={{ x: 0, y: 0 }}
 			end={{ x: 1, y: 1 }}
-			style={[styles.card, { height: cardHeight }]}
+			style={[styles.card, fill ? { flex: 1 } : { height: cardHeight }]}
 		>
 			<Image
 				source={require("@/assets/images/noise.png")}

@@ -20,6 +20,7 @@ export const queryKeys = {
 		transactions: (id: string) => ["transactions", id] as const,
 	},
 	giftCards: {
+		byId: (giftCardId: string) => ["giftCard", giftCardId] as const,
 		byUser: (userId: string) => ["giftCards", userId] as const,
 	},
 	notifications: {

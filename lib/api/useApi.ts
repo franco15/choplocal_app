@@ -1,4 +1,4 @@
-import { IGiftCard, IGiftCardCreate, IRedeemCodeResult } from "../types/giftcard";
+import { IGiftCard, IGiftCardCreate, IGiftCardDetail, IRedeemCodeResult } from "../types/giftcard";
 import { INotification } from "../types/notification";
 import { IRestaurant, IRestaurantTransactions } from "../types/restaurant";
 import { ISuggestion } from "../types/suggestions";
@@ -62,6 +62,8 @@ export const useRestaurantApi = () => {
 export const useGiftCardApi = () => {
 	const api = useAxios();
 	return {
+		byId: async (giftCardId: string): Promise<IGiftCardDetail> =>
+			api.get(`api/app/gift-card/${giftCardId}`),
 		byUser: async (userId: string): Promise<IGiftCard[]> =>
 			api.get(`api/app/gift-card/user/${userId}`),
 		create: async (params: IGiftCardCreate): Promise<IGiftCard> =>

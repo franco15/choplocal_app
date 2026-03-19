@@ -1,21 +1,18 @@
 import { Text, TextBold } from "@/components";
 import GiftCardVisual, { CARD_THEMES } from "@/components/GiftCardVisual";
-import { useGiftCardContext } from "@/contexts/GiftCardContext";
-import { useUserContext } from "@/contexts/UserContext";
 import { queryKeys } from "@/lib/api/queryClient";
-import { useUserApi } from "@/lib/api/useApi";
+import { useGiftCardApi } from "@/lib/api/useApi";
 import {
 	horizontalScale,
 	moderateScale,
 	verticalScale,
 } from "@/lib/metrics";
-import { isNullOrWhitespace } from "@/lib/utils";
 import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { MotiView } from "moti";
-import { useMemo } from "react";
 import {
+	ActivityIndicator,
 	ScrollView,
 	StyleSheet,
 	TouchableOpacity,
@@ -24,54 +21,32 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function GiftCardNotificationDetail() {
-	const { giftCardId, notificationDescription } = useLocalSearchParams<{
+	const { giftCardId } = useLocalSearchParams<{
 		giftCardId: string;
-		notificationDescription: string;
 	}>();
-	const { getGiftCardById, receivedGiftCards } = useGiftCardContext();
-	const { user } = useUserContext();
-	const userApi = useUserApi();
+	const giftCardApi = useGiftCardApi();
 	const router = useRouter();
 	const insets = useSafeAreaInsets();
 
-	const { data: restaurants } = useQuery({
-		queryKey: [queryKeys.users.restaurants],
-		queryFn: async () => userApi.restaurants(user.id),
-		enabled: !!user && !isNullOrWhitespace(user?.id),
+	const { data: card, isPending, isError } = useQuery({
+		queryKey: queryKeys.giftCards.byId(giftCardId ?? ""),
+		queryFn: () => giftCardApi.byId(giftCardId!),
+		enabled: !!giftCardId && giftCardId.length > 0,
 	});
 
-	const getRestaurantName = (rid: string) => {
-		return restaurants?.find((r) => r.id === rid)?.name ?? "Restaurant";
-	};
+	const isLoading = !!giftCardId && giftCardId.length > 0 && isPending;
 
-	// Match gift card: by ID, by restaurant name in description, or by notification order
-	const card = useMemo(() => {
-		// 1. Try exact ID match
-		if (giftCardId) {
-			const byId = getGiftCardById(giftCardId);
-			if (byId) return byId;
-		}
+	if (isLoading) {
+		return (
+			<View style={styles.root}>
+				<View style={styles.centered}>
+					<ActivityIndicator size="large" color="#b42406" />
+				</View>
+			</View>
+		);
+	}
 
-		// 2. Try matching restaurant name from the notification description
-		if (notificationDescription && restaurants && receivedGiftCards.length > 0) {
-			const descLower = notificationDescription.toLowerCase();
-			for (const gc of receivedGiftCards) {
-				const rName = getRestaurantName(gc.restaurantId).toLowerCase();
-				if (rName !== "restaurant" && descLower.includes(rName)) {
-					return gc;
-				}
-			}
-		}
-
-		// 3. Fallback: most recent received card
-		if (receivedGiftCards.length > 0) {
-			return receivedGiftCards[receivedGiftCards.length - 1];
-		}
-
-		return null;
-	}, [giftCardId, notificationDescription, receivedGiftCards, restaurants]);
-
-	if (!card) {
+	if (!card || isError || !giftCardId) {
 		return (
 			<View style={styles.root}>
 				<View style={styles.centered}>
@@ -89,7 +64,7 @@ export default function GiftCardNotificationDetail() {
 	}
 
 	const theme = CARD_THEMES[0];
-	const displayName = getRestaurantName(card.restaurantId);
+	const displayName = card.restaurantName ?? "Restaurant";
 	const createdDate = new Date(card.createdAt).toLocaleDateString("en-US", {
 		month: "long",
 		day: "numeric",
@@ -150,6 +125,15 @@ export default function GiftCardNotificationDetail() {
 									style={{ marginLeft: horizontalScale(6) }}
 								/>
 							</View>
+						</View>
+
+						<View style={styles.divider} />
+
+						<View style={styles.infoRow}>
+							<Text style={styles.infoLabel}>Sent by</Text>
+							<TextBold style={styles.infoValue}>
+								{card.senderName || "Unknown"}
+							</TextBold>
 						</View>
 
 						<View style={styles.divider} />
