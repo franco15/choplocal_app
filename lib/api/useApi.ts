@@ -76,10 +76,15 @@ export const useGiftCardApi = () => {
 export const useNotificationsApi = () => {
 	const api = useAxios();
 	return {
-		byUser: async (userId: string): Promise<INotification[]> =>
-			api.get(`api/app/notifications/user/${userId}`),
+		byUser: async (userId: string): Promise<INotification[]> => {
+			const data = await api.get(`api/app/notifications/user/${userId}`);
+			return data.map((n: any) => ({
+				...n,
+				read: n.read ?? n.isRead ?? false,
+			}));
+		},
 		markAsRead: async (notificationId: string): Promise<void> =>
-			api.put(`api/app/notifications/${notificationId}/read`),
+			api.put(`api/app/notifications/${notificationId}/read`, {}),
 	};
 };
 

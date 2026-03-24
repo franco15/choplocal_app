@@ -40,7 +40,10 @@ export default function VerifyScreen() {
 
 	const onSendCode = async () => {
 		if (isNullOrWhitespace(code)) return setError(true);
-		await registerWithCode(code);
+		const success = await registerWithCode(code);
+		if (!success) {
+			setError(true);
+		}
 	};
 
 	return (

@@ -1,7 +1,9 @@
 import { Text, TextBold } from "@/components";
 import GiftCardVisual, { CARD_THEMES } from "@/components/GiftCardVisual";
-import { queryKeys } from "@/lib/api/queryClient";
-import { useGiftCardApi } from "@/lib/api/useApi";
+import { useUserContext } from "@/contexts/UserContext";
+import { queryClient, queryKeys } from "@/lib/api/queryClient";
+import { useGiftCardApi, useNotificationsApi } from "@/lib/api/useApi";
+import { INotification } from "@/lib/types/notification";
 import {
 	horizontalScale,
 	moderateScale,
@@ -11,6 +13,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { MotiView } from "moti";
+import { useEffect, useRef } from "react";
 import {
 	ActivityIndicator,
 	ScrollView,
@@ -21,12 +24,35 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function GiftCardNotificationDetail() {
-	const { giftCardId } = useLocalSearchParams<{
+	const { giftCardId, notificationId } = useLocalSearchParams<{
 		giftCardId: string;
+		notificationId?: string;
 	}>();
 	const giftCardApi = useGiftCardApi();
+	const notificationsApi = useNotificationsApi();
+	const { user } = useUserContext();
 	const router = useRouter();
 	const insets = useSafeAreaInsets();
+	const markedRef = useRef(false);
+
+	// Mark notification as read when screen loads (optimistic update)
+	useEffect(() => {
+		if (notificationId && notificationId.length > 0 && user?.id && !markedRef.current) {
+			markedRef.current = true;
+			queryClient.setQueryData<INotification[]>(
+				queryKeys.notifications.byUser(user.id),
+				(old) =>
+					old?.map((n) =>
+						n.id === notificationId ? { ...n, read: true, isRead: true } : n,
+					),
+			);
+			notificationsApi.markAsRead(notificationId).then(() => {
+				queryClient.invalidateQueries({
+					queryKey: queryKeys.notifications.byUser(user!.id),
+				});
+			}).catch(() => {});
+		}
+	}, [notificationId, user?.id]);
 
 	const { data: card, isPending, isError } = useQuery({
 		queryKey: queryKeys.giftCards.byId(giftCardId ?? ""),
@@ -76,7 +102,7 @@ export default function GiftCardNotificationDetail() {
 			<ScrollView
 				showsVerticalScrollIndicator={false}
 				contentContainerStyle={{
-					paddingBottom: insets.bottom + verticalScale(40),
+					paddingBottom: insets.bottom + verticalScale(100),
 				}}
 			>
 				{/* Gift Card Visual */}
@@ -94,122 +120,78 @@ export default function GiftCardNotificationDetail() {
 					/>
 				</MotiView>
 
-				{/* Card Info Section */}
+				{/* Card Info */}
 				<MotiView
 					from={{ opacity: 0, translateY: 15 }}
 					animate={{ opacity: 1, translateY: 0 }}
 					transition={{ type: "timing", duration: 250 }}
+					style={styles.infoContainer}
 				>
-					<View style={styles.infoSection}>
-						<TextBold style={styles.infoSectionTitle}>Card Info</TextBold>
+					{/* Message */}
+					{card.message ? (
+						<View style={styles.messageCard}>
+							<Text style={styles.messageText}>"{card.message}"</Text>
+						</View>
+					) : null}
 
-						<View style={styles.infoRow}>
-							<Text style={styles.infoLabel}>Card balance</Text>
-							<TextBold style={styles.infoValueLarge}>
-								${card.amount}.00
-							</TextBold>
+					{/* Info Grid */}
+					<View style={styles.infoGrid}>
+						<View style={styles.infoItem}>
+							<Text style={styles.infoLabel}>Code</Text>
+							<TextBold style={styles.infoValue}>{card.code}</TextBold>
 						</View>
 
-						<View style={styles.divider} />
+						<View style={styles.gridDivider} />
 
-						<View style={styles.infoRow}>
-							<Text style={styles.infoLabel}>Gift card code</Text>
-							<View style={styles.codeRow}>
-								<TextBold style={styles.infoValue}>
-									{card.code}
-								</TextBold>
-								<Ionicons
-									name="checkmark-circle"
-									size={moderateScale(18)}
-									color="#4CAF50"
-									style={{ marginLeft: horizontalScale(6) }}
-								/>
-							</View>
-						</View>
-
-						<View style={styles.divider} />
-
-						<View style={styles.infoRow}>
+						<View style={styles.infoItem}>
 							<Text style={styles.infoLabel}>Sent by</Text>
-							<TextBold style={styles.infoValue}>
-								{card.senderName || "Unknown"}
-							</TextBold>
+							<TextBold style={styles.infoValue}>{card.senderName || "Unknown"}</TextBold>
 						</View>
 
-						<View style={styles.divider} />
+						<View style={styles.gridDivider} />
 
-						<View style={styles.infoRow}>
+						<View style={styles.infoItem}>
 							<Text style={styles.infoLabel}>Restaurant</Text>
-							<TextBold style={styles.infoValue}>
-								{displayName}
-							</TextBold>
+							<TextBold style={styles.infoValue}>{displayName}</TextBold>
 						</View>
 
-						<View style={styles.divider} />
+						<View style={styles.gridDivider} />
 
-						<View style={styles.infoRow}>
+						<View style={styles.infoItem}>
 							<Text style={styles.infoLabel}>Status</Text>
-							<View
-								style={[
-									styles.statusBadge,
-									{
-										backgroundColor: card.isActive
-											? "#D4EDDA"
-											: "#E8E8E8",
-									},
-								]}
-							>
-								<TextBold
-									style={{
-										fontSize: moderateScale(12),
-										color: card.isActive
-											? "#2D6A3F"
-											: "#666",
-									}}
-								>
+							<View style={[styles.statusBadge, { backgroundColor: card.isActive ? "#D4EDDA" : "#E8E8E8" }]}>
+								<TextBold style={{ fontSize: moderateScale(12), color: card.isActive ? "#2D6A3F" : "#666" }}>
 									{card.isActive ? "Active" : "Inactive"}
 								</TextBold>
 							</View>
 						</View>
 
-						<View style={styles.divider} />
+						<View style={styles.gridDivider} />
 
-						<View style={styles.infoRow}>
+						<View style={styles.infoItem}>
 							<Text style={styles.infoLabel}>Created</Text>
-							<Text style={styles.infoValue}>{createdDate}</Text>
+							<TextBold style={styles.infoValue}>{createdDate}</TextBold>
 						</View>
-					</View>
-
-					{/* View Restaurant Button */}
-					<View style={styles.buttonContainer}>
-						<TouchableOpacity
-							activeOpacity={0.8}
-							onPress={() => {
-								router.push({
-									pathname: "/restaurants/[id]",
-									params: { id: card.restaurantId },
-								});
-							}}
-							style={styles.button}
-						>
-							<Ionicons
-								name="restaurant-outline"
-								size={moderateScale(18)}
-								color="#FFFFFF"
-								style={{ marginRight: horizontalScale(8) }}
-							/>
-							<TextBold
-								style={{
-									fontSize: moderateScale(15),
-									color: "#FFFFFF",
-								}}
-							>
-								View Restaurant
-							</TextBold>
-						</TouchableOpacity>
 					</View>
 				</MotiView>
 			</ScrollView>
+
+			{/* Sticky Footer Button */}
+			<View style={[styles.footer, { paddingBottom: insets.bottom + verticalScale(16) }]}>
+				<TouchableOpacity
+					activeOpacity={0.8}
+					onPress={() => {
+						router.dismissAll();
+						router.push({
+							pathname: "/restaurants/[id]",
+							params: { id: card.restaurantId },
+						});
+					}}
+					style={styles.button}
+				>
+					<TextBold style={styles.buttonText}>View Restaurant</TextBold>
+				</TouchableOpacity>
+			</View>
 		</View>
 	);
 }
@@ -217,7 +199,7 @@ export default function GiftCardNotificationDetail() {
 const styles = StyleSheet.create({
 	root: {
 		flex: 1,
-		backgroundColor: "#FFFFFF",
+		backgroundColor: "#F2F2F7",
 	},
 	centered: {
 		flex: 1,
@@ -230,21 +212,41 @@ const styles = StyleSheet.create({
 		marginTop: verticalScale(12),
 	},
 
-	/* Info */
-	infoSection: {
-		marginTop: verticalScale(28),
+	/* Info Container */
+	infoContainer: {
 		paddingHorizontal: horizontalScale(20),
+		marginTop: verticalScale(20),
 	},
-	infoSectionTitle: {
-		fontSize: moderateScale(20),
-		color: "#1A1A1A",
-		marginBottom: verticalScale(20),
+
+	/* Message Card */
+	messageCard: {
+		flexDirection: "row",
+		backgroundColor: "#FFFFFF",
+		borderRadius: moderateScale(18),
+		paddingVertical: verticalScale(16),
+		paddingHorizontal: horizontalScale(16),
+		marginBottom: verticalScale(12),
+		alignItems: "flex-start",
 	},
-	infoRow: {
+	messageText: {
+		flex: 1,
+		fontSize: moderateScale(14),
+		color: "#555",
+		fontStyle: "italic",
+		lineHeight: moderateScale(20),
+	},
+
+	/* Info Grid */
+	infoGrid: {
+		backgroundColor: "#FFFFFF",
+		borderRadius: moderateScale(18),
+		paddingHorizontal: horizontalScale(16),
+	},
+	infoItem: {
 		paddingVertical: verticalScale(14),
 	},
 	infoLabel: {
-		fontSize: moderateScale(12),
+		fontSize: moderateScale(11),
 		color: "#999",
 		marginBottom: verticalScale(4),
 	},
@@ -252,37 +254,39 @@ const styles = StyleSheet.create({
 		fontSize: moderateScale(15),
 		color: "#1A1A1A",
 	},
-	infoValueLarge: {
-		fontSize: moderateScale(28),
-		color: "#1A1A1A",
-	},
-	codeRow: {
-		flexDirection: "row",
-		alignItems: "center",
-	},
-	divider: {
-		height: 1,
-		backgroundColor: "#F0F0F0",
-	},
 	statusBadge: {
 		alignSelf: "flex-start",
 		paddingHorizontal: horizontalScale(10),
 		paddingVertical: verticalScale(3),
 		borderRadius: moderateScale(8),
 	},
+	gridDivider: {
+		height: 1,
+		backgroundColor: "#F0F0F0",
+	},
 
-	/* Button */
-	buttonContainer: {
+	/* Footer */
+	footer: {
+		position: "absolute",
+		bottom: 0,
+		left: 0,
+		right: 0,
+		backgroundColor: "#FFFFFF",
+		paddingTop: verticalScale(12),
 		paddingHorizontal: horizontalScale(20),
-		marginTop: verticalScale(28),
+		borderTopWidth: 1,
+		borderTopColor: "#F0F0F0",
 	},
 	button: {
-		flexDirection: "row",
 		backgroundColor: "#000000",
 		height: verticalScale(54),
 		borderRadius: moderateScale(30),
 		alignItems: "center",
 		justifyContent: "center",
 		width: "100%",
+	},
+	buttonText: {
+		fontSize: moderateScale(15),
+		color: "#FFFFFF",
 	},
 });

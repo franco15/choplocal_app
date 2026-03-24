@@ -1,12 +1,11 @@
 import { Container, Text } from "@/components";
-import { images } from "@/constants/images";
+import ChopLogoVertical from "@/constants/svgs/ChopLogoVertical";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { regex } from "@/lib";
 import { horizontalScale, moderateScale, verticalScale } from "@/lib/metrics";
 import { Link, useRouter } from "expo-router";
 import { useState } from "react";
 import {
-	Image,
 	Keyboard,
 	KeyboardAvoidingView,
 	Platform,
@@ -48,17 +47,16 @@ export default function LoginScreen() {
 							className="flex-1 h-full"
 							style={{ paddingHorizontal: horizontalScale(20) }}
 						>
-							<Image
-								source={images.logoRed}
-								className="self-center"
-								style={{
-									width: horizontalScale(275),
-									height: verticalScale(275),
-									marginTop: verticalScale(75),
-									marginBottom: verticalScale(75),
-								}}
-								resizeMode="contain"
-							/>
+							<View style={{
+								alignSelf: "center",
+								marginTop: verticalScale(75),
+								marginBottom: verticalScale(75),
+							}}>
+								<ChopLogoVertical
+									width={horizontalScale(200)}
+									height={verticalScale(248)}
+								/>
+							</View>
 							<Link href="/register" asChild>
 								<Pressable
 									className={`w-2/3 flex self-center items-center justify-center`}

@@ -10,13 +10,16 @@ import { useRouter } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
 import {
 	ActivityIndicator,
+	Animated,
 	Platform,
 	Pressable,
 	RefreshControl,
 	SectionList,
 	StyleSheet,
+	TouchableOpacity,
 	View,
 } from "react-native";
+import { GestureHandlerRootView, Swipeable } from "react-native-gesture-handler";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const TYPE_CONFIG: Record<
@@ -45,14 +48,14 @@ function getRelativeTime(dateStr: string): string {
 
 function getSectionTitle(dateStr: string): string {
 	const date = new Date(dateStr);
-	if (isNaN(date.getTime())) return "Before That";
+	if (isNaN(date.getTime())) return "Newest";
 	const now = new Date();
 	const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 	const notifDay = new Date(date.getFullYear(), date.getMonth(), date.getDate());
 	const diffDays = Math.floor((today.getTime() - notifDay.getTime()) / (24 * 60 * 60 * 1000));
 	if (diffDays === 0) return "Today";
 	if (diffDays <= 7) return "This Week";
-	return "Before That";
+	return "Newest";
 }
 
 function getNotificationIcon(item: INotification): {
@@ -86,10 +89,15 @@ export default function NotificationsScreen() {
 	});
 
 	const sections = useMemo(() => {
-		const grouped: Record<string, INotification[]> = {};
-		const order = ["Today", "This Week", "Before That"];
+		// Sort all notifications by date, newest first
+		const sorted = [...notifications].sort(
+			(a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
+		);
 
-		for (const n of notifications) {
+		const grouped: Record<string, INotification[]> = {};
+		const order = ["Today", "This Week", "Newest"];
+
+		for (const n of sorted) {
 			const section = getSectionTitle(n.timestamp);
 			if (!grouped[section]) grouped[section] = [];
 			grouped[section].push(n);
@@ -108,28 +116,45 @@ export default function NotificationsScreen() {
 		setRefreshing(false);
 	}, [user.id]);
 
-	const unreadCount = notifications.filter((n) => !n.read).length;
+	const isRead = (n: INotification) => n.read || (n as any).isRead;
+	const unreadCount = notifications.filter((n) => !isRead(n)).length;
 
-	const onNotificationPress = useCallback(async (item: INotification) => {
-		// Mark as read
-		if (!item.read) {
-			try {
-				await notificationsApi.markAsRead(item.id);
-				queryClient.invalidateQueries({
-					queryKey: queryKeys.notifications.byUser(user.id),
-				});
-			} catch (_) {
-				// Continue navigating even if mark-as-read fails
-			}
-		}
+	const onDeleteNotification = useCallback((id: string) => {
+		queryClient.setQueryData<INotification[]>(
+			queryKeys.notifications.byUser(user?.id ?? ""),
+			(old) => old?.filter((n) => n.id !== id),
+		);
+	}, [user?.id]);
 
+	const renderRightActions = useCallback((progress: Animated.AnimatedInterpolation<number>, _dragX: Animated.AnimatedInterpolation<number>, id: string) => {
+		const translateX = progress.interpolate({
+			inputRange: [0, 1],
+			outputRange: [80, 0],
+		});
+		return (
+			<Animated.View style={{ transform: [{ translateX }], justifyContent: "center" }}>
+				<TouchableOpacity
+					activeOpacity={0.8}
+					onPress={() => onDeleteNotification(id)}
+					style={styles.deleteBtn}
+				>
+					<Ionicons name="trash-outline" size={moderateScale(22)} color="#FFFFFF" />
+				</TouchableOpacity>
+			</Animated.View>
+		);
+	}, [onDeleteNotification]);
+
+	const onNotificationPress = useCallback((item: INotification) => {
 		if (item.type === NotificationType.GiftCard) {
 			const parsed = parseNotificationData<IGiftCardNotificationData>(item.data);
 			const giftCardId = parsed?.GiftCardId ?? item.giftCardId ?? "";
 
 			router.push({
 				pathname: "/gift-cards/notification-detail",
-				params: { giftCardId },
+				params: {
+					giftCardId,
+					notificationId: item.read ? "" : item.id,
+				},
 			});
 			return;
 		}
@@ -138,11 +163,13 @@ export default function NotificationsScreen() {
 			pathname: "/gift-cards/notification-detail",
 			params: {
 				giftCardId: item.giftCardId ?? "",
+				notificationId: item.read ? "" : item.id,
 			},
 		});
-	}, [router, notificationsApi, user.id]);
+	}, [router]);
 
 	return (
+		<GestureHandlerRootView style={{ flex: 1 }}>
 		<View
 			style={[
 				styles.root,
@@ -187,48 +214,53 @@ export default function NotificationsScreen() {
 					renderItem={({ item }) => {
 						const config = getNotificationIcon(item);
 						return (
-							<Pressable
-								onPress={() => onNotificationPress(item)}
-								style={styles.card}
+							<Swipeable
+								renderRightActions={(progress, dragX) => renderRightActions(progress, dragX, item.id)}
+								overshootRight={false}
 							>
-								{/* Unread dot */}
-								{!item.read && <View style={styles.unreadDot} />}
-
-								{/* Icon */}
-								<View
-									style={[
-										styles.iconCircle,
-										{ backgroundColor: config.bg },
-									]}
+								<Pressable
+									onPress={() => onNotificationPress(item)}
+									style={styles.card}
 								>
-									<Ionicons
-										name={config.icon}
-										size={moderateScale(20)}
-										color={config.color}
-									/>
-								</View>
+									{/* Unread dot */}
+									{!isRead(item) && <View style={styles.unreadDot} />}
 
-								{/* Content */}
-								<View style={{ flex: 1 }}>
-									<View style={styles.cardHeader}>
-										<TextBold
-											style={styles.cardTitle}
-											numberOfLines={1}
+									{/* Icon */}
+									<View
+										style={[
+											styles.iconCircle,
+											{ backgroundColor: config.bg },
+										]}
+									>
+										<Ionicons
+											name={config.icon}
+											size={moderateScale(20)}
+											color={config.color}
+										/>
+									</View>
+
+									{/* Content */}
+									<View style={{ flex: 1 }}>
+										<View style={styles.cardHeader}>
+											<TextBold
+												style={styles.cardTitle}
+												numberOfLines={1}
+											>
+												{item.title}
+											</TextBold>
+											<Text style={styles.cardTime}>
+												{getRelativeTime(item.timestamp)}
+											</Text>
+										</View>
+										<Text
+											style={styles.cardDescription}
+											numberOfLines={2}
 										>
-											{item.title}
-										</TextBold>
-										<Text style={styles.cardTime}>
-											{getRelativeTime(item.timestamp)}
+											{item.description}
 										</Text>
 									</View>
-									<Text
-										style={styles.cardDescription}
-										numberOfLines={2}
-									>
-										{item.description}
-									</Text>
-								</View>
-							</Pressable>
+								</Pressable>
+							</Swipeable>
 						);
 					}}
 					ListEmptyComponent={
@@ -252,6 +284,7 @@ export default function NotificationsScreen() {
 				/>
 			)}
 		</View>
+		</GestureHandlerRootView>
 	);
 }
 
@@ -334,6 +367,18 @@ const styles = StyleSheet.create({
 		color: "#888",
 		marginTop: verticalScale(4),
 		lineHeight: moderateScale(18),
+	},
+
+	/* Delete */
+	deleteBtn: {
+		backgroundColor: "#FF3B30",
+		width: moderateScale(64),
+		height: "100%",
+		borderRadius: moderateScale(16),
+		alignItems: "center",
+		justifyContent: "center",
+		marginLeft: horizontalScale(8),
+		marginBottom: verticalScale(10),
 	},
 
 	/* Empty */

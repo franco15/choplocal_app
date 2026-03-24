@@ -60,7 +60,7 @@ export default function HomeScreen() {
 		staleTime: 10000,
 	});
 
-	const hasUnread = notifications.some((n) => !n.read);
+	const hasUnread = notifications.some((n) => !n.read && !(n as any).isRead);
 
 	useEffect(() => {
 		if (!profileComplete) router.replace("/complete-profile");
@@ -91,6 +91,9 @@ export default function HomeScreen() {
 		await queryClient.invalidateQueries({ queryKey: queryKeys.notifications.byUser(user?.id ?? "") });
 		setRefreshing(false);
 	}, [user?.id]);
+
+	// Debug: see createdAt values
+	console.log("RESTAURANTS createdAt:", restaurants?.map(r => ({ name: r.name, createdAt: r.createdAt })));
 
 	// Group restaurants by category
 	const groups = useMemo(() => {

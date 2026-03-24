@@ -1,9 +1,10 @@
-import { Birthdate, Container, Text, TextBold } from "@/components";
+import { Birthdate, Text, TextBold } from "@/components";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { useUserContext } from "@/contexts/UserContext";
 import { useUpdateUser } from "@/lib/api/queries/userQueries";
 import { horizontalScale, moderateScale, verticalScale } from "@/lib/metrics";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { Controller, useForm } from "react-hook-form";
 import {
@@ -17,23 +18,22 @@ import {
 	TouchableWithoutFeedback,
 	View,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { z } from "zod";
 
 const schema = z.object({
 	firstName: z.string({ error: "Name cannot be empty" }),
 	lastName: z.string({ error: "Last name cannot be empty" }),
 	email: z.email({ error: "Invalid email address" }),
-	// birthDate: z.date({ error: "Birthdate cannot be empty" }),
 	birthDate: z.string({ error: "Birthdate cannot be empty" }),
 });
-
-const INPUT_CLASS = "justify-center items-center text-black border-[#1A1C20]";
 
 export default function CompleteProfile() {
 	const router = useRouter();
 	const updateUser = useUpdateUser();
 	const { user, refetch, setProfileComplete } = useUserContext();
 	const { isNewUser, clearNewUser } = useAuthContext();
+	const insets = useSafeAreaInsets();
 	const {
 		control,
 		handleSubmit,
@@ -53,225 +53,246 @@ export default function CompleteProfile() {
 	};
 
 	return (
-		<Container useGradient={false}>
+		<View style={[styles.root, { paddingTop: insets.top }]}>
 			<KeyboardAvoidingView
-				behavior={Platform.OS == "ios" ? "padding" : "height"}
+				behavior={Platform.OS === "ios" ? "padding" : "height"}
 				style={{ flex: 1 }}
 			>
-				<ScrollView style={{ paddingTop: verticalScale(40) }}>
-					<TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-						<View
-							className="flex h-full bg-background"
-							style={{ paddingHorizontal: horizontalScale(15) }}
-						>
-							<TextBold
-								className=""
-								style={{
-									color: "#1A1C20",
-									fontSize: moderateScale(35),
-									marginBottom: verticalScale(12),
-									marginHorizontal: horizontalScale(5),
-								}}
-							>
-								WELCOME TO{"\n"}CHOP LOCAL
-							</TextBold>
-							<Text
-								className=""
-								style={{
-									color: "#000000",
-									fontSize: moderateScale(13),
-									marginBottom: verticalScale(120),
-								}}
-							>
-								Just a few last steps before everything is set up
+				<TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+					<ScrollView
+						showsVerticalScrollIndicator={false}
+						contentContainerStyle={styles.scrollContent}
+						keyboardShouldPersistTaps="handled"
+					>
+						{/* ── Header ── */}
+						<View style={styles.header}>
+							<View style={styles.iconCircle}>
+								<Ionicons name="person-outline" size={moderateScale(28)} color="#b42406" />
+							</View>
+							<TextBold style={styles.title}>Almost there!</TextBold>
+							<Text style={styles.subtitle}>
+								Tell us a bit about yourself to get started
 							</Text>
-							<View style={{ marginHorizontal: horizontalScale(10) }}>
-								<Text
-									className="text-black"
-									style={{
-										fontSize: moderateScale(13),
-										marginLeft: horizontalScale(20),
-									}}
-								>
-									Name
-								</Text>
+						</View>
+
+						{/* ── Form Card ── */}
+						<View style={styles.formCard}>
+							{/* First Name */}
+							<View style={styles.fieldGroup}>
+								<Text style={styles.label}>First Name</Text>
 								<Controller
 									control={control}
 									rules={{ required: "Name cannot be empty" }}
 									name="firstName"
 									render={({ field: { onChange, onBlur, value } }) => (
 										<TextInput
-											className={INPUT_CLASS}
-											placeholderTextColor={"rgba(0, 0, 0, 0.3)"}
+											placeholder="John"
+											placeholderTextColor="#C7C7CC"
 											onBlur={onBlur}
 											onChangeText={onChange}
 											value={value}
+											autoCapitalize="words"
 											style={[
-												style.inputStyle,
-												errors.firstName && style.inputError,
+												styles.input,
+												errors.firstName && styles.inputError,
 											]}
 										/>
 									)}
 								/>
 								{errors.firstName && (
-									<Text
-										className="text-red-600"
-										style={{
-											fontSize: moderateScale(11),
-											marginLeft: horizontalScale(20),
-											marginTop: verticalScale(2),
-										}}
-									>
-										{errors.firstName.message}
-									</Text>
+									<Text style={styles.errorText}>{errors.firstName.message}</Text>
 								)}
-								<Text
-									className="text-black"
-									style={{
-										fontSize: moderateScale(13),
-										marginLeft: horizontalScale(20),
-										marginTop: verticalScale(15),
-									}}
-								>
-									Last name
-								</Text>
+							</View>
+
+							{/* Last Name */}
+							<View style={styles.fieldGroup}>
+								<Text style={styles.label}>Last Name</Text>
 								<Controller
 									control={control}
 									rules={{ required: "Last name cannot be empty" }}
 									name="lastName"
 									render={({ field: { onChange, onBlur, value } }) => (
 										<TextInput
-											className={INPUT_CLASS}
-											placeholderTextColor={"rgba(0, 0, 0, 0.3)"}
+											placeholder="Doe"
+											placeholderTextColor="#C7C7CC"
 											onBlur={onBlur}
 											onChangeText={onChange}
 											value={value}
+											autoCapitalize="words"
 											style={[
-												style.inputStyle,
-												errors.lastName && style.inputError,
+												styles.input,
+												errors.lastName && styles.inputError,
 											]}
 										/>
 									)}
 								/>
 								{errors.lastName && (
-									<Text
-										className="text-red-600"
-										style={{
-											fontSize: moderateScale(11),
-											marginLeft: horizontalScale(20),
-											marginTop: verticalScale(2),
-										}}
-									>
-										{errors.lastName.message}
-									</Text>
+									<Text style={styles.errorText}>{errors.lastName.message}</Text>
 								)}
-								<Text
-									className="text-black"
-									style={{
-										fontSize: moderateScale(13),
-										marginLeft: horizontalScale(20),
-										marginTop: verticalScale(15),
-									}}
-								>
-									Email
-								</Text>
+							</View>
+
+							{/* Email */}
+							<View style={styles.fieldGroup}>
+								<Text style={styles.label}>Email</Text>
 								<Controller
 									control={control}
 									rules={{ required: "Not a valid email" }}
 									name="email"
 									render={({ field: { onChange, onBlur, value } }) => (
 										<TextInput
-											className={INPUT_CLASS}
-											placeholderTextColor={"rgba(0, 0, 0, 0.3)"}
+											placeholder="john@example.com"
+											placeholderTextColor="#C7C7CC"
 											onBlur={onBlur}
 											onChangeText={onChange}
 											value={value}
+											keyboardType="email-address"
+											autoCapitalize="none"
 											style={[
-												style.inputStyle,
-												errors.email && style.inputError,
+												styles.input,
+												errors.email && styles.inputError,
 											]}
 										/>
 									)}
 								/>
 								{errors.email && (
-									<Text
-										className="text-red-600"
-										style={{
-											fontSize: moderateScale(11),
-											marginLeft: horizontalScale(20),
-											marginTop: verticalScale(2),
-										}}
-									>
-										{errors.email.message}
-									</Text>
+									<Text style={styles.errorText}>{errors.email.message}</Text>
 								)}
-								<Text
-									className="text-black"
-									style={{
-										fontSize: moderateScale(13),
-										marginLeft: horizontalScale(20),
-										marginTop: verticalScale(15),
-									}}
-								>
-									Birthdate
-								</Text>
+							</View>
+
+							{/* Birthdate */}
+							<View style={styles.fieldGroup}>
+								<Text style={styles.label}>Birthdate</Text>
 								<Controller
 									control={control}
 									rules={{ required: "Date cannot be empty" }}
 									name="birthDate"
-									render={({ field: { onChange, onBlur, value } }) => (
+									render={({ field: { onChange, value } }) => (
 										<Birthdate onChange={onChange} value={value} />
 									)}
 								/>
 								{errors.birthDate && (
-									<Text
-										className="text-red-600"
-										style={{
-											fontSize: moderateScale(11),
-											marginLeft: horizontalScale(20),
-											marginTop: verticalScale(2),
-										}}
-									>
-										{errors.birthDate.message}
-									</Text>
+									<Text style={styles.errorText}>{errors.birthDate.message}</Text>
 								)}
-								<TouchableOpacity
-									className="w-1/2 self-center items-center justify-center"
-									activeOpacity={0.8}
-									onPress={handleSubmit(onSubmit)}
-									style={{
-										marginTop: verticalScale(80),
-										height: verticalScale(54),
-										borderRadius: moderateScale(30),
-										backgroundColor: "#b42406",
-									}}
-								>
-									<Text
-										className=""
-										style={{ color: "#FFFFFF", fontSize: moderateScale(14) }}
-									>
-										Done
-									</Text>
-								</TouchableOpacity>
 							</View>
 						</View>
-					</TouchableWithoutFeedback>
-				</ScrollView>
+
+					</ScrollView>
+				</TouchableWithoutFeedback>
 			</KeyboardAvoidingView>
-		</Container>
+
+			{/* ── Fixed Bottom Button ── */}
+			<View style={[styles.bottomBar, { paddingBottom: insets.bottom + verticalScale(12) }]}>
+				<TouchableOpacity
+					activeOpacity={0.85}
+					onPress={handleSubmit(onSubmit)}
+					style={styles.submitBtn}
+				>
+					<TextBold style={styles.submitText}>Continue</TextBold>
+				</TouchableOpacity>
+			</View>
+		</View>
 	);
 }
 
-const style = StyleSheet.create({
-	inputError: {
-		borderWidth: 1,
-		borderColor: "red",
+const styles = StyleSheet.create({
+	root: {
+		flex: 1,
+		backgroundColor: "#F2F2F7",
 	},
-	inputStyle: {
-		height: verticalScale(40),
-		borderRadius: moderateScale(27),
-		borderWidth: moderateScale(0.5),
+	scrollContent: {
 		paddingHorizontal: horizontalScale(20),
-		fontSize: moderateScale(13),
+		paddingBottom: verticalScale(40),
+	},
+
+	/* ── Header ── */
+	header: {
+		alignItems: "center",
+		marginTop: verticalScale(32),
+		marginBottom: verticalScale(28),
+	},
+	iconCircle: {
+		width: moderateScale(64),
+		height: moderateScale(64),
+		borderRadius: moderateScale(32),
+		backgroundColor: "rgba(180, 36, 6, 0.08)",
+		alignItems: "center",
+		justifyContent: "center",
+		marginBottom: verticalScale(16),
+	},
+	title: {
+		fontSize: moderateScale(26),
+		color: "#1A1A1A",
+		marginBottom: verticalScale(8),
+	},
+	subtitle: {
+		fontSize: moderateScale(14),
+		color: "#888",
+		textAlign: "center",
+	},
+
+	/* ── Form Card ── */
+	formCard: {
+		backgroundColor: "#FFFFFF",
+		borderRadius: moderateScale(22),
+		paddingVertical: verticalScale(24),
+		paddingHorizontal: horizontalScale(20),
+		shadowColor: "#000",
+		shadowOffset: { width: 0, height: 2 },
+		shadowOpacity: 0.06,
+		shadowRadius: 8,
+		elevation: 3,
+	},
+	fieldGroup: {
+		marginBottom: verticalScale(18),
+	},
+	label: {
+		fontSize: moderateScale(12),
+		color: "#888",
+		marginBottom: verticalScale(6),
+		marginLeft: horizontalScale(4),
+		textTransform: "uppercase",
+		letterSpacing: 0.5,
+	},
+	input: {
+		height: verticalScale(48),
+		backgroundColor: "#F8F8F8",
+		borderRadius: moderateScale(14),
+		paddingHorizontal: horizontalScale(16),
+		fontSize: moderateScale(15),
+		color: "#1A1A1A",
+		borderWidth: 1,
+		borderColor: "#F0F0F0",
+	},
+	inputError: {
+		borderColor: "#FF3B30",
+		borderWidth: 1,
+	},
+	errorText: {
+		fontSize: moderateScale(11),
+		color: "#FF3B30",
+		marginTop: verticalScale(4),
+		marginLeft: horizontalScale(4),
+	},
+
+	/* ── Bottom Bar ── */
+	bottomBar: {
+		position: "absolute",
+		bottom: 0,
+		left: 0,
+		right: 0,
+		paddingHorizontal: horizontalScale(20),
+		paddingTop: verticalScale(12),
+		backgroundColor: "#F2F2F7",
+	},
+	submitBtn: {
+		alignItems: "center",
+		justifyContent: "center",
+		backgroundColor: "#b42406",
+		height: verticalScale(54),
+		borderRadius: moderateScale(30),
+	},
+	submitText: {
+		fontSize: moderateScale(16),
+		color: "#FFFFFF",
 	},
 });

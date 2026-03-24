@@ -67,7 +67,9 @@ export default function Restaurant() {
 		setRefreshing(false);
 	}, [id, user?.id]);
 
-	const recentTransactions = (transactions ?? []).slice(0, 2);
+	const recentTransactions = [...(transactions ?? [])]
+		.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+		.slice(0, 2);
 	const restaurantGiftCards = getGiftCardsByRestaurant?.(id as string) ?? [];
 	const displayName = rawRestaurant?.name || paramName || "";
 

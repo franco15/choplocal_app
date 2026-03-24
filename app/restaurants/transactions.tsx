@@ -44,7 +44,7 @@ export default function Transactions() {
 	return (
 		<View style={styles.root}>
 			<FlatList
-				data={transactions}
+				data={[...transactions].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())}
 				showsVerticalScrollIndicator={false}
 				refreshControl={
 					<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#b42406" progressViewOffset={100} />

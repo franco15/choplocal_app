@@ -17,6 +17,7 @@ import { router, useFocusEffect } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
 import {
 	FlatList,
+	LayoutAnimation,
 	Pressable,
 	RefreshControl,
 	ScrollView,
@@ -197,17 +198,15 @@ export default function Restaurants() {
 								gap: horizontalScale(10),
 							}}
 						>
-							{[...FILTER_TABS].sort((a, b) => {
-								if (a.key === activeFilter) return -1;
-								if (b.key === activeFilter) return 1;
-								return 0;
-							}).map((tab) => {
-								const isActive =
-									activeFilter === tab.key;
+							{FILTER_TABS.map((tab) => {
+								const isActive = activeFilter === tab.key;
 								return (
 									<Pressable
 										key={tab.key}
 										onPress={() => {
+											LayoutAnimation.configureNext(
+												LayoutAnimation.create(200, "easeInEaseOut", "opacity"),
+											);
 											setActiveFilter(tab.key);
 											setSearch("");
 										}}
