@@ -5,10 +5,10 @@ import { useUserApi } from "@/lib/api/useApi";
 import { IUser } from "@/lib/types/user";
 import { isNullOrWhitespace } from "@/lib/utils";
 import * as Sentry from "@sentry/react-native";
+import { IUserPut } from "@/lib/types/user";
 import {
 	QueryObserverResult,
 	RefetchOptions,
-	UseMutationResult,
 	useQuery,
 } from "@tanstack/react-query";
 import { useAuthContext } from "./AuthContext";
@@ -19,7 +19,7 @@ interface IUserContext {
 	isUserFetching: boolean;
 	profileComplete: boolean;
 	setProfileComplete: (complete: boolean) => void;
-	updateUser: UseMutationResult<IUser, Error, IUser, unknown>;
+	updateUser: (data: IUserPut) => Promise<IUser>;
 	refetch: (
 		options?: RefetchOptions,
 	) => Promise<QueryObserverResult<IUser, Error>>;
@@ -56,6 +56,12 @@ const UserProvider = ({ children }: { children: React.ReactNode }) => {
 		}
 	}, [user]);
 
+	const updateUser = async (data: IUserPut): Promise<IUser> => {
+		const updated = await userApi.update(user!.id, data);
+		await refetch();
+		return updated;
+	};
+
 	const deleteUser = async () => {
 		await userApi.delete(user!.id);
 	};
@@ -67,6 +73,7 @@ const UserProvider = ({ children }: { children: React.ReactNode }) => {
 			isUserFetching,
 			profileComplete,
 			setProfileComplete,
+			updateUser,
 			refetch,
 			deleteUser,
 		} as IUserContext;

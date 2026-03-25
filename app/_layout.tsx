@@ -190,6 +190,32 @@ const RootComponent = () => {
 									},
 								}}
 							/>
+							<Stack.Screen
+								name="edit-profile"
+								options={{
+									headerShown:
+										Platform.OS === "ios" ? true : false,
+									headerShadowVisible: false,
+									headerTitle: "",
+									headerBackTitle: "Settings",
+									headerStyle: {
+										backgroundColor: "#FFFFFF",
+									},
+								}}
+							/>
+							<Stack.Screen
+								name="change-phone"
+								options={{
+									headerShown:
+										Platform.OS === "ios" ? true : false,
+									headerShadowVisible: false,
+									headerTitle: "",
+									headerBackTitle: "Back",
+									headerStyle: {
+										backgroundColor: "#FFFFFF",
+									},
+								}}
+							/>
 						</Stack>
 					</SuggestionProvider>
 				</RedeemCodeProvider>

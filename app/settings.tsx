@@ -113,6 +113,39 @@ export default function SettingsScreen() {
 					Settings
 				</TextBold>
 
+				{/* Profile Section */}
+				<Text
+					style={{
+						fontSize: moderateScale(14),
+						color: "#999",
+						marginBottom: verticalScale(10),
+						marginLeft: horizontalScale(4),
+					}}
+				>
+					Profile
+				</Text>
+
+				<TouchableOpacity
+					activeOpacity={0.6}
+					onPress={() => router.push("/edit-profile")}
+					style={{
+						backgroundColor: "#FFFFFF",
+						borderRadius: 16,
+						borderWidth: 1,
+						borderColor: "#E0E0E0",
+						paddingHorizontal: 20,
+						paddingVertical: 18,
+						marginBottom: 32,
+					}}
+				>
+					<View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+						<Text style={{ fontSize: moderateScale(17), color: "#1A1A1A" }}>
+							Edit Profile
+						</Text>
+						<Ionicons name="chevron-forward" size={moderateScale(18)} color="#CCC" />
+					</View>
+				</TouchableOpacity>
+
 				{/* Legal Section */}
 				<Text
 					style={{

@@ -43,6 +43,10 @@ export const useUserApi = () => {
 			api.get(`api/app/users/${id}/restaurants/visited`),
 		delete: async (id: string): Promise<void> =>
 			api.delete(`api/app/users/${id}`),
+		requestPhoneChangeCode: async (userId: string, newPhoneNumber: string): Promise<void> =>
+			api.post(`api/app/users/${userId}/phone/request-code`, { newPhoneNumber }),
+		updatePhoneNumber: async (userId: string, newPhoneNumber: string, code: string): Promise<IUser> =>
+			api.put(`api/app/users/${userId}/phone`, { newPhoneNumber, code }),
 	};
 };
 
