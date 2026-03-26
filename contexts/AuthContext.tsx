@@ -150,7 +150,14 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 			isNewUser,
 			clearNewUser,
 		} as IAuthContext;
-	}, [authenticated, phoneNumber, userAuth, token, showDeletedUserAlert, isNewUser]);
+	}, [
+		authenticated,
+		phoneNumber,
+		userAuth,
+		token,
+		showDeletedUserAlert,
+		isNewUser,
+	]);
 
 	return <AuthContext.Provider value={data}>{children}</AuthContext.Provider>;
 };

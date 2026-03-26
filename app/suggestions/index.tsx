@@ -29,7 +29,7 @@ export default function SuggestionsScreen() {
 	} = useForm({ resolver: zodResolver(schema) });
 
 	const onSubmit = async (data: any) => {
-		craeteSuggestion(data.name);
+		// craeteSuggestion(data.name);
 		router.push("/suggestions/thanks");
 	};
 

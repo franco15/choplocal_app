@@ -1,8 +1,7 @@
 import { Text, TextBold } from "@/components";
+import { useSuggestionContext } from "@/contexts/SuggestionsContext";
 import { useUserContext } from "@/contexts/UserContext";
 import { horizontalScale, moderateScale, verticalScale } from "@/lib/metrics";
-import { IRestaurantSuggestion } from "@/lib/types/suggestion";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation, useRouter } from "expo-router";
 import { MotiView } from "moti";
@@ -29,6 +28,7 @@ export default function SuggestRestaurantScreen() {
 	const navigation = useNavigation();
 	const insets = useSafeAreaInsets();
 	const { user } = useUserContext();
+	const { craeteSuggestion } = useSuggestionContext();
 
 	const [name, setName] = useState("");
 	const [city, setCity] = useState("");
@@ -46,30 +46,17 @@ export default function SuggestRestaurantScreen() {
 
 	const onSubmit = async () => {
 		if (!canSubmit) {
-			Alert.alert("Missing fields", "Please fill in the restaurant name and city.");
+			Alert.alert(
+				"Missing fields",
+				"Please fill in the restaurant name and city.",
+			);
 			return;
 		}
 
 		setIsSubmitting(true);
 		Keyboard.dismiss();
 
-		// Simulate API delay
-		await new Promise((r) => setTimeout(r, 1000));
-
-		const suggestion: IRestaurantSuggestion = {
-			id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
-			restaurantName: name.trim(),
-			city: city.trim(),
-			reason: reason.trim() || undefined,
-			submittedAt: new Date().toISOString(),
-			userId: user?.id ?? "",
-		};
-
-		// Save to AsyncStorage (mock for backend)
-		const existing = await AsyncStorage.getItem(SUGGESTIONS_KEY);
-		const list: IRestaurantSuggestion[] = existing ? JSON.parse(existing) : [];
-		list.push(suggestion);
-		await AsyncStorage.setItem(SUGGESTIONS_KEY, JSON.stringify(list));
+		craeteSuggestion(name.trim(), city.trim(), reason.trim());
 
 		setIsSubmitting(false);
 		setSubmitted(true);
@@ -84,7 +71,9 @@ export default function SuggestRestaurantScreen() {
 					paddingHorizontal: horizontalScale(32),
 				}}
 			>
-				<View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+				<View
+					style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
+				>
 					<MotiView
 						from={{ scale: 0 }}
 						animate={{ scale: 1 }}
@@ -120,7 +109,8 @@ export default function SuggestRestaurantScreen() {
 								lineHeight: moderateScale(24),
 							}}
 						>
-							You're helping the foodie fam discover{"\n"}their next favorite spot!
+							You're helping the foodie fam discover{"\n"}their next favorite
+							spot!
 						</Text>
 					</MotiView>
 				</View>
@@ -156,9 +146,7 @@ export default function SuggestRestaurantScreen() {
 				styles.root,
 				{
 					paddingTop:
-						Platform.OS === "ios"
-							? 0
-							: insets.top + verticalScale(16),
+						Platform.OS === "ios" ? 0 : insets.top + verticalScale(16),
 				},
 			]}
 		>
@@ -190,9 +178,7 @@ export default function SuggestRestaurantScreen() {
 							</View>
 						)}
 
-						<TextBold style={styles.title}>
-							Suggest a{"\n"}Restaurant
-						</TextBold>
+						<TextBold style={styles.title}>Suggest a{"\n"}Restaurant</TextBold>
 						<Text style={styles.subtitle}>
 							Which restaurant would you like to see on Chop Local?
 						</Text>
