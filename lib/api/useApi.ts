@@ -92,6 +92,22 @@ export const useNotificationsApi = () => {
 	};
 };
 
+export const useStripeApi = () => {
+	const api = useAxios();
+	return {
+		getConfig: async (): Promise<{ publishableKey: string }> =>
+			api.get("api/app/stripe/config"),
+		createPaymentIntent: async (params: {
+			amount: number;
+			restaurantId: string;
+			senderId: string;
+			receiverPhoneNumber: string;
+			message: string;
+		}): Promise<{ clientSecret: string; paymentIntentId: string }> =>
+			api.post("api/app/giftcards/payment-intent", params),
+	};
+};
+
 export const useSuggestionsApi = () => {
 	const api = useAxios();
 	return {

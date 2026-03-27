@@ -2,46 +2,35 @@ import { Container, Text, TextBold } from "@/components";
 import { Lock } from "@/constants/svgs";
 import { useGiftCardContext } from "@/contexts/GiftCardContext";
 import { useUserContext } from "@/contexts/UserContext";
-import { useGiftCardApi } from "@/lib/api/useApi";
+import { useStripeApi } from "@/lib/api/useApi";
 import {
 	horizontalScale,
 	moderateScale,
 	verticalScale,
 } from "@/lib/metrics";
+import { Ionicons } from "@expo/vector-icons";
+import { useStripe } from "@stripe/stripe-react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { MotiView } from "moti";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import {
 	ActivityIndicator,
-	KeyboardAvoidingView,
 	Modal,
 	Platform,
 	ScrollView,
 	StyleSheet,
-	TextInput,
 	TouchableOpacity,
 	View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-
-const formatCardNumber = (text: string) => {
-	const cleaned = text.replace(/\D/g, "").slice(0, 16);
-	return cleaned.replace(/(.{4})/g, "$1 ").trim();
-};
-
-const formatExpiry = (text: string) => {
-	const cleaned = text.replace(/\D/g, "").slice(0, 4);
-	if (cleaned.length >= 3)
-		return cleaned.slice(0, 2) + "/" + cleaned.slice(2);
-	return cleaned;
-};
 
 export default function Payment() {
 	const router = useRouter();
 	const insets = useSafeAreaInsets();
 	const { user } = useUserContext();
 	const { refreshGiftCards } = useGiftCardContext();
-	const giftCardApi = useGiftCardApi();
+	const stripeApi = useStripeApi();
+	const { initPaymentSheet, presentPaymentSheet } = useStripe();
 
 	const {
 		restaurantId,
@@ -59,38 +48,57 @@ export default function Payment() {
 		colorThemeId: string;
 	}>();
 
-	const [cardholderName, setCardholderName] = useState("");
-	const [cardNumber, setCardNumber] = useState("");
-	const [expiry, setExpiry] = useState("");
-	const [cvv, setCvv] = useState("");
 	const [processing, setProcessing] = useState(false);
-	const [errors, setErrors] = useState<Record<string, string>>({});
+	const [error, setError] = useState("");
 
 	const amount = Number(value) || 0;
 
-	const validate = (): boolean => {
-		const newErrors: Record<string, string> = {};
-		if (cardholderName.trim().length < 2)
-			newErrors.name = "Enter cardholder name";
-		if (cardNumber.replace(/\s/g, "").length < 16)
-			newErrors.card = "Enter a valid card number";
-		if (expiry.length < 5) newErrors.expiry = "Enter valid expiry";
-		if (cvv.length < 3) newErrors.cvv = "Enter valid CVV";
-		setErrors(newErrors);
-		return Object.keys(newErrors).length === 0;
-	};
-
-	const onPay = async () => {
-		if (!validate()) return;
+	const onPay = useCallback(async () => {
 		setProcessing(true);
+		setError("");
+
 		try {
-			const giftCard = await giftCardApi.create({
+			// Step 1: Create payment intent on backend
+			const { clientSecret } = await stripeApi.createPaymentIntent({
 				amount,
 				restaurantId: restaurantId ?? "",
 				senderId: user.id,
 				receiverPhoneNumber: recipientPhone ?? "",
 				message: message ?? "",
 			});
+
+			// Step 2: Initialize the payment sheet
+			const { error: initError } = await initPaymentSheet({
+				paymentIntentClientSecret: clientSecret,
+				merchantDisplayName: "Chop Local",
+				style: "automatic",
+				defaultBillingDetails: {
+					name: `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim(),
+					email: user.email ?? undefined,
+				},
+			});
+
+			if (initError) {
+				setError(initError.message ?? "Could not initialize payment.");
+				setProcessing(false);
+				return;
+			}
+
+			// Step 3: Present the payment sheet
+			const { error: sheetError } = await presentPaymentSheet();
+
+			if (sheetError) {
+				if (sheetError.code === "Canceled") {
+					// User cancelled — do nothing
+					setProcessing(false);
+					return;
+				}
+				setError(sheetError.message ?? "Payment failed. Please try again.");
+				setProcessing(false);
+				return;
+			}
+
+			// Step 4: Payment succeeded!
 			refreshGiftCards();
 			router.replace({
 				pathname: "/gift-cards/success",
@@ -99,380 +107,148 @@ export default function Payment() {
 					value,
 					recipientPhone,
 					colorThemeId,
-					code: giftCard.code,
 					message: message ?? "",
 				},
 			});
 		} catch (err: any) {
 			const apiMessage = err?.response?.data?.message;
-			setErrors({ general: apiMessage ?? "Payment failed. Please try again." });
+			setError(apiMessage ?? "Payment failed. Please try again.");
 		} finally {
 			setProcessing(false);
 		}
-	};
+	}, [amount, restaurantId, recipientPhone, message, user]);
 
 	return (
 		<Container style={{ paddingTop: 0 }}>
-			<KeyboardAvoidingView
-				behavior={Platform.OS === "ios" ? "padding" : "height"}
-				style={{ flex: 1 }}
-			>
-				<View style={{ flex: 1 }}>
-					<ScrollView
-						contentContainerStyle={styles.content}
-						showsVerticalScrollIndicator={false}
-						keyboardShouldPersistTaps="handled"
-					>
-						{/* Header */}
-						<MotiView
-							from={{ opacity: 0, translateY: -10 }}
-							animate={{ opacity: 1, translateY: 0 }}
-							transition={{
-								type: "timing",
-								duration: 300,
-							}}
-						>
-							<TextBold
-								style={{
-									fontSize: moderateScale(26),
-									color: "#1A1A1A",
-								}}
-							>
-								Payment
-							</TextBold>
-							<Text
-								style={{
-									fontSize: moderateScale(14),
-									color: "#888",
-									marginTop: verticalScale(4),
-								}}
-							>
-								Complete your gift card purchase
-							</Text>
-						</MotiView>
-
-						{/* Order Summary */}
-						<MotiView
-							from={{ opacity: 0, translateY: 10 }}
-							animate={{ opacity: 1, translateY: 0 }}
-							transition={{
-								type: "timing",
-								duration: 300,
-								delay: 100,
-							}}
-						>
-							<View style={styles.summaryCard}>
-								<View style={styles.summaryRow}>
-									<Text style={styles.label}>
-										Restaurant
-									</Text>
-									<TextBold
-										style={styles.summaryValue}
-										numberOfLines={1}
-									>
-										{restaurantName}
-									</TextBold>
-								</View>
-								<View style={styles.divider} />
-								<View style={styles.summaryRow}>
-									<Text style={styles.label}>
-										Gift Card
-									</Text>
-									<TextBold style={styles.summaryValue}>
-										${amount}.00
-									</TextBold>
-								</View>
-								<View style={styles.divider} />
-								<View style={styles.summaryRow}>
-									<Text style={styles.label}>To</Text>
-									<TextBold style={styles.summaryValue}>
-										{recipientPhone}
-									</TextBold>
-								</View>
-								<View style={styles.dividerThick} />
-								<View style={styles.summaryRow}>
-									<TextBold
-										style={{
-											fontSize: moderateScale(15),
-											color: "#1A1A1A",
-										}}
-									>
-										Total
-									</TextBold>
-									<TextBold
-										style={{
-											fontSize: moderateScale(20),
-											color: "#1A1A1A",
-										}}
-									>
-										${amount}.00
-									</TextBold>
-								</View>
-							</View>
-						</MotiView>
-
-						{/* Payment Form */}
-						<MotiView
-							from={{ opacity: 0, translateY: 10 }}
-							animate={{ opacity: 1, translateY: 0 }}
-							transition={{
-								type: "timing",
-								duration: 300,
-								delay: 200,
-							}}
-						>
-							<TextBold
-								style={{
-									fontSize: moderateScale(16),
-									color: "#1A1A1A",
-									marginTop: verticalScale(24),
-									marginBottom: verticalScale(16),
-								}}
-							>
-								Card Details
-							</TextBold>
-
-							{/* Cardholder Name */}
-							<Text style={styles.inputLabel}>
-								Cardholder Name
-							</Text>
-							<TextInput
-								value={cardholderName}
-								onChangeText={(t) => {
-									setCardholderName(t);
-									if (errors.name)
-										setErrors((e) => ({
-											...e,
-											name: "",
-										}));
-								}}
-								placeholder="John Doe"
-								placeholderTextColor="#BBB"
-								style={[
-									styles.input,
-									errors.name
-										? { borderColor: "#E53935" }
-										: {},
-								]}
-							/>
-							{errors.name ? (
-								<Text style={styles.errorText}>
-									{errors.name}
-								</Text>
-							) : null}
-
-							{/* Card Number */}
-							<Text style={styles.inputLabel}>
-								Card Number
-							</Text>
-							<TextInput
-								value={cardNumber}
-								onChangeText={(t) => {
-									setCardNumber(formatCardNumber(t));
-									if (errors.card)
-										setErrors((e) => ({
-											...e,
-											card: "",
-										}));
-								}}
-								placeholder="4242 4242 4242 4242"
-								placeholderTextColor="#BBB"
-								keyboardType="number-pad"
-								maxLength={19}
-								style={[
-									styles.input,
-									errors.card
-										? { borderColor: "#E53935" }
-										: {},
-								]}
-							/>
-							{errors.card ? (
-								<Text style={styles.errorText}>
-									{errors.card}
-								</Text>
-							) : null}
-
-							{/* Expiry + CVV Row */}
-							<View style={styles.row}>
-								<View style={{ flex: 1 }}>
-									<Text style={styles.inputLabel}>
-										Expiry
-									</Text>
-									<TextInput
-										value={expiry}
-										onChangeText={(t) => {
-											setExpiry(formatExpiry(t));
-											if (errors.expiry)
-												setErrors((e) => ({
-													...e,
-													expiry: "",
-												}));
-										}}
-										placeholder="MM/YY"
-										placeholderTextColor="#BBB"
-										keyboardType="number-pad"
-										maxLength={5}
-										style={[
-											styles.input,
-											errors.expiry
-												? {
-														borderColor:
-															"#E53935",
-													}
-												: {},
-										]}
-									/>
-									{errors.expiry ? (
-										<Text style={styles.errorText}>
-											{errors.expiry}
-										</Text>
-									) : null}
-								</View>
-								<View
-									style={{
-										width: horizontalScale(14),
-									}}
-								/>
-								<View style={{ flex: 1 }}>
-									<Text style={styles.inputLabel}>
-										CVV
-									</Text>
-									<TextInput
-										value={cvv}
-										onChangeText={(t) => {
-											setCvv(
-												t
-													.replace(/\D/g, "")
-													.slice(0, 3),
-											);
-											if (errors.cvv)
-												setErrors((e) => ({
-													...e,
-													cvv: "",
-												}));
-										}}
-										placeholder="123"
-										placeholderTextColor="#BBB"
-										keyboardType="number-pad"
-										secureTextEntry
-										maxLength={3}
-										style={[
-											styles.input,
-											errors.cvv
-												? {
-														borderColor:
-															"#E53935",
-													}
-												: {},
-										]}
-									/>
-									{errors.cvv ? (
-										<Text style={styles.errorText}>
-											{errors.cvv}
-										</Text>
-									) : null}
-								</View>
-							</View>
-
-							{/* Secure payment badge */}
-							<View style={styles.secureBadge}>
-								<Lock
-									width={horizontalScale(14)}
-									height={verticalScale(14)}
-								/>
-								<Text
-									style={{
-										fontSize: moderateScale(12),
-										color: "#AAA",
-										marginLeft: horizontalScale(6),
-									}}
-								>
-									Secure payment
-								</Text>
-							</View>
-						</MotiView>
-
-						{/* General error */}
-						{errors.general ? (
-							<Text
-								style={[
-									styles.errorText,
-									{
-										textAlign: "center",
-										marginTop: verticalScale(12),
-									},
-								]}
-							>
-								{errors.general}
-							</Text>
-						) : null}
-					</ScrollView>
-
-					{/* Fixed Bottom Button */}
-					<View
-						style={[
-							styles.bottomBar,
-							{
-								paddingBottom:
-									insets.bottom > 0
-										? insets.bottom
-										: verticalScale(16),
-							},
-						]}
-					>
-						<TouchableOpacity
-							activeOpacity={0.8}
-							onPress={onPay}
-							disabled={processing}
-							style={styles.payButton}
-						>
-							<TextBold
-								style={{
-									fontSize: moderateScale(16),
-									color: "#FFFFFF",
-								}}
-							>
-								Pay ${amount}.00
-							</TextBold>
-						</TouchableOpacity>
-					</View>
-				</View>
-			</KeyboardAvoidingView>
-
-			{/* Processing Overlay */}
-			<Modal visible={processing} transparent animationType="fade">
-				<View style={styles.overlay}>
+			<View style={{ flex: 1 }}>
+				<ScrollView
+					contentContainerStyle={styles.content}
+					showsVerticalScrollIndicator={false}
+				>
+					{/* Header */}
 					<MotiView
-						from={{ scale: 0.9, opacity: 0 }}
-						animate={{ scale: 1, opacity: 1 }}
-						transition={{ type: "timing", duration: 250 }}
-						style={styles.processingCard}
+						from={{ opacity: 0, translateY: -10 }}
+						animate={{ opacity: 1, translateY: 0 }}
+						transition={{ type: "timing", duration: 300 }}
 					>
-						<ActivityIndicator
-							size="large"
-							color="#000000"
-						/>
-						<TextBold
-							style={{
-								fontSize: moderateScale(16),
-								color: "#1A1A1A",
-								marginTop: verticalScale(16),
-							}}
-						>
-							Processing payment...
-						</TextBold>
-						<Text
-							style={{
-								fontSize: moderateScale(13),
-								color: "#888",
-								marginTop: verticalScale(6),
-							}}
-						>
-							Please wait a moment
+						<TextBold style={styles.title}>Review & Pay</TextBold>
+						<Text style={styles.subtitle}>
+							Review your gift card details
 						</Text>
 					</MotiView>
+
+					{/* Order Summary */}
+					<MotiView
+						from={{ opacity: 0, translateY: 10 }}
+						animate={{ opacity: 1, translateY: 0 }}
+						transition={{ type: "timing", duration: 300, delay: 100 }}
+					>
+						<View style={styles.summaryCard}>
+							<View style={styles.summaryRow}>
+								<Text style={styles.label}>Restaurant</Text>
+								<TextBold style={styles.summaryValue} numberOfLines={1}>
+									{restaurantName}
+								</TextBold>
+							</View>
+							<View style={styles.divider} />
+							<View style={styles.summaryRow}>
+								<Text style={styles.label}>Gift Card</Text>
+								<TextBold style={styles.summaryValue}>
+									${amount}.00
+								</TextBold>
+							</View>
+							<View style={styles.divider} />
+							<View style={styles.summaryRow}>
+								<Text style={styles.label}>To</Text>
+								<TextBold style={styles.summaryValue}>
+									{recipientPhone}
+								</TextBold>
+							</View>
+							{message ? (
+								<>
+									<View style={styles.divider} />
+									<View style={styles.summaryRow}>
+										<Text style={styles.label}>Message</Text>
+										<Text style={[styles.summaryValue, { fontStyle: "italic" }]} numberOfLines={2}>
+											"{message}"
+										</Text>
+									</View>
+								</>
+							) : null}
+							<View style={styles.dividerThick} />
+							<View style={styles.summaryRow}>
+								<TextBold style={{ fontSize: moderateScale(15), color: "#1A1A1A" }}>
+									Total
+								</TextBold>
+								<TextBold style={{ fontSize: moderateScale(22), color: "#1A1A1A" }}>
+									${amount}.00
+								</TextBold>
+							</View>
+						</View>
+					</MotiView>
+
+					{/* Payment Info */}
+					<MotiView
+						from={{ opacity: 0, translateY: 10 }}
+						animate={{ opacity: 1, translateY: 0 }}
+						transition={{ type: "timing", duration: 300, delay: 200 }}
+					>
+						<View style={styles.infoCard}>
+							<Ionicons name="card-outline" size={moderateScale(20)} color="#888" />
+							<Text style={styles.infoText}>
+								You'll be asked to enter your card details securely via Stripe when you tap "Pay Now".
+							</Text>
+						</View>
+					</MotiView>
+
+					{/* Secure badge */}
+					<View style={styles.secureBadge}>
+						<Lock
+							width={horizontalScale(14)}
+							height={verticalScale(14)}
+						/>
+						<Text style={styles.secureText}>
+							Secure payment powered by Stripe
+						</Text>
+					</View>
+
+					{/* Error */}
+					{error ? (
+						<View style={styles.errorContainer}>
+							<Ionicons name="alert-circle" size={moderateScale(16)} color="#E53935" />
+							<Text style={styles.errorText}>{error}</Text>
+						</View>
+					) : null}
+				</ScrollView>
+
+				{/* Fixed Bottom Button */}
+				<View
+					style={[
+						styles.bottomBar,
+						{
+							paddingBottom:
+								insets.bottom > 0
+									? insets.bottom
+									: verticalScale(16),
+						},
+					]}
+				>
+					<TouchableOpacity
+						activeOpacity={0.8}
+						onPress={onPay}
+						disabled={processing}
+						style={[styles.payButton, processing && { opacity: 0.6 }]}
+					>
+						{processing ? (
+							<ActivityIndicator color="#FFFFFF" />
+						) : (
+							<TextBold style={styles.payButtonText}>
+								Pay Now — ${amount}.00
+							</TextBold>
+						)}
+					</TouchableOpacity>
 				</View>
-			</Modal>
+			</View>
 		</Container>
 	);
 }
@@ -482,6 +258,15 @@ const styles = StyleSheet.create({
 		paddingHorizontal: horizontalScale(8),
 		paddingTop: verticalScale(10),
 		paddingBottom: verticalScale(20),
+	},
+	title: {
+		fontSize: moderateScale(26),
+		color: "#1A1A1A",
+	},
+	subtitle: {
+		fontSize: moderateScale(14),
+		color: "#888",
+		marginTop: verticalScale(4),
 	},
 	summaryCard: {
 		backgroundColor: "#FFFFFF",
@@ -515,35 +300,42 @@ const styles = StyleSheet.create({
 		height: 1.5,
 		backgroundColor: "#E0E0E0",
 	},
-	inputLabel: {
-		fontSize: moderateScale(13),
-		color: "#666",
-		marginBottom: verticalScale(6),
-		marginTop: verticalScale(12),
-	},
-	input: {
-		backgroundColor: "#FFFFFF",
-		borderRadius: moderateScale(14),
-		borderWidth: 1,
-		borderColor: "#EDEDED",
-		paddingHorizontal: horizontalScale(16),
-		paddingVertical: verticalScale(14),
-		fontSize: moderateScale(15),
-		color: "#1A1A1A",
-	},
-	errorText: {
-		fontSize: moderateScale(12),
-		color: "#E53935",
-		marginTop: verticalScale(4),
-	},
-	row: {
+	infoCard: {
 		flexDirection: "row",
+		alignItems: "center",
+		backgroundColor: "#F8F8F8",
+		borderRadius: moderateScale(14),
+		padding: moderateScale(16),
+		marginTop: verticalScale(20),
+		gap: horizontalScale(12),
+	},
+	infoText: {
+		flex: 1,
+		fontSize: moderateScale(13),
+		color: "#888",
+		lineHeight: moderateScale(19),
 	},
 	secureBadge: {
 		flexDirection: "row",
 		alignItems: "center",
 		justifyContent: "center",
+		marginTop: verticalScale(20),
+	},
+	secureText: {
+		fontSize: moderateScale(12),
+		color: "#AAA",
+		marginLeft: horizontalScale(6),
+	},
+	errorContainer: {
+		flexDirection: "row",
+		alignItems: "center",
+		justifyContent: "center",
 		marginTop: verticalScale(16),
+		gap: horizontalScale(6),
+	},
+	errorText: {
+		fontSize: moderateScale(13),
+		color: "#E53935",
 	},
 	bottomBar: {
 		paddingHorizontal: horizontalScale(8),
@@ -558,17 +350,8 @@ const styles = StyleSheet.create({
 		justifyContent: "center",
 		width: "100%",
 	},
-	overlay: {
-		flex: 1,
-		backgroundColor: "rgba(0,0,0,0.5)",
-		alignItems: "center",
-		justifyContent: "center",
-	},
-	processingCard: {
-		backgroundColor: "#FFFFFF",
-		borderRadius: moderateScale(20),
-		padding: moderateScale(36),
-		alignItems: "center",
-		width: horizontalScale(260),
+	payButtonText: {
+		fontSize: moderateScale(16),
+		color: "#FFFFFF",
 	},
 });

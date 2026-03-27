@@ -4,6 +4,7 @@ import { RedeemCodeProvider } from "@/contexts/RedeemCodeContext";
 import { SuggestionProvider } from "@/contexts/SuggestionsContext";
 import { UserProvider } from "@/contexts/UserContext";
 import { queryClient } from "@/lib/api/queryClient";
+import { useStripeApi } from "@/lib/api/useApi";
 import {
 	Inter_400Regular,
 	Inter_500Medium,
@@ -11,13 +12,14 @@ import {
 	Inter_700Bold,
 	useFonts,
 } from "@expo-google-fonts/inter";
+import { StripeProvider } from "@stripe/stripe-react-native";
 import * as Sentry from "@sentry/react-native";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Ionicons } from "@expo/vector-icons";
 import { Stack, useRouter } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Platform, TouchableOpacity } from "react-native";
 import "./global.css";
 
@@ -78,6 +80,7 @@ const RootComponent = () => {
 
 	return (
 		<UserProvider>
+			<StripeWrapper>
 			<GiftCardProvider>
 				<RedeemCodeProvider>
 					<SuggestionProvider>
@@ -220,6 +223,26 @@ const RootComponent = () => {
 					</SuggestionProvider>
 				</RedeemCodeProvider>
 			</GiftCardProvider>
+			</StripeWrapper>
 		</UserProvider>
+	);
+};
+
+const StripeWrapper = ({ children }: { children: React.ReactNode }) => {
+	const [publishableKey, setPublishableKey] = useState("");
+	const stripeApi = useStripeApi();
+
+	useEffect(() => {
+		stripeApi.getConfig()
+			.then((data) => setPublishableKey(data.publishableKey))
+			.catch(() => {});
+	}, []);
+
+	if (!publishableKey) return <>{children}</>;
+
+	return (
+		<StripeProvider publishableKey={publishableKey}>
+			{children}
+		</StripeProvider>
 	);
 };

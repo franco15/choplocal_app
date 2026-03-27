@@ -88,9 +88,10 @@ export default function GiftCardSuccess() {
 	};
 
 	const onShare = async () => {
-		const shareMsg = message
-			? `I sent you a $${value} gift card for ${restaurantName}! "${message}" \nRedeem it with code: ${code}`
-			: `I sent you a $${value} gift card for ${restaurantName}! Redeem it with code: ${code}`;
+		let shareMsg = `I sent you a $${value} gift card for ${restaurantName}!`;
+		if (message) shareMsg += ` "${message}"`;
+		if (code) shareMsg += `\nRedeem it with code: ${code}`;
+		else shareMsg += `\nYou'll receive it in your Chop Local app shortly.`;
 		await Share.share({ message: shareMsg });
 	};
 
@@ -176,7 +177,7 @@ export default function GiftCardSuccess() {
 							textAlign: "center",
 						}}
 					>
-						Gift Card Sent!
+						Payment Successful!
 					</TextBold>
 					<Text
 						style={{
@@ -187,42 +188,43 @@ export default function GiftCardSuccess() {
 							lineHeight: moderateScale(21),
 						}}
 					>
-						Share this code with your friend{"\n"}so they can
-						redeem it.
+						Your gift card will be sent to the{"\n"}recipient shortly.
 					</Text>
 				</MotiView>
 
-				{/* ── Code Card ── */}
-				<MotiView
-					from={{ opacity: 0, translateY: 10 }}
-					animate={{ opacity: 1, translateY: 0 }}
-					transition={{
-						type: "timing",
-						duration: 300,
-						delay: 500,
-					}}
-				>
-					<View style={styles.codeCard}>
-						<Text style={styles.codeLabel}>GIFT CARD CODE</Text>
-						<TextBold style={styles.codeText}>
-							{code ?? "---"}
-						</TextBold>
-						<TouchableOpacity
-							onPress={onCopyCode}
-							activeOpacity={0.7}
-							style={styles.copyButton}
-						>
-							<Ionicons
-								name="copy-outline"
-								size={18}
-								color="#1A1A1A"
-							/>
-							<Text style={styles.copyButtonText}>
-								Copy Code
-							</Text>
-						</TouchableOpacity>
-					</View>
-				</MotiView>
+				{/* ── Code Card (only if code is available) ── */}
+				{code ? (
+					<MotiView
+						from={{ opacity: 0, translateY: 10 }}
+						animate={{ opacity: 1, translateY: 0 }}
+						transition={{
+							type: "timing",
+							duration: 300,
+							delay: 500,
+						}}
+					>
+						<View style={styles.codeCard}>
+							<Text style={styles.codeLabel}>GIFT CARD CODE</Text>
+							<TextBold style={styles.codeText}>
+								{code}
+							</TextBold>
+							<TouchableOpacity
+								onPress={onCopyCode}
+								activeOpacity={0.7}
+								style={styles.copyButton}
+							>
+								<Ionicons
+									name="copy-outline"
+									size={18}
+									color="#1A1A1A"
+								/>
+								<Text style={styles.copyButtonText}>
+									Copy Code
+								</Text>
+							</TouchableOpacity>
+						</View>
+					</MotiView>
+				) : null}
 
 				{/* Details card */}
 				<MotiView
