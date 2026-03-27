@@ -1,11 +1,12 @@
 import { CustomText as Text, CustomTextBold as TextBold } from "@/components/Texts";
 import { Bookmark, BookmarkSolid } from "@/constants/svgs";
+import { API_BASE } from "@/constants/keys";
 import { horizontalScale, moderateScale, verticalScale } from "@/lib/metrics";
 import { ERestaurantStatus, IRestaurant } from "@/lib/types/restaurant";
 import { router } from "expo-router";
 import { MotiView } from "moti";
 import { useCallback } from "react";
-import { Pressable, StyleSheet, View } from "react-native";
+import { Image, Pressable, StyleSheet, View } from "react-native";
 
 const STATUS_LABELS: Record<number, string> = {
 	[ERestaurantStatus.Visited]: "Visited",
@@ -90,17 +91,26 @@ export default function RestaurantCard({
 								height: moderateScale(70),
 								borderRadius: moderateScale(12),
 								marginRight: horizontalScale(12),
+								overflow: "hidden",
 							},
 						]}
 					>
-						<TextBold
-							style={{
-								color: "#999",
-								fontSize: moderateScale(18),
-							}}
-						>
-							{getInitials(restaurant.name)}
-						</TextBold>
+						{restaurant.logo ? (
+							<Image
+								source={{ uri: `${API_BASE}${restaurant.logo}` }}
+								style={{ width: "100%", height: "100%" }}
+								resizeMode="cover"
+							/>
+						) : (
+							<TextBold
+								style={{
+									color: "#999",
+									fontSize: moderateScale(18),
+								}}
+							>
+								{getInitials(restaurant.name)}
+							</TextBold>
+						)}
 					</View>
 
 					{/* Center: Info */}

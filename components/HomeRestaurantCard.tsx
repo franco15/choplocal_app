@@ -1,10 +1,12 @@
 import { CustomText as Text, CustomTextBold as TextBold } from "@/components/Texts";
 import { Bookmark, BookmarkSolid } from "@/constants/svgs";
+import { API_BASE } from "@/constants/keys";
 import { moderateScale, verticalScale, horizontalScale } from "@/lib/metrics";
 import { IRestaurant } from "@/lib/types/restaurant";
 import { router } from "expo-router";
 import { useCallback } from "react";
 import {
+	Image,
 	Pressable,
 	Share,
 	StyleSheet,
@@ -34,6 +36,8 @@ export default function HomeRestaurantCard({
 			.map((w) => w[0])
 			.join("")
 			.toUpperCase();
+
+	const restaurantImage = restaurant.image || restaurant.logo;
 
 	const onFavorite = useCallback(() => {
 		onToggleFavorite?.(restaurant.id);
@@ -69,9 +73,17 @@ export default function HomeRestaurantCard({
 			>
 				{/* Image area */}
 				<View style={styles.imageArea}>
-					<TextBold style={styles.initials}>
-						{getInitials(restaurant.name)}
-					</TextBold>
+					{restaurantImage ? (
+						<Image
+							source={{ uri: `${API_BASE}${restaurantImage}` }}
+							style={styles.image}
+							resizeMode="cover"
+						/>
+					) : (
+						<TextBold style={styles.initials}>
+							{getInitials(restaurant.name)}
+						</TextBold>
+					)}
 
 					{/* Bookmark — top-right, white circle */}
 					<TouchableOpacity
@@ -138,6 +150,10 @@ const styles = StyleSheet.create({
 		backgroundColor: "#F0F0F0",
 		alignItems: "center",
 		justifyContent: "center",
+	},
+	image: {
+		width: "100%",
+		height: "100%",
 	},
 	initials: {
 		fontSize: moderateScale(40),

@@ -9,14 +9,12 @@ import {
 	verticalScale,
 } from "@/lib/metrics";
 import { Ionicons } from "@expo/vector-icons";
-import { useStripe } from "@stripe/stripe-react-native";
+import { CardForm, useStripe } from "@stripe/stripe-react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { MotiView } from "moti";
 import { useCallback, useState } from "react";
 import {
 	ActivityIndicator,
-	Modal,
-	Platform,
 	ScrollView,
 	StyleSheet,
 	TouchableOpacity,
@@ -30,7 +28,7 @@ export default function Payment() {
 	const { user } = useUserContext();
 	const { refreshGiftCards } = useGiftCardContext();
 	const stripeApi = useStripeApi();
-	const { initPaymentSheet, presentPaymentSheet } = useStripe();
+	const { confirmPayment } = useStripe();
 
 	const {
 		restaurantId,
@@ -50,16 +48,22 @@ export default function Payment() {
 
 	const [processing, setProcessing] = useState(false);
 	const [error, setError] = useState("");
+	const [cardComplete, setCardComplete] = useState(false);
 
 	const amount = Number(value) || 0;
 
 	const onPay = useCallback(async () => {
+		if (!cardComplete) {
+			setError("Please complete your card details.");
+			return;
+		}
+
 		setProcessing(true);
 		setError("");
 
 		try {
 			// Step 1: Create payment intent on backend
-			const { clientSecret } = await stripeApi.createPaymentIntent({
+			const { clientSecret, giftCardCode } = await stripeApi.createPaymentIntent({
 				amount,
 				restaurantId: restaurantId ?? "",
 				senderId: user.id,
@@ -67,56 +71,38 @@ export default function Payment() {
 				message: message ?? "",
 			});
 
-			// Step 2: Initialize the payment sheet
-			const { error: initError } = await initPaymentSheet({
-				paymentIntentClientSecret: clientSecret,
-				merchantDisplayName: "Chop Local",
-				style: "automatic",
-				defaultBillingDetails: {
-					name: `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim(),
-					email: user.email ?? undefined,
-				},
+			// Step 2: Confirm payment with card form details
+			const { error: confirmError, paymentIntent } = await confirmPayment(clientSecret, {
+				paymentMethodType: "Card",
 			});
 
-			if (initError) {
-				setError(initError.message ?? "Could not initialize payment.");
+			if (confirmError) {
+				setError(confirmError.message ?? "Payment failed. Please try again.");
 				setProcessing(false);
 				return;
 			}
 
-			// Step 3: Present the payment sheet
-			const { error: sheetError } = await presentPaymentSheet();
-
-			if (sheetError) {
-				if (sheetError.code === "Canceled") {
-					// User cancelled — do nothing
-					setProcessing(false);
-					return;
-				}
-				setError(sheetError.message ?? "Payment failed. Please try again.");
-				setProcessing(false);
-				return;
+			if (paymentIntent?.status === "Succeeded") {
+				refreshGiftCards();
+				router.replace({
+					pathname: "/gift-cards/success",
+					params: {
+						restaurantName,
+						value,
+						recipientPhone,
+						colorThemeId,
+						message: message ?? "",
+						code: giftCardCode ?? "",
+					},
+				});
 			}
-
-			// Step 4: Payment succeeded!
-			refreshGiftCards();
-			router.replace({
-				pathname: "/gift-cards/success",
-				params: {
-					restaurantName,
-					value,
-					recipientPhone,
-					colorThemeId,
-					message: message ?? "",
-				},
-			});
 		} catch (err: any) {
 			const apiMessage = err?.response?.data?.message;
 			setError(apiMessage ?? "Payment failed. Please try again.");
 		} finally {
 			setProcessing(false);
 		}
-	}, [amount, restaurantId, recipientPhone, message, user]);
+	}, [amount, restaurantId, recipientPhone, message, user, cardComplete]);
 
 	return (
 		<Container style={{ paddingTop: 0 }}>
@@ -187,18 +173,32 @@ export default function Payment() {
 						</View>
 					</MotiView>
 
-					{/* Payment Info */}
+					{/* Card Input */}
 					<MotiView
 						from={{ opacity: 0, translateY: 10 }}
 						animate={{ opacity: 1, translateY: 0 }}
 						transition={{ type: "timing", duration: 300, delay: 200 }}
 					>
-						<View style={styles.infoCard}>
-							<Ionicons name="card-outline" size={moderateScale(20)} color="#888" />
-							<Text style={styles.infoText}>
-								You'll be asked to enter your card details securely via Stripe when you tap "Pay Now".
-							</Text>
-						</View>
+						<TextBold style={styles.cardSectionTitle}>Payment Method</TextBold>
+						<CardForm
+							autofocus={false}
+							cardStyle={{
+								backgroundColor: "#FFFFFF",
+								textColor: "#1A1A1A",
+								placeholderColor: "#C0C0C0",
+								borderColor: "#E0E0E0",
+								borderWidth: 1,
+								borderRadius: 12,
+								fontSize: 16,
+								cursorColor: "#b42406",
+								textErrorColor: "#E53935",
+							}}
+							style={styles.cardForm}
+							onFormComplete={(details) => {
+								setCardComplete(details.complete);
+								if (error) setError("");
+							}}
+						/>
 					</MotiView>
 
 					{/* Secure badge */}
@@ -236,8 +236,11 @@ export default function Payment() {
 					<TouchableOpacity
 						activeOpacity={0.8}
 						onPress={onPay}
-						disabled={processing}
-						style={[styles.payButton, processing && { opacity: 0.6 }]}
+						disabled={processing || !cardComplete}
+						style={[
+							styles.payButton,
+							(processing || !cardComplete) && { opacity: 0.6 },
+						]}
 					>
 						{processing ? (
 							<ActivityIndicator color="#FFFFFF" />
@@ -300,20 +303,15 @@ const styles = StyleSheet.create({
 		height: 1.5,
 		backgroundColor: "#E0E0E0",
 	},
-	infoCard: {
-		flexDirection: "row",
-		alignItems: "center",
-		backgroundColor: "#F8F8F8",
-		borderRadius: moderateScale(14),
-		padding: moderateScale(16),
-		marginTop: verticalScale(20),
-		gap: horizontalScale(12),
+	cardSectionTitle: {
+		fontSize: moderateScale(16),
+		color: "#1A1A1A",
+		marginTop: verticalScale(24),
+		marginBottom: verticalScale(12),
 	},
-	infoText: {
-		flex: 1,
-		fontSize: moderateScale(13),
-		color: "#888",
-		lineHeight: moderateScale(19),
+	cardForm: {
+		width: "100%",
+		height: verticalScale(210),
 	},
 	secureBadge: {
 		flexDirection: "row",
