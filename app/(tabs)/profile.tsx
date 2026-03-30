@@ -4,15 +4,22 @@ import { useUserContext } from "@/contexts/UserContext";
 import { queryClient, queryKeys } from "@/lib/api/queryClient";
 import { useUserApi } from "@/lib/api/useApi";
 import { horizontalScale, moderateScale, verticalScale } from "@/lib/metrics";
-import { isNullOrWhitespace } from "@/lib/utils";
 import { IRestaurant } from "@/lib/types/restaurant";
+import { isNullOrWhitespace } from "@/lib/utils";
 import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useQuery } from "@tanstack/react-query";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
-import { FlatList, RefreshControl, ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
+import {
+	FlatList,
+	RefreshControl,
+	ScrollView,
+	StyleSheet,
+	TouchableOpacity,
+	View,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const FAVORITES_KEY = "choplocal-favorites";
 
@@ -53,7 +60,9 @@ export default function ProfileScreen() {
 
 	const onRefresh = useCallback(async () => {
 		setRefreshing(true);
-		await queryClient.invalidateQueries({ queryKey: [queryKeys.users.restaurants] });
+		await queryClient.invalidateQueries({
+			queryKey: [queryKeys.users.restaurants],
+		});
 		setRefreshing(false);
 	}, []);
 
@@ -65,7 +74,11 @@ export default function ProfileScreen() {
 	const stats = useMemo(() => {
 		if (!restaurants) return { visited: 0, remaining: 0, total: 0 };
 		const visited = restaurants.filter((r) => r.checkIns >= 1).length;
-		return { visited, remaining: restaurants.length - visited, total: restaurants.length };
+		return {
+			visited,
+			remaining: restaurants.length - visited,
+			total: restaurants.length,
+		};
 	}, [restaurants]);
 
 	const topRestaurants = useMemo(() => {
@@ -84,11 +97,18 @@ export default function ProfileScreen() {
 				showsVerticalScrollIndicator={false}
 				contentContainerStyle={{ paddingBottom: verticalScale(120) }}
 				refreshControl={
-					<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#b42406" progressViewOffset={100} />
+					<RefreshControl
+						refreshing={refreshing}
+						onRefresh={onRefresh}
+						tintColor="#b42406"
+						progressViewOffset={100}
+					/>
 				}
 			>
 				{/* ── Header ── */}
-				<View style={[styles.header, { paddingTop: insets.top + verticalScale(8) }]}>
+				<View
+					style={[styles.header, { paddingTop: insets.top + verticalScale(8) }]}
+				>
 					<TextBold style={styles.screenTitle}>Profile</TextBold>
 					<TouchableOpacity
 						activeOpacity={0.5}
@@ -96,7 +116,11 @@ export default function ProfileScreen() {
 						hitSlop={12}
 						style={styles.settingsBtn}
 					>
-						<Ionicons name="settings-outline" size={moderateScale(22)} color="#1A1A1A" />
+						<Ionicons
+							name="settings-outline"
+							size={moderateScale(22)}
+							color="#1A1A1A"
+						/>
 					</TouchableOpacity>
 				</View>
 
@@ -111,21 +135,27 @@ export default function ProfileScreen() {
 						{user.firstName} {user.lastName}
 					</TextBold>
 
-					{user.email ? (
-						<Text style={styles.email}>{user.email}</Text>
-					) : null}
+					{user.email ? <Text style={styles.email}>{user.email}</Text> : null}
 
 					{/* Info pills */}
 					<View style={styles.pillsRow}>
 						{user.phoneNumber ? (
 							<View style={styles.pill}>
-								<Ionicons name="call-outline" size={moderateScale(13)} color="#888" />
+								<Ionicons
+									name="call-outline"
+									size={moderateScale(13)}
+									color="#888"
+								/>
 								<Text style={styles.pillText}>{user.phoneNumber}</Text>
 							</View>
 						) : null}
 						{user.birthDate ? (
 							<View style={styles.pill}>
-								<Ionicons name="calendar-outline" size={moderateScale(13)} color="#888" />
+								<Ionicons
+									name="calendar-outline"
+									size={moderateScale(13)}
+									color="#888"
+								/>
 								<Text style={styles.pillText}>
 									{new Date(user.birthDate).toLocaleDateString("en-US", {
 										month: "short",
@@ -135,8 +165,7 @@ export default function ProfileScreen() {
 							</View>
 						) : null}
 					</View>
-
-					</View>
+				</View>
 
 				{/* ── Stats ── */}
 				<View style={styles.statsRow}>
@@ -166,13 +195,21 @@ export default function ProfileScreen() {
 					onPress={() => router.push("/suggest-restaurant")}
 					style={styles.suggestBtn}
 				>
-					<Ionicons name="add-circle-outline" size={moderateScale(22)} color="#b42406" />
+					<Ionicons
+						name="add-circle-outline"
+						size={moderateScale(22)}
+						color="#b42406"
+					/>
 					<View style={{ flex: 1, marginLeft: horizontalScale(12) }}>
 						<TextBold style={styles.suggestTitle}>Know a great spot?</TextBold>
 						<Text style={styles.suggestSub}>Suggest a restaurant</Text>
 					</View>
 					<View style={styles.suggestArrow}>
-						<Ionicons name="arrow-forward" size={moderateScale(16)} color="#b42406" />
+						<Ionicons
+							name="arrow-forward"
+							size={moderateScale(16)}
+							color="#b42406"
+						/>
 					</View>
 				</TouchableOpacity>
 
@@ -197,8 +234,14 @@ export default function ProfileScreen() {
 						/>
 					) : (
 						<View style={styles.emptyTop}>
-							<Ionicons name="restaurant-outline" size={moderateScale(32)} color="#DDD" />
-							<Text style={styles.emptyTopText}>Visit your first restaurant!</Text>
+							<Ionicons
+								name="restaurant-outline"
+								size={moderateScale(32)}
+								color="#DDD"
+							/>
+							<Text style={styles.emptyTopText}>
+								Visit your first restaurant!
+							</Text>
 						</View>
 					)}
 				</View>

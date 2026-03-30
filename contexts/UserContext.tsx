@@ -2,10 +2,9 @@ import { createContext, useContext, useEffect, useMemo, useState } from "react";
 
 import { queryKeys } from "@/lib/api/queryClient";
 import { useUserApi } from "@/lib/api/useApi";
-import { IUser } from "@/lib/types/user";
+import { IUser, IUserPut } from "@/lib/types/user";
 import { isNullOrWhitespace } from "@/lib/utils";
 import * as Sentry from "@sentry/react-native";
-import { IUserPut } from "@/lib/types/user";
 import {
 	QueryObserverResult,
 	RefetchOptions,

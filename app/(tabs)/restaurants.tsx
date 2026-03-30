@@ -4,14 +4,11 @@ import { SearchIcon } from "@/constants/svgs";
 import { useUserContext } from "@/contexts/UserContext";
 import { queryClient, queryKeys } from "@/lib/api/queryClient";
 import { useUserApi } from "@/lib/api/useApi";
-import {
-	horizontalScale,
-	moderateScale,
-	verticalScale,
-} from "@/lib/metrics";
-import { isNullOrWhitespace } from "@/lib/utils";
+import { horizontalScale, moderateScale, verticalScale } from "@/lib/metrics";
 import { ERestaurantStatus, IRestaurant } from "@/lib/types/restaurant";
+import { isNullOrWhitespace } from "@/lib/utils";
 import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useQuery } from "@tanstack/react-query";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
@@ -26,7 +23,6 @@ import {
 	TouchableOpacity,
 	View,
 } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import RestaurantsSkeleton from "../skeletons/restaurants";
 
 const FAVORITES_KEY = "choplocal-favorites";
@@ -52,7 +48,6 @@ export default function Restaurants() {
 		queryKey: [queryKeys.users.restaurants],
 		queryFn: async () => {
 			const data = await userApi.restaurants(user.id);
-			console.log("restauratns", data)
 			return data;
 		},
 		enabled: !isNullOrWhitespace(user?.id),
@@ -79,7 +74,9 @@ export default function Restaurants() {
 
 	const onRefresh = useCallback(async () => {
 		setRefreshing(true);
-		await queryClient.invalidateQueries({ queryKey: [queryKeys.users.restaurants] });
+		await queryClient.invalidateQueries({
+			queryKey: [queryKeys.users.restaurants],
+		});
 		setRefreshing(false);
 	}, []);
 
@@ -89,9 +86,7 @@ export default function Restaurants() {
 		let result = restaurants;
 		if (search.trim()) {
 			const q = search.trim().toLowerCase();
-			result = restaurants.filter((r) =>
-				r.name.toLowerCase().includes(q),
-			);
+			result = restaurants.filter((r) => r.name.toLowerCase().includes(q));
 		} else {
 			switch (activeFilter) {
 				case "visited":
@@ -137,15 +132,16 @@ export default function Restaurants() {
 				data={filteredRestaurants}
 				showsVerticalScrollIndicator={false}
 				refreshControl={
-					<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#b42406" progressViewOffset={100} />
+					<RefreshControl
+						refreshing={refreshing}
+						onRefresh={onRefresh}
+						tintColor="#b42406"
+						progressViewOffset={100}
+					/>
 				}
-				keyExtractor={(item, index) =>
-					`${activeFilter}_${index}_${item.id}`
-				}
+				keyExtractor={(item, index) => `${activeFilter}_${index}_${item.id}`}
 				renderItem={renderItem}
-				ItemSeparatorComponent={() => (
-					<View style={styles.separator} />
-				)}
+				ItemSeparatorComponent={() => <View style={styles.separator} />}
 				contentContainerStyle={{
 					paddingHorizontal: horizontalScale(14),
 					paddingBottom: verticalScale(80),
@@ -171,8 +167,7 @@ export default function Restaurants() {
 										marginTop: verticalScale(4),
 									}}
 								>
-									{restaurants?.length ?? 0} places to
-									discover
+									{restaurants?.length ?? 0} places to discover
 								</Text>
 							</View>
 							<TouchableOpacity
@@ -215,24 +210,18 @@ export default function Restaurants() {
 											style={{
 												alignItems: "center",
 												justifyContent: "center",
-												paddingVertical:
-													verticalScale(8),
-												paddingHorizontal:
-													horizontalScale(16),
-												borderRadius:
-													moderateScale(20),
+												paddingVertical: verticalScale(8),
+												paddingHorizontal: horizontalScale(16),
+												borderRadius: moderateScale(20),
 												borderWidth: 1,
 												borderColor: "#000000",
-												backgroundColor: isActive
-													? "#000000"
-													: "#FFFFFF",
+												backgroundColor: isActive ? "#000000" : "#FFFFFF",
 											}}
 										>
 											{isActive ? (
 												<TextBold
 													style={{
-														fontSize:
-															moderateScale(13),
+														fontSize: moderateScale(13),
 														color: "#FFFFFF",
 													}}
 												>
@@ -241,8 +230,7 @@ export default function Restaurants() {
 											) : (
 												<Text
 													style={{
-														fontSize:
-															moderateScale(13),
+														fontSize: moderateScale(13),
 														color: "#000000",
 													}}
 												>
@@ -269,10 +257,7 @@ export default function Restaurants() {
 								style={styles.searchInput}
 							/>
 							{search.length > 0 && (
-								<Pressable
-									onPress={() => setSearch("")}
-									hitSlop={10}
-								>
+								<Pressable onPress={() => setSearch("")} hitSlop={10}>
 									<Text
 										style={{
 											fontSize: moderateScale(16),

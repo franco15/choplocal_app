@@ -21,8 +21,6 @@ export default function VerifyScreen() {
 	const [error, setError] = useState(false);
 	const [timer, setTimer] = useState(RESEND_TIME);
 
-	// console.log(phoneNumber);
-
 	useEffect(() => {
 		let interval: NodeJS.Timeout;
 		if (timer > 0) {
@@ -73,7 +71,7 @@ export default function VerifyScreen() {
 				>
 					{`A message with a verification code has been\nsent to ${phoneNumber.replace(
 						/.(?=.{4})/g,
-						"*"
+						"*",
 					)}. Please enter the code\nto continue.`}
 				</Text>
 				<TextInput

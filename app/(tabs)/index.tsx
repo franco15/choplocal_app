@@ -1,33 +1,38 @@
-import CityDropdown from "@/components/CityDropdown";
+import { Text, TextBold } from "@/components";
+import CityDropdown, { AVAILABLE_CITIES } from "@/components/CityDropdown";
 import GiftCardBanner from "@/components/GiftCardBanner";
-import RedeemCodeBanner from "@/components/RedeemCodeBanner";
 import GradientBackground from "@/components/GradientBackground";
 import HomeRestaurantCard from "@/components/HomeRestaurantCard";
+import RedeemCodeBanner from "@/components/RedeemCodeBanner";
 import SectionHeader from "@/components/SectionHeader";
-import { TextBold, Text } from "@/components";
 import { Bell } from "@/constants/svgs";
 import { useUserContext } from "@/contexts/UserContext";
 import { queryClient, queryKeys } from "@/lib/api/queryClient";
-import { useUserApi, useNotificationsApi } from "@/lib/api/useApi";
+import { useNotificationsApi, useUserApi } from "@/lib/api/useApi";
 import { horizontalScale, moderateScale, verticalScale } from "@/lib/metrics";
-import { isNullOrWhitespace } from "@/lib/utils";
 import { ERestaurantStatus, IRestaurant } from "@/lib/types/restaurant";
+import { isNullOrWhitespace } from "@/lib/utils";
+import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useQuery } from "@tanstack/react-query";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { FlatList, Pressable, RefreshControl, StyleSheet, View } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import {
+	FlatList,
+	Pressable,
+	RefreshControl,
+	StyleSheet,
+	View,
+} from "react-native";
 import Animated, {
+	Extrapolation,
+	interpolate,
 	useAnimatedScrollHandler,
 	useAnimatedStyle,
 	useSharedValue,
-	interpolate,
-	Extrapolation,
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import HomeSkeleton from "../skeletons/home";
-import { AVAILABLE_CITIES } from "@/components/CityDropdown";
 
 const FAVORITES_KEY = "choplocal-favorites";
 
@@ -87,13 +92,14 @@ export default function HomeScreen() {
 
 	const onRefresh = useCallback(async () => {
 		setRefreshing(true);
-		await queryClient.invalidateQueries({ queryKey: [queryKeys.users.restaurants] });
-		await queryClient.invalidateQueries({ queryKey: queryKeys.notifications.byUser(user?.id ?? "") });
+		await queryClient.invalidateQueries({
+			queryKey: [queryKeys.users.restaurants],
+		});
+		await queryClient.invalidateQueries({
+			queryKey: queryKeys.notifications.byUser(user?.id ?? ""),
+		});
 		setRefreshing(false);
 	}, [user?.id]);
-
-	// Debug: see createdAt values
-	console.log("RESTAURANTS createdAt:", restaurants?.map(r => ({ name: r.name, createdAt: r.createdAt })));
 
 	// Group restaurants by category
 	const groups = useMemo(() => {
@@ -111,18 +117,18 @@ export default function HomeScreen() {
 				.sort((a, b) => b.checkIns - a.checkIns)
 				.slice(0, 10),
 			new: [...restaurants]
-				.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+				.sort(
+					(a, b) =>
+						new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+				)
 				.slice(0, 15),
 		};
 	}, [restaurants]);
 
 	// Navigate to independent "See All" page
-	const goToSeeAll = useCallback(
-		(type: string) => {
-			router.push({ pathname: "/restaurant-list", params: { type } });
-		},
-		[],
-	);
+	const goToSeeAll = useCallback((type: string) => {
+		router.push({ pathname: "/restaurant-list", params: { type } });
+	}, []);
 
 	// Animated scroll handler
 	const scrollHandler = useAnimatedScrollHandler({
@@ -184,7 +190,6 @@ export default function HomeScreen() {
 						variant={variant}
 					/>
 				)}
-
 			/>
 		);
 	};
@@ -207,7 +212,12 @@ export default function HomeScreen() {
 				>
 					<Text style={styles.stickyText}>Ready to explore </Text>
 					<TextBold style={styles.stickyCity}>City</TextBold>
-					<Ionicons name="chevron-down" size={moderateScale(16)} color="#1A1A1A" style={{ marginLeft: 4 }} />
+					<Ionicons
+						name="chevron-down"
+						size={moderateScale(16)}
+						color="#1A1A1A"
+						style={{ marginLeft: 4 }}
+					/>
 				</Pressable>
 
 				<Pressable
@@ -218,10 +228,7 @@ export default function HomeScreen() {
 						marginLeft: horizontalScale(12),
 					})}
 				>
-					<Bell
-						width={horizontalScale(24)}
-						height={verticalScale(24)}
-					/>
+					<Bell width={horizontalScale(24)} height={verticalScale(24)} />
 					{hasUnread && <View style={styles.notifDot} />}
 				</Pressable>
 			</Animated.View>
@@ -232,7 +239,12 @@ export default function HomeScreen() {
 				scrollEventThrottle={16}
 				showsVerticalScrollIndicator={false}
 				refreshControl={
-					<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#b42406" progressViewOffset={100} />
+					<RefreshControl
+						refreshing={refreshing}
+						onRefresh={onRefresh}
+						tintColor="#b42406"
+						progressViewOffset={100}
+					/>
 				}
 				contentContainerStyle={[
 					styles.scrollContent,
@@ -248,15 +260,9 @@ export default function HomeScreen() {
 					<Pressable
 						onPress={() => router.push("/notifications")}
 						hitSlop={10}
-						style={[
-							styles.heroBell,
-							{ top: verticalScale(4) },
-						]}
+						style={[styles.heroBell, { top: verticalScale(4) }]}
 					>
-						<Bell
-							width={horizontalScale(26)}
-							height={verticalScale(26)}
-						/>
+						<Bell width={horizontalScale(26)} height={verticalScale(26)} />
 						{hasUnread && <View style={styles.notifDot} />}
 					</Pressable>
 
@@ -268,12 +274,18 @@ export default function HomeScreen() {
 					</Animated.View>
 
 					<View>
-						<Text style={styles.heroSubtitle}>
-							Ready to explore
-						</Text>
-						<Pressable onPress={() => setCityModalOpen(true)} style={{ flexDirection: "row", alignItems: "center" }}>
+						<Text style={styles.heroSubtitle}>Ready to explore</Text>
+						<Pressable
+							onPress={() => setCityModalOpen(true)}
+							style={{ flexDirection: "row", alignItems: "center" }}
+						>
 							<TextBold style={styles.heroCity}>City</TextBold>
-							<Ionicons name="chevron-down" size={moderateScale(18)} color="rgba(0,0,0,0.5)" style={{ marginLeft: 4 }} />
+							<Ionicons
+								name="chevron-down"
+								size={moderateScale(18)}
+								color="rgba(0,0,0,0.5)"
+								style={{ marginLeft: 4 }}
+							/>
 						</Pressable>
 					</View>
 				</View>
@@ -321,7 +333,8 @@ export default function HomeScreen() {
 					<View style={styles.statDivider} />
 					<View style={styles.statItem}>
 						<TextBold style={styles.statNumber}>
-							{(restaurants?.length ?? 0) - (restaurants?.filter((r) => r.checkIns >= 1).length ?? 0)}
+							{(restaurants?.length ?? 0) -
+								(restaurants?.filter((r) => r.checkIns >= 1).length ?? 0)}
 						</TextBold>
 						<Text style={styles.statLabel}>To Explore</Text>
 					</View>

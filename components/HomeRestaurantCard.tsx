@@ -1,7 +1,9 @@
-import { CustomText as Text, CustomTextBold as TextBold } from "@/components/Texts";
+import {
+	CustomText as Text,
+	CustomTextBold as TextBold,
+} from "@/components/Texts";
 import { Bookmark, BookmarkSolid } from "@/constants/svgs";
-import { API_BASE } from "@/constants/keys";
-import { moderateScale, verticalScale, horizontalScale } from "@/lib/metrics";
+import { horizontalScale, moderateScale, verticalScale } from "@/lib/metrics";
 import { IRestaurant } from "@/lib/types/restaurant";
 import { router } from "expo-router";
 import { useCallback } from "react";
@@ -75,7 +77,7 @@ export default function HomeRestaurantCard({
 				<View style={styles.imageArea}>
 					{restaurantImage ? (
 						<Image
-							source={{ uri: `${API_BASE}${restaurantImage}` }}
+							source={{ uri: restaurantImage }}
 							style={styles.image}
 							resizeMode="cover"
 						/>
@@ -93,17 +95,9 @@ export default function HomeRestaurantCard({
 						style={styles.bookmarkCircle}
 					>
 						{isFavorited ? (
-							<BookmarkSolid
-								width={22}
-								height={22}
-								fill="#1A1A1A"
-							/>
+							<BookmarkSolid width={22} height={22} fill="#1A1A1A" />
 						) : (
-							<Bookmark
-								width={22}
-								height={22}
-								fill="#999"
-							/>
+							<Bookmark width={22} height={22} fill="#999" />
 						)}
 					</TouchableOpacity>
 				</View>

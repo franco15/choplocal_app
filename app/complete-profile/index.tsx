@@ -3,8 +3,8 @@ import { useAuthContext } from "@/contexts/AuthContext";
 import { useUserContext } from "@/contexts/UserContext";
 import { useUpdateUser } from "@/lib/api/queries/userQueries";
 import { horizontalScale, moderateScale, verticalScale } from "@/lib/metrics";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { Ionicons } from "@expo/vector-icons";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "expo-router";
 import { Controller, useForm } from "react-hook-form";
 import {
@@ -67,7 +67,11 @@ export default function CompleteProfile() {
 						{/* ── Header ── */}
 						<View style={styles.header}>
 							<View style={styles.iconCircle}>
-								<Ionicons name="person-outline" size={moderateScale(28)} color="#b42406" />
+								<Ionicons
+									name="person-outline"
+									size={moderateScale(28)}
+									color="#b42406"
+								/>
 							</View>
 							<TextBold style={styles.title}>Almost there!</TextBold>
 							<Text style={styles.subtitle}>
@@ -100,7 +104,9 @@ export default function CompleteProfile() {
 									)}
 								/>
 								{errors.firstName && (
-									<Text style={styles.errorText}>{errors.firstName.message}</Text>
+									<Text style={styles.errorText}>
+										{errors.firstName.message}
+									</Text>
 								)}
 							</View>
 
@@ -127,7 +133,9 @@ export default function CompleteProfile() {
 									)}
 								/>
 								{errors.lastName && (
-									<Text style={styles.errorText}>{errors.lastName.message}</Text>
+									<Text style={styles.errorText}>
+										{errors.lastName.message}
+									</Text>
 								)}
 							</View>
 
@@ -147,10 +155,7 @@ export default function CompleteProfile() {
 											value={value}
 											keyboardType="email-address"
 											autoCapitalize="none"
-											style={[
-												styles.input,
-												errors.email && styles.inputError,
-											]}
+											style={[styles.input, errors.email && styles.inputError]}
 										/>
 									)}
 								/>
@@ -171,17 +176,23 @@ export default function CompleteProfile() {
 									)}
 								/>
 								{errors.birthDate && (
-									<Text style={styles.errorText}>{errors.birthDate.message}</Text>
+									<Text style={styles.errorText}>
+										{errors.birthDate.message}
+									</Text>
 								)}
 							</View>
 						</View>
-
 					</ScrollView>
 				</TouchableWithoutFeedback>
 			</KeyboardAvoidingView>
 
 			{/* ── Fixed Bottom Button ── */}
-			<View style={[styles.bottomBar, { paddingBottom: insets.bottom + verticalScale(12) }]}>
+			<View
+				style={[
+					styles.bottomBar,
+					{ paddingBottom: insets.bottom + verticalScale(12) },
+				]}
+			>
 				<TouchableOpacity
 					activeOpacity={0.85}
 					onPress={handleSubmit(onSubmit)}

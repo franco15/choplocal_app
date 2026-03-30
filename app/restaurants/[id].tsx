@@ -9,11 +9,15 @@ import { horizontalScale, moderateScale, verticalScale } from "@/lib/metrics";
 import { ERestaurantStatus, IRestaurant } from "@/lib/types/restaurant";
 import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
-import { LinearGradient } from "expo-linear-gradient";
-import { Link, useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
+import {
+	Link,
+	useFocusEffect,
+	useLocalSearchParams,
+	useRouter,
+} from "expo-router";
+import { useCallback, useState } from "react";
 import {
 	Alert,
-	Image,
 	RefreshControl,
 	ScrollView,
 	Share,
@@ -21,12 +25,14 @@ import {
 	TouchableOpacity,
 	View,
 } from "react-native";
-import { useCallback, useState } from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import RestaurantSkeleton from "../skeletons/restaurant";
 
 export default function Restaurant() {
-	const { id, name: paramName } = useLocalSearchParams<{ id: string; name?: string }>();
+	const { id, name: paramName } = useLocalSearchParams<{
+		id: string;
+		name?: string;
+	}>();
 	const router = useRouter();
 	const insets = useSafeAreaInsets();
 	const { user } = useUserContext();
@@ -52,7 +58,9 @@ export default function Restaurant() {
 	useFocusEffect(
 		useCallback(() => {
 			if (user?.id) {
-				queryClient.invalidateQueries({ queryKey: queryKeys.giftCards.byUser(user.id) });
+				queryClient.invalidateQueries({
+					queryKey: queryKeys.giftCards.byUser(user.id),
+				});
 			}
 		}, [user?.id]),
 	);
@@ -60,9 +68,15 @@ export default function Restaurant() {
 	const onRefresh = useCallback(async () => {
 		setRefreshing(true);
 		await Promise.all([
-			queryClient.invalidateQueries({ queryKey: [queryKeys.restaurants.byId(id as string)] }),
-			queryClient.invalidateQueries({ queryKey: [queryKeys.restaurants.transactions(id as string)] }),
-			queryClient.invalidateQueries({ queryKey: queryKeys.giftCards.byUser(user?.id ?? "") }),
+			queryClient.invalidateQueries({
+				queryKey: [queryKeys.restaurants.byId(id as string)],
+			}),
+			queryClient.invalidateQueries({
+				queryKey: [queryKeys.restaurants.transactions(id as string)],
+			}),
+			queryClient.invalidateQueries({
+				queryKey: queryKeys.giftCards.byUser(user?.id ?? ""),
+			}),
 		]);
 		setRefreshing(false);
 	}, [id, user?.id]);
@@ -86,7 +100,9 @@ export default function Restaurant() {
 		// so fallback to the cached user restaurants list
 		let code = restaurant.referralCode;
 		if (!code) {
-			const cachedList = queryClient.getQueryData<IRestaurant[]>([queryKeys.users.restaurants]);
+			const cachedList = queryClient.getQueryData<IRestaurant[]>([
+				queryKeys.users.restaurants,
+			]);
 			const cached = cachedList?.find((r) => r.id === id);
 			code = cached?.referralCode ?? null;
 		}
@@ -107,6 +123,7 @@ export default function Restaurant() {
 	const totalBalance = restaurant?.balance ?? 0;
 
 	return (
+		// <Container>
 		<View style={styles.root}>
 			<ScrollView
 				contentContainerStyle={{
@@ -115,11 +132,20 @@ export default function Restaurant() {
 				}}
 				showsVerticalScrollIndicator={false}
 				refreshControl={
-					<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#b42406" progressViewOffset={100} />
+					<RefreshControl
+						refreshing={refreshing}
+						onRefresh={onRefresh}
+						tintColor="#b42406"
+						progressViewOffset={100}
+					/>
 				}
 			>
-				<View style={[styles.cardList, { paddingTop: verticalScale(8) }]}>
-
+				<View
+					style={[
+						styles.cardList,
+						{ paddingTop: insets.top + verticalScale(8) },
+					]}
+				>
 					{/* ═══════════════════════════════════════════
 					    CARD 1 — Restaurant Info
 					    ═══════════════════════════════════════════ */}
@@ -138,12 +164,16 @@ export default function Restaurant() {
 							<View style={styles.infoStatsRow}>
 								<View style={styles.infoStat}>
 									<Text style={styles.infoStatLabel}>Balance</Text>
-									<TextBold style={styles.infoStatValue}>${totalBalance.toFixed(2)}</TextBold>
+									<TextBold style={styles.infoStatValue}>
+										${totalBalance.toFixed(2)}
+									</TextBold>
 								</View>
 								<View style={styles.infoStatDivider} />
 								<View style={styles.infoStat}>
 									<Text style={styles.infoStatLabel}>Visits</Text>
-									<TextBold style={styles.infoStatValue}>{restaurant?.checkIns ?? 0}</TextBold>
+									<TextBold style={styles.infoStatValue}>
+										{restaurant?.checkIns ?? 0}
+									</TextBold>
 								</View>
 							</View>
 						</View>
@@ -156,24 +186,35 @@ export default function Restaurant() {
 						<View style={styles.cardBody}>
 							<View style={styles.cardSectionHeader}>
 								<View>
-									<TextBold style={styles.cardSectionTitle}>My Gift Cards</TextBold>
+									<TextBold style={styles.cardSectionTitle}>
+										My Gift Cards
+									</TextBold>
 									{restaurantGiftCards.length > 0 && (
 										<Text style={styles.cardSectionMeta}>
-											{restaurantGiftCards.length} {restaurantGiftCards.length === 1 ? "card" : "cards"} · ${restaurantGiftCards.reduce((sum, gc) => sum + (gc.amount ?? 0), 0)}
+											{restaurantGiftCards.length}{" "}
+											{restaurantGiftCards.length === 1 ? "card" : "cards"} · $
+											{restaurantGiftCards.reduce(
+												(sum, gc) => sum + (gc.amount ?? 0),
+												0,
+											)}
 										</Text>
 									)}
 								</View>
 								{restaurantGiftCards.length > 3 && (
 									<TouchableOpacity
 										activeOpacity={0.7}
-										onPress={() => router.push({
-											pathname: "/gift-cards/card-detail",
-											params: {
-												giftCardId: restaurantGiftCards[0].id,
-												themeIndex: "0",
-												groupIds: restaurantGiftCards.map((g) => g.id).join(","),
-											},
-										})}
+										onPress={() =>
+											router.push({
+												pathname: "/gift-cards/card-detail",
+												params: {
+													giftCardId: restaurantGiftCards[0].id,
+													themeIndex: "0",
+													groupIds: restaurantGiftCards
+														.map((g) => g.id)
+														.join(","),
+												},
+											})
+										}
 									>
 										<Text style={styles.seeAllLink}>See all</Text>
 									</TouchableOpacity>
@@ -183,7 +224,10 @@ export default function Restaurant() {
 							{restaurantGiftCards.length > 0 ? (
 								<View
 									style={{
-										height: verticalScale(210) + (restaurantGiftCards.slice(0, 3).length - 1) * verticalScale(38),
+										height:
+											verticalScale(210) +
+											(restaurantGiftCards.slice(0, 3).length - 1) *
+												verticalScale(38),
 										marginTop: verticalScale(4),
 									}}
 								>
@@ -194,14 +238,18 @@ export default function Restaurant() {
 											<TouchableOpacity
 												key={gc.id}
 												activeOpacity={0.85}
-												onPress={() => router.push({
-													pathname: "/gift-cards/card-detail",
-													params: {
-														giftCardId: gc.id,
-														themeIndex: String(ci),
-														groupIds: restaurantGiftCards.map((g) => g.id).join(","),
-													},
-												})}
+												onPress={() =>
+													router.push({
+														pathname: "/gift-cards/card-detail",
+														params: {
+															giftCardId: gc.id,
+															themeIndex: String(ci),
+															groupIds: restaurantGiftCards
+																.map((g) => g.id)
+																.join(","),
+														},
+													})
+												}
 												style={{
 													position: ci === 0 ? "relative" : "absolute",
 													top: ci * verticalScale(38),
@@ -230,8 +278,14 @@ export default function Restaurant() {
 								</View>
 							) : (
 								<View style={styles.emptyCardContent}>
-									<Ionicons name="gift-outline" size={moderateScale(32)} color="#D0D0D0" />
-									<Text style={styles.emptyCardText}>No gift cards yet — maybe someone will surprise you!</Text>
+									<Ionicons
+										name="gift-outline"
+										size={moderateScale(32)}
+										color="#D0D0D0"
+									/>
+									<Text style={styles.emptyCardText}>
+										No gift cards yet — maybe someone will surprise you!
+									</Text>
 								</View>
 							)}
 						</View>
@@ -243,7 +297,9 @@ export default function Restaurant() {
 					<View style={styles.card}>
 						<View style={styles.cardBody}>
 							<View style={styles.cardSectionHeader}>
-								<TextBold style={styles.cardSectionTitle}>Recent Activity</TextBold>
+								<TextBold style={styles.cardSectionTitle}>
+									Recent Activity
+								</TextBold>
 								{(transactions ?? []).length > 2 && (
 									<Link
 										href={{
@@ -260,9 +316,16 @@ export default function Restaurant() {
 								recentTransactions.map((tx, i) => {
 									const spent = (tx.cashback * 20).toFixed(2);
 									return (
-										<View key={i} style={[styles.txRow, i > 0 && styles.txRowBorder]}>
+										<View
+											key={i}
+											style={[styles.txRow, i > 0 && styles.txRowBorder]}
+										>
 											<View style={styles.txIconCircle}>
-												<Ionicons name="receipt-outline" size={moderateScale(16)} color="#888" />
+												<Ionicons
+													name="receipt-outline"
+													size={moderateScale(16)}
+													color="#888"
+												/>
 											</View>
 											<View style={styles.txInfo}>
 												<Text style={styles.txDate}>
@@ -282,8 +345,14 @@ export default function Restaurant() {
 								})
 							) : (
 								<View style={styles.emptyCardContent}>
-									<Ionicons name="time-outline" size={moderateScale(32)} color="#D0D0D0" />
-									<Text style={styles.emptyCardText}>Nothing here yet — your first visit will be legendary!</Text>
+									<Ionicons
+										name="time-outline"
+										size={moderateScale(32)}
+										color="#D0D0D0"
+									/>
+									<Text style={styles.emptyCardText}>
+										Nothing here yet — your first visit will be legendary!
+									</Text>
 								</View>
 							)}
 						</View>
@@ -323,6 +392,7 @@ export default function Restaurant() {
 				</TouchableOpacity>
 			</View>
 		</View>
+		// </Container>
 	);
 }
 

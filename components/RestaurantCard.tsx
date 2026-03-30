@@ -1,6 +1,8 @@
-import { CustomText as Text, CustomTextBold as TextBold } from "@/components/Texts";
+import {
+	CustomText as Text,
+	CustomTextBold as TextBold,
+} from "@/components/Texts";
 import { Bookmark, BookmarkSolid } from "@/constants/svgs";
-import { API_BASE } from "@/constants/keys";
 import { horizontalScale, moderateScale, verticalScale } from "@/lib/metrics";
 import { ERestaurantStatus, IRestaurant } from "@/lib/types/restaurant";
 import { router } from "expo-router";
@@ -33,7 +35,6 @@ export default function RestaurantCard({
 	isFavorited = false,
 	onToggleFavorite,
 }: Props) {
-
 	const statusLabel =
 		STATUS_LABELS[restaurant.status] ??
 		STATUS_LABELS[ERestaurantStatus.NotVisited];
@@ -97,7 +98,7 @@ export default function RestaurantCard({
 					>
 						{restaurant.logo ? (
 							<Image
-								source={{ uri: `${API_BASE}${restaurant.logo}` }}
+								source={{ uri: restaurant.logo }}
 								style={{ width: "100%", height: "100%" }}
 								resizeMode="cover"
 							/>
@@ -114,7 +115,13 @@ export default function RestaurantCard({
 					</View>
 
 					{/* Center: Info */}
-					<View style={{ flex: 1, justifyContent: "center", paddingRight: horizontalScale(8) }}>
+					<View
+						style={{
+							flex: 1,
+							justifyContent: "center",
+							paddingRight: horizontalScale(8),
+						}}
+					>
 						<TextBold
 							numberOfLines={1}
 							style={{
@@ -190,9 +197,7 @@ export default function RestaurantCard({
 							onPress={onFavorite}
 							hitSlop={14}
 							style={({ pressed }) => ({
-								transform: [
-									{ scale: pressed ? 0.8 : 1 },
-								],
+								transform: [{ scale: pressed ? 0.8 : 1 }],
 							})}
 						>
 							{isFavorited ? (
@@ -211,8 +216,7 @@ export default function RestaurantCard({
 						</Pressable>
 					</View>
 				</View>
-
-				</Pressable>
+			</Pressable>
 		</MotiView>
 	);
 }

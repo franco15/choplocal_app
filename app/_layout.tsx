@@ -12,15 +12,14 @@ import {
 	Inter_700Bold,
 	useFonts,
 } from "@expo-google-fonts/inter";
-import { StripeProvider } from "@stripe/stripe-react-native";
 import * as Sentry from "@sentry/react-native";
+import { StripeProvider } from "@stripe/stripe-react-native";
 import { QueryClientProvider } from "@tanstack/react-query";
-import { Ionicons } from "@expo/vector-icons";
 import { Stack, useRouter } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useState } from "react";
-import { Platform, TouchableOpacity } from "react-native";
+import { Platform } from "react-native";
 import "./global.css";
 
 Sentry.init({
@@ -60,7 +59,6 @@ const RootComponent = () => {
 	const { authenticated } = useAuthContext();
 
 	useEffect(() => {
-		// console.log("authenticated in root", authenticated);
 		if (authenticated !== null) SplashScreen.hide();
 		if (!authenticated) {
 			router.replace("/(auth)");
@@ -68,8 +66,6 @@ const RootComponent = () => {
 			router.replace("/(tabs)");
 		}
 	}, [authenticated]);
-
-	// if (authenticated === null) console.log("auth null");
 
 	if (!authenticated)
 		return (
@@ -81,148 +77,140 @@ const RootComponent = () => {
 	return (
 		<UserProvider>
 			<StripeWrapper>
-			<GiftCardProvider>
-				<RedeemCodeProvider>
-					<SuggestionProvider>
-						<Stack screenOptions={{ headerShown: false }}>
-							<Stack.Screen name="(tabs)" />
-							<Stack.Screen
-								name="restaurants"
-								options={{
-									headerShown: false,
-								}}
-							/>
-							<Stack.Screen
-								name="qr"
-								options={{
-									headerShown:
-										Platform.OS === "ios" ? true : false,
-									headerShadowVisible: false,
-									headerTitle: "",
-									headerBackTitle: "Back",
-									headerTransparent: true,
-									headerStyle: { backgroundColor: "transparent" },
-								}}
-							/>
-							<Stack.Screen
-								name="suggestions"
-								options={{
-									headerShown:
-										Platform.OS === "ios" ? true : false,
-									headerShadowVisible: false,
-									headerTitle: "",
-									headerBackTitle: "Back",
-									headerTransparent: true,
-								}}
-							/>
-							<Stack.Screen
-								name="search"
-								options={{
-									headerShown: false,
-									animation: "fade",
-								}}
-							/>
-							<Stack.Screen
-								name="restaurant-list"
-								options={{
-									headerShown:
-										Platform.OS === "ios" ? true : false,
-									headerShadowVisible: false,
-									headerTitle: "",
-									headerBackTitle: "Home",
-									headerStyle: {
-										backgroundColor: "#FFFFFF",
-									},
-								}}
-							/>
-							<Stack.Screen
-								name="gift-cards"
-								options={{
-									headerShown: false,
-								}}
-							/>
-							<Stack.Screen
-								name="redeem-code"
-								options={{
-									headerShown: false,
-								}}
-							/>
-							<Stack.Screen
-								name="welcome-recommendation"
-								options={{
-									headerShown: false,
-									gestureEnabled: false,
-								}}
-							/>
-							<Stack.Screen
-								name="settings"
-								options={{
-									headerShown:
-										Platform.OS === "ios" ? true : false,
-									headerShadowVisible: false,
-									headerTitle: "",
-									headerBackTitle: "Profile",
-									headerStyle: {
-										backgroundColor: "#FFFFFF",
-									},
-								}}
-							/>
-							<Stack.Screen
-								name="suggest-restaurant"
-								options={{
-									headerShown:
-										Platform.OS === "ios" ? true : false,
-									headerShadowVisible: false,
-									headerTitle: "",
-									headerBackTitle: "Back",
-									headerStyle: {
-										backgroundColor: "#FFFFFF",
-									},
-								}}
-							/>
-							<Stack.Screen
-								name="notifications"
-								options={{
-									headerShown:
-										Platform.OS === "ios" ? true : false,
-									headerShadowVisible: false,
-									headerTitle: "",
-									headerBackTitle: "Back",
-									headerStyle: {
-										backgroundColor: "#FFFFFF",
-									},
-								}}
-							/>
-							<Stack.Screen
-								name="edit-profile"
-								options={{
-									headerShown:
-										Platform.OS === "ios" ? true : false,
-									headerShadowVisible: false,
-									headerTitle: "",
-									headerBackTitle: "Settings",
-									headerStyle: {
-										backgroundColor: "#FFFFFF",
-									},
-								}}
-							/>
-							<Stack.Screen
-								name="change-phone"
-								options={{
-									headerShown:
-										Platform.OS === "ios" ? true : false,
-									headerShadowVisible: false,
-									headerTitle: "",
-									headerBackTitle: "Back",
-									headerStyle: {
-										backgroundColor: "#FFFFFF",
-									},
-								}}
-							/>
-						</Stack>
-					</SuggestionProvider>
-				</RedeemCodeProvider>
-			</GiftCardProvider>
+				<GiftCardProvider>
+					<RedeemCodeProvider>
+						<SuggestionProvider>
+							<Stack screenOptions={{ headerShown: false }}>
+								<Stack.Screen name="(tabs)" />
+								<Stack.Screen
+									name="restaurants"
+									options={{
+										headerShown: false,
+									}}
+								/>
+								<Stack.Screen
+									name="qr"
+									options={{
+										headerShown: Platform.OS === "ios" ? true : false,
+										headerShadowVisible: false,
+										headerTitle: "",
+										headerBackTitle: "Back",
+										headerTransparent: true,
+										headerStyle: { backgroundColor: "transparent" },
+									}}
+								/>
+								<Stack.Screen
+									name="suggestions"
+									options={{
+										headerShown: Platform.OS === "ios" ? true : false,
+										headerShadowVisible: false,
+										headerTitle: "",
+										headerBackTitle: "Back",
+										headerTransparent: true,
+									}}
+								/>
+								<Stack.Screen
+									name="search"
+									options={{
+										headerShown: false,
+										animation: "fade",
+									}}
+								/>
+								<Stack.Screen
+									name="restaurant-list"
+									options={{
+										headerShown: Platform.OS === "ios" ? true : false,
+										headerShadowVisible: false,
+										headerTitle: "",
+										headerBackTitle: "Home",
+										headerStyle: {
+											backgroundColor: "#FFFFFF",
+										},
+									}}
+								/>
+								<Stack.Screen
+									name="gift-cards"
+									options={{
+										headerShown: false,
+									}}
+								/>
+								<Stack.Screen
+									name="redeem-code"
+									options={{
+										headerShown: false,
+									}}
+								/>
+								<Stack.Screen
+									name="welcome-recommendation"
+									options={{
+										headerShown: false,
+										gestureEnabled: false,
+									}}
+								/>
+								<Stack.Screen
+									name="settings"
+									options={{
+										headerShown: Platform.OS === "ios" ? true : false,
+										headerShadowVisible: false,
+										headerTitle: "",
+										headerBackTitle: "Profile",
+										headerStyle: {
+											backgroundColor: "#FFFFFF",
+										},
+									}}
+								/>
+								<Stack.Screen
+									name="suggest-restaurant"
+									options={{
+										headerShown: Platform.OS === "ios" ? true : false,
+										headerShadowVisible: false,
+										headerTitle: "",
+										headerBackTitle: "Back",
+										headerStyle: {
+											backgroundColor: "#FFFFFF",
+										},
+									}}
+								/>
+								<Stack.Screen
+									name="notifications"
+									options={{
+										headerShown: Platform.OS === "ios" ? true : false,
+										headerShadowVisible: false,
+										headerTitle: "",
+										headerBackTitle: "Back",
+										headerStyle: {
+											backgroundColor: "#FFFFFF",
+										},
+									}}
+								/>
+								<Stack.Screen
+									name="edit-profile"
+									options={{
+										headerShown: Platform.OS === "ios" ? true : false,
+										headerShadowVisible: false,
+										headerTitle: "",
+										headerBackTitle: "Settings",
+										headerStyle: {
+											backgroundColor: "#FFFFFF",
+										},
+									}}
+								/>
+								<Stack.Screen
+									name="change-phone"
+									options={{
+										headerShown: Platform.OS === "ios" ? true : false,
+										headerShadowVisible: false,
+										headerTitle: "",
+										headerBackTitle: "Back",
+										headerStyle: {
+											backgroundColor: "#FFFFFF",
+										},
+									}}
+								/>
+							</Stack>
+						</SuggestionProvider>
+					</RedeemCodeProvider>
+				</GiftCardProvider>
 			</StripeWrapper>
 		</UserProvider>
 	);
@@ -233,7 +221,8 @@ const StripeWrapper = ({ children }: { children: React.ReactNode }) => {
 	const stripeApi = useStripeApi();
 
 	useEffect(() => {
-		stripeApi.getConfig()
+		stripeApi
+			.getConfig()
 			.then((data) => setPublishableKey(data.publishableKey))
 			.catch(() => {});
 	}, []);
@@ -241,8 +230,6 @@ const StripeWrapper = ({ children }: { children: React.ReactNode }) => {
 	if (!publishableKey) return <>{children}</>;
 
 	return (
-		<StripeProvider publishableKey={publishableKey}>
-			{children}
-		</StripeProvider>
+		<StripeProvider publishableKey={publishableKey}>{children}</StripeProvider>
 	);
 };
