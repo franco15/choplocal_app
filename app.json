@@ -16,7 +16,8 @@
 			},
 			"bundleIdentifier": "com.choplocal.choplocal",
 			"infoPlist": {
-				"ITSAppUsesNonExemptEncryption": false
+				"ITSAppUsesNonExemptEncryption": false,
+				"NSCameraUsageDescription": "This app may use the camera to enable features such as capturing photos or scanning content when available."
 			}
 		},
 		"android": {
