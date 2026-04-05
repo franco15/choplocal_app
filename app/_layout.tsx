@@ -1,3 +1,4 @@
+import { HeaderBackButton } from "@/components";
 import { AuthProvider, useAuthContext } from "@/contexts/AuthContext";
 import { GiftCardProvider } from "@/contexts/GiftCardContext";
 import { RedeemCodeProvider } from "@/contexts/RedeemCodeContext";
@@ -19,7 +20,6 @@ import { Stack, useRouter } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useState } from "react";
-import { Platform } from "react-native";
 import "./global.css";
 
 Sentry.init({
@@ -91,41 +91,13 @@ const RootComponent = () => {
 								<Stack.Screen
 									name="qr"
 									options={{
-										headerShown: Platform.OS === "ios" ? true : false,
-										headerShadowVisible: false,
-										headerTitle: "",
-										headerBackTitle: "Back",
-										headerTransparent: true,
-										headerStyle: { backgroundColor: "transparent" },
+										headerShown: false,
 									}}
 								/>
 								<Stack.Screen
 									name="suggestions"
 									options={{
-										headerShown: Platform.OS === "ios" ? true : false,
-										headerShadowVisible: false,
-										headerTitle: "",
-										headerBackTitle: "Back",
-										headerTransparent: true,
-									}}
-								/>
-								<Stack.Screen
-									name="search"
-									options={{
 										headerShown: false,
-										animation: "fade",
-									}}
-								/>
-								<Stack.Screen
-									name="restaurant-list"
-									options={{
-										headerShown: Platform.OS === "ios" ? true : false,
-										headerShadowVisible: false,
-										headerTitle: "",
-										headerBackTitle: "Home",
-										headerStyle: {
-											backgroundColor: "#FFFFFF",
-										},
 									}}
 								/>
 								<Stack.Screen
@@ -150,61 +122,19 @@ const RootComponent = () => {
 								<Stack.Screen
 									name="settings"
 									options={{
-										headerShown: Platform.OS === "ios" ? true : false,
-										headerShadowVisible: false,
-										headerTitle: "",
-										headerBackTitle: "Profile",
-										headerStyle: {
-											backgroundColor: "#FFFFFF",
-										},
-									}}
-								/>
-								<Stack.Screen
-									name="suggest-restaurant"
-									options={{
-										headerShown: Platform.OS === "ios" ? true : false,
-										headerShadowVisible: false,
-										headerTitle: "",
-										headerBackTitle: "Back",
-										headerStyle: {
-											backgroundColor: "#FFFFFF",
-										},
+										headerShown: false,
 									}}
 								/>
 								<Stack.Screen
 									name="notifications"
 									options={{
-										headerShown: Platform.OS === "ios" ? true : false,
+										headerShown: true,
 										headerShadowVisible: false,
 										headerTitle: "",
-										headerBackTitle: "Back",
 										headerStyle: {
 											backgroundColor: "#FFFFFF",
 										},
-									}}
-								/>
-								<Stack.Screen
-									name="edit-profile"
-									options={{
-										headerShown: Platform.OS === "ios" ? true : false,
-										headerShadowVisible: false,
-										headerTitle: "",
-										headerBackTitle: "Settings",
-										headerStyle: {
-											backgroundColor: "#FFFFFF",
-										},
-									}}
-								/>
-								<Stack.Screen
-									name="change-phone"
-									options={{
-										headerShown: Platform.OS === "ios" ? true : false,
-										headerShadowVisible: false,
-										headerTitle: "",
-										headerBackTitle: "Back",
-										headerStyle: {
-											backgroundColor: "#FFFFFF",
-										},
+										headerLeft: () => <HeaderBackButton />,
 									}}
 								/>
 							</Stack>
@@ -230,6 +160,8 @@ const StripeWrapper = ({ children }: { children: React.ReactNode }) => {
 	if (!publishableKey) return <>{children}</>;
 
 	return (
-		<StripeProvider publishableKey={publishableKey}>{children}</StripeProvider>
+		<StripeProvider publishableKey={publishableKey}>
+			<>{children}</>
+		</StripeProvider>
 	);
 };

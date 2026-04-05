@@ -1,5 +1,6 @@
+import { HeaderBackButton } from "@/components";
 import { Ionicons } from "@expo/vector-icons";
-import { HeaderBackButton } from "@react-navigation/elements";
+// import { HeaderBackButton } from "@react-navigation/elements";
 import { Stack, useRouter } from "expo-router";
 import { Platform, TouchableOpacity } from "react-native";
 
@@ -11,17 +12,12 @@ const RestaurantsLayout = () => {
 			<Stack.Screen
 				name="[id]"
 				options={{
-					headerShown: Platform.OS === "ios",
+					// headerShown: Platform.OS === "ios",
 					headerShadowVisible: false,
 					headerTitle: "",
 					headerStyle: { backgroundColor: "#FFFFFF" },
-					headerLeft: () => (
-						<HeaderBackButton
-							label="Back"
-							tintColor="#1A1A1A"
-							onPress={() => router.back()}
-						/>
-					),
+					headerTintColor: "#1A1A1A",
+					headerLeft: () => <HeaderBackButton />,
 					headerRightContainerStyle: {
 						backgroundColor: "transparent",
 						flexDirection: "row",
@@ -42,11 +38,7 @@ const RestaurantsLayout = () => {
 									marginRight: 8,
 								}}
 							>
-								<Ionicons
-									name="qr-code-outline"
-									size={20}
-									color="#1A1A1A"
-								/>
+								<Ionicons name="qr-code-outline" size={20} color="#1A1A1A" />
 							</TouchableOpacity>
 							<TouchableOpacity
 								activeOpacity={0.7}
@@ -60,11 +52,7 @@ const RestaurantsLayout = () => {
 									justifyContent: "center",
 								}}
 							>
-								<Ionicons
-									name="ticket-outline"
-									size={22}
-									color="#438989"
-								/>
+								<Ionicons name="ticket-outline" size={22} color="#438989" />
 							</TouchableOpacity>
 						</>
 					),
@@ -80,6 +68,18 @@ const RestaurantsLayout = () => {
 					headerBackTitle: "Back",
 					headerTintColor: "#1A1A1A",
 					headerStyle: { backgroundColor: "#FFFFFF" },
+				}}
+			/>
+			<Stack.Screen
+				name="restaurant-list"
+				options={{
+					headerShadowVisible: false,
+					headerTitle: "",
+					headerBackTitle: "Home",
+					headerStyle: {
+						backgroundColor: "#FFFFFF",
+					},
+					headerLeft: () => <HeaderBackButton />,
 				}}
 			/>
 		</Stack>

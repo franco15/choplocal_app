@@ -123,7 +123,6 @@ export default function Restaurant() {
 	const totalBalance = restaurant?.balance ?? 0;
 
 	return (
-		// <Container>
 		<View style={styles.root}>
 			<ScrollView
 				contentContainerStyle={{
@@ -140,12 +139,7 @@ export default function Restaurant() {
 					/>
 				}
 			>
-				<View
-					style={[
-						styles.cardList,
-						{ paddingTop: insets.top + verticalScale(8) },
-					]}
-				>
+				<View style={[styles.cardList, { paddingTop: verticalScale(8) }]}>
 					{/* ═══════════════════════════════════════════
 					    CARD 1 — Restaurant Info
 					    ═══════════════════════════════════════════ */}
@@ -392,7 +386,6 @@ export default function Restaurant() {
 				</TouchableOpacity>
 			</View>
 		</View>
-		// </Container>
 	);
 }
 

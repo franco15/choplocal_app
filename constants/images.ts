@@ -1,5 +1,3 @@
-import choplocal from "../assets/images/choplocal.png";
-import restaurantDefault from "../assets/images/default_restaurant.png";
 import geoLogo from "../assets/images/geoLogo.png";
 import logo from "../assets/images/logo.png";
 import logoRed from "../assets/images/logo_red.png";
@@ -12,6 +10,4 @@ export const images = {
 	logoRed,
 	logoWhite,
 	qrExample,
-	choplocal,
-	restaurantDefault,
 };

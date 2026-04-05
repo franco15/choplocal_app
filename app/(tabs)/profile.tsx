@@ -192,7 +192,7 @@ export default function ProfileScreen() {
 				{/* ── Suggest a Restaurant ── */}
 				<TouchableOpacity
 					activeOpacity={0.85}
-					onPress={() => router.push("/suggest-restaurant")}
+					onPress={() => router.push("/suggestions")}
 					style={styles.suggestBtn}
 				>
 					<Ionicons

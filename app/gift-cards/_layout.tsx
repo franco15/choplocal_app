@@ -1,37 +1,6 @@
-import { Ionicons } from "@expo/vector-icons";
-import { Stack, useRouter } from "expo-router";
-import { Platform, TouchableOpacity } from "react-native";
-
-function BackButton() {
-	const router = useRouter();
-	return (
-		<TouchableOpacity
-			onPress={() => router.back()}
-			activeOpacity={0.7}
-			hitSlop={10}
-			style={{ marginLeft: Platform.OS === "android" ? 10 : 0 }}
-		>
-			<Ionicons name="chevron-back" size={28} color="#1A1A1A" />
-		</TouchableOpacity>
-	);
-}
-
-function CloseButton() {
-	const router = useRouter();
-	return (
-		<TouchableOpacity
-			onPress={() => {
-				router.dismissAll();
-				router.replace("/(tabs)");
-			}}
-			activeOpacity={0.7}
-			hitSlop={10}
-			style={{ marginRight: Platform.OS === "android" ? 10 : 0 }}
-		>
-			<Ionicons name="close" size={26} color="#1A1A1A" />
-		</TouchableOpacity>
-	);
-}
+import { HeaderBackButton } from "@/components";
+import HeaderCloseButton from "@/components/HeaderCloseButton";
+import { Stack } from "expo-router";
 
 export default function GiftCardsLayout() {
 	return (
@@ -47,59 +16,56 @@ export default function GiftCardsLayout() {
 			<Stack.Screen
 				name="index"
 				options={{
-					headerLeft: () => <BackButton />,
+					headerLeft: () => <HeaderBackButton />,
 				}}
 			/>
 			<Stack.Screen
 				name="select-restaurant"
 				options={{
-					headerLeft: () => <BackButton />,
+					headerLeft: () => <HeaderBackButton />,
 				}}
 			/>
 			<Stack.Screen
 				name="choose-amount"
 				options={{
-					headerLeft: () => <BackButton />,
-					headerRight: () => <CloseButton />,
+					headerLeft: () => <HeaderBackButton />,
+					headerRight: () => <HeaderCloseButton />,
 				}}
 			/>
 			<Stack.Screen
 				name="recipient"
 				options={{
-					headerLeft: () => <BackButton />,
-					headerRight: () => <CloseButton />,
+					headerLeft: () => <HeaderBackButton />,
+					headerRight: () => <HeaderCloseButton />,
 				}}
 			/>
 			<Stack.Screen
 				name="payment"
 				options={{
-					headerLeft: () => <BackButton />,
-					headerRight: () => <CloseButton />,
+					headerLeft: () => <HeaderBackButton />,
+					headerRight: () => <HeaderCloseButton />,
 				}}
 			/>
 			<Stack.Screen
 				name="confirm"
 				options={{
-					headerLeft: () => <BackButton />,
-					headerRight: () => <CloseButton />,
+					headerLeft: () => <HeaderBackButton />,
+					headerRight: () => <HeaderCloseButton />,
 				}}
 			/>
-			<Stack.Screen
-				name="success"
-				options={{ headerShown: false }}
-			/>
+			<Stack.Screen name="success" options={{ headerShown: false }} />
 			<Stack.Screen name="received" />
 			<Stack.Screen name="accepted" />
 			<Stack.Screen
 				name="card-detail"
 				options={{
-					headerLeft: () => <BackButton />,
+					headerLeft: () => <HeaderBackButton />,
 				}}
 			/>
 			<Stack.Screen
 				name="notification-detail"
 				options={{
-					headerLeft: () => <BackButton />,
+					headerLeft: () => <HeaderBackButton />,
 				}}
 			/>
 		</Stack>

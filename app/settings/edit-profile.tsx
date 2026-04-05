@@ -8,7 +8,6 @@ import {
 	ActivityIndicator,
 	Alert,
 	Keyboard,
-	Platform,
 	ScrollView,
 	StyleSheet,
 	TextInput,
@@ -40,8 +39,10 @@ export default function EditProfileScreen() {
 		const digits = text.replace(/\D/g, "");
 		let formatted = "";
 		if (digits.length <= 2) formatted = digits;
-		else if (digits.length <= 4) formatted = `${digits.slice(0, 2)}/${digits.slice(2)}`;
-		else formatted = `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4, 8)}`;
+		else if (digits.length <= 4)
+			formatted = `${digits.slice(0, 2)}/${digits.slice(2)}`;
+		else
+			formatted = `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4, 8)}`;
 		setBirthDate(formatted);
 	};
 
@@ -77,15 +78,7 @@ export default function EditProfileScreen() {
 
 	return (
 		<TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-			<View
-				style={[
-					styles.root,
-					{
-						paddingTop:
-							Platform.OS === "ios" ? 0 : insets.top + verticalScale(16),
-					},
-				]}
-			>
+			<View style={[styles.root, {}]}>
 				<ScrollView
 					showsVerticalScrollIndicator={false}
 					contentContainerStyle={styles.scrollContent}
@@ -136,19 +129,28 @@ export default function EditProfileScreen() {
 					<Text style={styles.label}>Phone number</Text>
 					<TouchableOpacity
 						activeOpacity={0.7}
-						onPress={() => router.push("/change-phone")}
+						onPress={() => router.push("/settings/change-phone")}
 						style={styles.phoneRow}
 					>
 						<Text style={styles.phoneText}>{user.phoneNumber}</Text>
 						<View style={styles.changeBtn}>
 							<Text style={styles.changeBtnText}>Change</Text>
-							<Ionicons name="chevron-forward" size={moderateScale(14)} color="#b42406" />
+							<Ionicons
+								name="chevron-forward"
+								size={moderateScale(14)}
+								color="#b42406"
+							/>
 						</View>
 					</TouchableOpacity>
 				</ScrollView>
 
 				{/* Save button — sticky at bottom */}
-				<View style={[styles.footer, { paddingBottom: insets.bottom + verticalScale(12) }]}>
+				<View
+					style={[
+						styles.footer,
+						{ paddingBottom: insets.bottom + verticalScale(12) },
+					]}
+				>
 					<TouchableOpacity
 						activeOpacity={0.85}
 						onPress={onSave}

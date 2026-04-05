@@ -127,7 +127,7 @@ export default function HomeScreen() {
 
 	// Navigate to independent "See All" page
 	const goToSeeAll = useCallback((type: string) => {
-		router.push({ pathname: "/restaurant-list", params: { type } });
+		router.push({ pathname: "/restaurants/restaurant-list", params: { type } });
 	}, []);
 
 	// Animated scroll handler
