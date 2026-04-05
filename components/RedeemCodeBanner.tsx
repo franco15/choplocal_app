@@ -1,4 +1,4 @@
-import { CustomText as Text, CustomTextBold as TextBold } from "@/components/Texts";
+import { CustomText as Text, CustomTextBold as TextBold } from "./Texts";
 import { horizontalScale, moderateScale, verticalScale } from "@/lib/metrics";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";

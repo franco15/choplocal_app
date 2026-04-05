@@ -1,5 +1,4 @@
-import { Text, TextBold } from "@/components";
-import GiftCardVisual, { CARD_THEMES } from "@/components/GiftCardVisual";
+import { Text, TextBold, GiftCardVisual, CARD_THEMES } from "@/components";
 import { useUserContext } from "@/contexts/UserContext";
 import { queryClient, queryKeys } from "@/lib/api/queryClient";
 import { useGiftCardApi, useNotificationsApi } from "@/lib/api/useApi";

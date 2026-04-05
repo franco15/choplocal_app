@@ -1,18 +1,16 @@
 import { Container, Text, TextBold } from "@/components";
 import RestaurantCard from "@/components/RestaurantCard";
 import { useUserContext } from "@/contexts/UserContext";
+import { useFavorites } from "@/lib/hooks/useFavorites";
 import { queryClient, queryKeys } from "@/lib/api/queryClient";
 import { useUserApi } from "@/lib/api/useApi";
 import { horizontalScale, moderateScale, verticalScale } from "@/lib/metrics";
 import { ERestaurantStatus, IRestaurant } from "@/lib/types/restaurant";
 import { isNullOrWhitespace } from "@/lib/utils";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useQuery } from "@tanstack/react-query";
-import { useFocusEffect, useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
 import { FlatList, RefreshControl, StyleSheet, View } from "react-native";
-
-const FAVORITES_KEY = "choplocal-favorites";
 
 const SECTION_CONFIG: Record<string, { title: string; subtitle: string }> = {
 	visited: {
@@ -37,7 +35,7 @@ export default function RestaurantListScreen() {
 	const { type } = useLocalSearchParams<{ type: string }>();
 	const { user } = useUserContext();
 	const userApi = useUserApi();
-	const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
+	const { favoriteIds, toggleFavorite } = useFavorites();
 	const [refreshing, setRefreshing] = useState(false);
 
 	const config = SECTION_CONFIG[type ?? "visited"] ?? SECTION_CONFIG.visited;
@@ -51,31 +49,12 @@ export default function RestaurantListScreen() {
 		enabled: !!user && !isNullOrWhitespace(user?.id),
 	});
 
-	useFocusEffect(
-		useCallback(() => {
-			AsyncStorage.getItem(FAVORITES_KEY).then((val) => {
-				if (val) setFavoriteIds(JSON.parse(val));
-				else setFavoriteIds([]);
-			});
-		}, []),
-	);
-
 	const onRefresh = useCallback(async () => {
 		setRefreshing(true);
 		await queryClient.invalidateQueries({
 			queryKey: [queryKeys.users.restaurants],
 		});
 		setRefreshing(false);
-	}, []);
-
-	const toggleFavorite = useCallback((id: string) => {
-		setFavoriteIds((prev) => {
-			const next = prev.includes(id)
-				? prev.filter((fid) => fid !== id)
-				: [...prev, id];
-			AsyncStorage.setItem(FAVORITES_KEY, JSON.stringify(next));
-			return next;
-		});
 	}, []);
 
 	const filtered = useMemo(() => {

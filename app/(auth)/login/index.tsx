@@ -48,7 +48,7 @@ export default function LoginScreen() {
 	};
 
 	return (
-		<Container useGradient={false}>
+		<Container>
 			<KeyboardAvoidingView
 				behavior={Platform.OS == "ios" ? "padding" : "height"}
 			>
@@ -58,11 +58,13 @@ export default function LoginScreen() {
 							className="flex-1 h-full"
 							style={{ paddingHorizontal: horizontalScale(20) }}
 						>
-							<View style={{
-								alignSelf: "center",
-								marginTop: verticalScale(75),
-								marginBottom: verticalScale(75),
-							}}>
+							<View
+								style={{
+									alignSelf: "center",
+									marginTop: verticalScale(75),
+									marginBottom: verticalScale(75),
+								}}
+							>
 								<ChopLogoVertical
 									width={horizontalScale(200)}
 									height={verticalScale(248)}

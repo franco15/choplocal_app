@@ -1,5 +1,4 @@
-import { HeaderBackButton } from "@/components";
-import HeaderCloseButton from "@/components/HeaderCloseButton";
+import { HeaderBackButton, HeaderCloseButton } from "@/components";
 import { Stack } from "expo-router";
 
 export default function GiftCardsLayout() {

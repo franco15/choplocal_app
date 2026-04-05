@@ -1,7 +1,7 @@
 import {
 	CustomText as Text,
 	CustomTextBold as TextBold,
-} from "@/components/Texts";
+} from "./Texts";
 import { Gift } from "@/constants/svgs";
 import {
 	horizontalScale,

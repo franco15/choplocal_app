@@ -1,15 +1,15 @@
 import { Text, TextBold } from "@/components";
 import HomeRestaurantCard from "@/components/HomeRestaurantCard";
 import { useUserContext } from "@/contexts/UserContext";
+import { useFavorites } from "@/lib/hooks/useFavorites";
 import { queryClient, queryKeys } from "@/lib/api/queryClient";
 import { useUserApi } from "@/lib/api/useApi";
 import { horizontalScale, moderateScale, verticalScale } from "@/lib/metrics";
 import { IRestaurant } from "@/lib/types/restaurant";
 import { isNullOrWhitespace } from "@/lib/utils";
 import { Ionicons } from "@expo/vector-icons";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useQuery } from "@tanstack/react-query";
-import { router, useFocusEffect } from "expo-router";
+import { router } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
 import {
 	FlatList,
@@ -21,14 +21,12 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-const FAVORITES_KEY = "choplocal-favorites";
-
 export default function ProfileScreen() {
 	const { user } = useUserContext();
 	const userApi = useUserApi();
 	const insets = useSafeAreaInsets();
 	const [refreshing, setRefreshing] = useState(false);
-	const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
+	const { favoriteIds, toggleFavorite } = useFavorites();
 
 	const { data: restaurants } = useQuery({
 		queryKey: [queryKeys.users.restaurants],
@@ -38,25 +36,6 @@ export default function ProfileScreen() {
 		},
 		enabled: !!user && !isNullOrWhitespace(user?.id),
 	});
-
-	useFocusEffect(
-		useCallback(() => {
-			AsyncStorage.getItem(FAVORITES_KEY).then((val) => {
-				if (val) setFavoriteIds(JSON.parse(val));
-				else setFavoriteIds([]);
-			});
-		}, []),
-	);
-
-	const toggleFavorite = useCallback((id: string) => {
-		setFavoriteIds((prev) => {
-			const next = prev.includes(id)
-				? prev.filter((fid) => fid !== id)
-				: [...prev, id];
-			AsyncStorage.setItem(FAVORITES_KEY, JSON.stringify(next));
-			return next;
-		});
-	}, []);
 
 	const onRefresh = useCallback(async () => {
 		setRefreshing(true);

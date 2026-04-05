@@ -23,7 +23,7 @@ export default function SuggestRestaurantScreen() {
 	const router = useRouter();
 	const navigation = useNavigation();
 	const insets = useSafeAreaInsets();
-	const { craeteSuggestion } = useSuggestionContext();
+	const { createSuggestion } = useSuggestionContext();
 
 	const [name, setName] = useState("");
 	const [city, setCity] = useState("");
@@ -51,7 +51,7 @@ export default function SuggestRestaurantScreen() {
 		setIsSubmitting(true);
 		Keyboard.dismiss();
 
-		craeteSuggestion(name.trim(), city.trim(), reason.trim());
+		createSuggestion(name.trim(), city.trim(), reason.trim());
 
 		setIsSubmitting(false);
 		setSubmitted(true);

@@ -1,4 +1,4 @@
-import { CustomText as Text, CustomTextBold as TextBold } from "@/components/Texts";
+import { CustomText as Text, CustomTextBold as TextBold } from "./Texts";
 import { horizontalScale, moderateScale, verticalScale } from "@/lib/metrics";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
 import Modal from "react-native-modal";

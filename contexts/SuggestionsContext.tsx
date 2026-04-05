@@ -2,7 +2,7 @@ import { useSuggestionsApi } from "@/lib/api/useApi";
 import { createContext, useContext, useMemo } from "react";
 
 interface ISuggestionContext {
-	craeteSuggestion: (
+	createSuggestion: (
 		name: string,
 		city: string,
 		description: string,
@@ -16,7 +16,7 @@ const SuggestionContext = createContext<ISuggestionContext>(
 const SuggestionProvider = ({ children }: { children: React.ReactNode }) => {
 	const suggestionsApi = useSuggestionsApi();
 
-	const craeteSuggestion = async (
+	const createSuggestion = async (
 		name: string,
 		city: string,
 		description: string,
@@ -29,7 +29,7 @@ const SuggestionProvider = ({ children }: { children: React.ReactNode }) => {
 	};
 
 	const data = useMemo(() => {
-		return { craeteSuggestion } as ISuggestionContext;
+		return { createSuggestion } as ISuggestionContext;
 	}, []);
 	return (
 		<SuggestionContext.Provider value={data}>
@@ -42,7 +42,7 @@ const useSuggestionContext = () => {
 	const context = useContext(SuggestionContext);
 
 	if (!context) {
-		throw "auth context not defined";
+		throw new Error("auth context not defined");
 	}
 	return context;
 };

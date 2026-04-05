@@ -166,7 +166,7 @@ const useAuthContext = () => {
 	const context = useContext(AuthContext);
 
 	if (!context) {
-		throw "auth context not defined";
+		throw new Error("auth context not defined");
 	}
 	return context;
 };

@@ -1,8 +1,11 @@
-import { Container, Text, TextBold } from "@/components";
-import GiftCardVisual, {
+import {
+	Container,
+	Text,
+	TextBold,
+	GiftCardVisual,
 	CARD_THEMES,
 	CardTheme,
-} from "@/components/GiftCardVisual";
+} from "@/components";
 import {
 	horizontalScale,
 	moderateScale,
