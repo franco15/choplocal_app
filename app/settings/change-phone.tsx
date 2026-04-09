@@ -10,7 +10,6 @@ import {
 	ActivityIndicator,
 	Alert,
 	Keyboard,
-	Platform,
 	StyleSheet,
 	TextInput,
 	TouchableOpacity,
@@ -55,7 +54,8 @@ export default function ChangePhoneScreen() {
 			setStep("code");
 			setTimer(RESEND_TIME);
 		} catch (err: any) {
-			const msg = err?.response?.data?.message ?? err?.message ?? "Error sending code";
+			const msg =
+				err?.response?.data?.message ?? err?.message ?? "Error sending code";
 			setError(msg);
 		} finally {
 			setLoading(false);
@@ -84,7 +84,8 @@ export default function ChangePhoneScreen() {
 				],
 			);
 		} catch (err: any) {
-			const msg = err?.response?.data?.message ?? err?.message ?? "Error updating phone";
+			const msg =
+				err?.response?.data?.message ?? err?.message ?? "Error updating phone";
 			setError(msg);
 		} finally {
 			setLoading(false);
@@ -106,21 +107,14 @@ export default function ChangePhoneScreen() {
 
 	return (
 		<TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-			<View
-				style={[
-					styles.root,
-					{
-						paddingTop:
-							Platform.OS === "ios" ? 0 : insets.top + verticalScale(16),
-					},
-				]}
-			>
+			<View style={[styles.root, {}]}>
 				<View style={styles.content}>
 					{step === "phone" ? (
 						<>
 							<TextBold style={styles.title}>Change Phone Number</TextBold>
 							<Text style={styles.subtitle}>
-								Enter your new phone number. We'll send a verification code to confirm it's yours.
+								Enter your new phone number. We'll send a verification code to
+								confirm it's yours.
 							</Text>
 
 							<Text style={styles.label}>Current number</Text>
@@ -171,10 +165,7 @@ export default function ChangePhoneScreen() {
 								<Text style={styles.resendText}>Didn't get the code? </Text>
 								<TouchableOpacity onPress={onResend} disabled={timer > 0}>
 									<TextBold
-										style={[
-											styles.resendBtn,
-											timer > 0 && { color: "#CCC" },
-										]}
+										style={[styles.resendBtn, timer > 0 && { color: "#CCC" }]}
 									>
 										Resend {timer > 0 ? `(${timer})` : ""}
 									</TextBold>
@@ -195,7 +186,12 @@ export default function ChangePhoneScreen() {
 				</View>
 
 				{/* Action button */}
-				<View style={[styles.footer, { paddingBottom: insets.bottom + verticalScale(12) }]}>
+				<View
+					style={[
+						styles.footer,
+						{ paddingBottom: insets.bottom + verticalScale(12) },
+					]}
+				>
 					<TouchableOpacity
 						activeOpacity={0.85}
 						onPress={step === "phone" ? onSendCode : onVerifyAndUpdate}

@@ -4,21 +4,18 @@ import { Bookmark } from "@/constants/svgs";
 import { useUserContext } from "@/contexts/UserContext";
 import { queryClient, queryKeys } from "@/lib/api/queryClient";
 import { useUserApi } from "@/lib/api/useApi";
+import { useFavorites } from "@/lib/hooks/useFavorites";
 import { horizontalScale, moderateScale, verticalScale } from "@/lib/metrics";
-import { isNullOrWhitespace } from "@/lib/utils";
 import { IRestaurant } from "@/lib/types/restaurant";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { isNullOrWhitespace } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
-import { useFocusEffect } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
 import { FlatList, RefreshControl, StyleSheet, View } from "react-native";
-
-const FAVORITES_KEY = "choplocal-favorites";
 
 export default function FavoritesScreen() {
 	const { user } = useUserContext();
 	const userApi = useUserApi();
-	const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
+	const { favoriteIds, toggleFavorite } = useFavorites();
 	const [refreshing, setRefreshing] = useState(false);
 
 	const { data: restaurants } = useQuery({
@@ -30,29 +27,12 @@ export default function FavoritesScreen() {
 		enabled: !!user && !isNullOrWhitespace(user?.id),
 	});
 
-	useFocusEffect(
-		useCallback(() => {
-			AsyncStorage.getItem(FAVORITES_KEY).then((val) => {
-				if (val) setFavoriteIds(JSON.parse(val));
-				else setFavoriteIds([]);
-			});
-		}, []),
-	);
-
 	const onRefresh = useCallback(async () => {
 		setRefreshing(true);
-		await queryClient.invalidateQueries({ queryKey: [queryKeys.users.restaurants] });
-		setRefreshing(false);
-	}, []);
-
-	const toggleFavorite = useCallback((id: string) => {
-		setFavoriteIds((prev) => {
-			const next = prev.includes(id)
-				? prev.filter((fid) => fid !== id)
-				: [...prev, id];
-			AsyncStorage.setItem(FAVORITES_KEY, JSON.stringify(next));
-			return next;
+		await queryClient.invalidateQueries({
+			queryKey: [queryKeys.users.restaurants],
 		});
+		setRefreshing(false);
 	}, []);
 
 	const favoriteRestaurants = useMemo(() => {
@@ -111,11 +91,14 @@ export default function FavoritesScreen() {
 						data={favoriteRestaurants}
 						showsVerticalScrollIndicator={false}
 						refreshControl={
-							<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#b42406" progressViewOffset={100} />
+							<RefreshControl
+								refreshing={refreshing}
+								onRefresh={onRefresh}
+								tintColor="#b42406"
+								progressViewOffset={100}
+							/>
 						}
-						keyExtractor={(item, index) =>
-							`fav_${index}_${item.id}`
-						}
+						keyExtractor={(item, index) => `fav_${index}_${item.id}`}
 						renderItem={renderItem}
 						contentContainerStyle={{
 							paddingBottom: verticalScale(80),
@@ -157,7 +140,8 @@ export default function FavoritesScreen() {
 								lineHeight: moderateScale(20),
 							}}
 						>
-							Your future food obsessions go here!{"\n"}Tap the bookmark on any restaurant{"\n"}to start your collection
+							Your future food obsessions go here!{"\n"}Tap the bookmark on any
+							restaurant{"\n"}to start your collection
 						</Text>
 					</View>
 				)}

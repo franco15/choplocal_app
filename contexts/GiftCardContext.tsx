@@ -1,15 +1,10 @@
-import {
-	createContext,
-	useCallback,
-	useContext,
-	useMemo,
-} from "react";
+import { createContext, useCallback, useContext, useMemo } from "react";
 
-import { IGiftCard } from "@/lib/types/giftcard";
-import { queryKeys, queryClient } from "@/lib/api/queryClient";
+import { queryClient, queryKeys } from "@/lib/api/queryClient";
 import { useGiftCardApi } from "@/lib/api/useApi";
-import { useUserContext } from "./UserContext";
+import { IGiftCard } from "@/lib/types/giftcard";
 import { useQuery } from "@tanstack/react-query";
+import { useUserContext } from "./UserContext";
 
 interface IGiftCardContext {
 	giftCards: IGiftCard[];
@@ -43,18 +38,12 @@ const GiftCardProvider = ({ children }: { children: React.ReactNode }) => {
 	}, [user?.id]);
 
 	const sentGiftCards = useMemo(
-		() =>
-			giftCards.filter(
-				(gc) => gc.senderId === user?.id,
-			),
+		() => giftCards.filter((gc) => gc.senderId === user?.id),
 		[giftCards, user],
 	);
 
 	const receivedGiftCards = useMemo(
-		() =>
-			giftCards.filter(
-				(gc) => gc.receiverId === user?.id,
-			),
+		() => giftCards.filter((gc) => gc.receiverId === user?.id),
 		[giftCards, user],
 	);
 
@@ -72,9 +61,7 @@ const GiftCardProvider = ({ children }: { children: React.ReactNode }) => {
 	const getGiftCardByCode = useCallback(
 		(code: string) =>
 			giftCards.find(
-				(gc) =>
-					gc.code &&
-					gc.code.toUpperCase() === code.toUpperCase(),
+				(gc) => gc.code && gc.code.toUpperCase() === code.toUpperCase(),
 			),
 		[giftCards],
 	);
@@ -95,15 +82,13 @@ const GiftCardProvider = ({ children }: { children: React.ReactNode }) => {
 	);
 
 	return (
-		<GiftCardContext.Provider value={data}>
-			{children}
-		</GiftCardContext.Provider>
+		<GiftCardContext.Provider value={data}>{children}</GiftCardContext.Provider>
 	);
 };
 
 const useGiftCardContext = () => {
 	const context = useContext(GiftCardContext);
-	if (!context) throw "GiftCardContext not defined";
+	if (!context) throw new Error("GiftCardContext not defined");
 	return context;
 };
 

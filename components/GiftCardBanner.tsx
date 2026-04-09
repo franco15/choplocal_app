@@ -1,4 +1,4 @@
-import { CustomText as Text, CustomTextBold as TextBold } from "@/components/Texts";
+import { CustomText as Text, CustomTextBold as TextBold } from "./Texts";
 import { Gift } from "@/constants/svgs";
 import { horizontalScale, moderateScale, verticalScale } from "@/lib/metrics";
 import { router } from "expo-router";

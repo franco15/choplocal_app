@@ -4,7 +4,7 @@ import { ScrollView, View } from "react-native";
 
 export default function NewsScreen() {
 	return (
-		<Container useGradient={false}>
+		<Container>
 			<ScrollView
 				className="flex-1"
 				style={{

@@ -2,15 +2,15 @@ import { Container, Text, TextBold } from "@/components";
 import RestaurantCard from "@/components/RestaurantCard";
 import { SearchIcon } from "@/constants/svgs";
 import { useUserContext } from "@/contexts/UserContext";
+import { useFavorites } from "@/lib/hooks/useFavorites";
 import { queryClient, queryKeys } from "@/lib/api/queryClient";
 import { useUserApi } from "@/lib/api/useApi";
 import { horizontalScale, moderateScale, verticalScale } from "@/lib/metrics";
 import { ERestaurantStatus, IRestaurant } from "@/lib/types/restaurant";
 import { isNullOrWhitespace } from "@/lib/utils";
 import { Ionicons } from "@expo/vector-icons";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useQuery } from "@tanstack/react-query";
-import { router, useFocusEffect } from "expo-router";
+import { router } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
 import {
 	FlatList,
@@ -25,8 +25,6 @@ import {
 } from "react-native";
 import RestaurantsSkeleton from "../skeletons/restaurants";
 
-const FAVORITES_KEY = "choplocal-favorites";
-
 type FilterTab = "all" | "visited" | "recommended" | "new";
 
 const FILTER_TABS: { key: FilterTab; label: string }[] = [
@@ -39,7 +37,7 @@ const FILTER_TABS: { key: FilterTab; label: string }[] = [
 export default function Restaurants() {
 	const userApi = useUserApi();
 	const { user } = useUserContext();
-	const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
+	const { favoriteIds, toggleFavorite } = useFavorites();
 	const [activeFilter, setActiveFilter] = useState<FilterTab>("all");
 	const [search, setSearch] = useState("");
 	const [refreshing, setRefreshing] = useState(false);
@@ -52,25 +50,6 @@ export default function Restaurants() {
 		},
 		enabled: !isNullOrWhitespace(user?.id),
 	});
-
-	useFocusEffect(
-		useCallback(() => {
-			AsyncStorage.getItem(FAVORITES_KEY).then((val) => {
-				if (val) setFavoriteIds(JSON.parse(val));
-				else setFavoriteIds([]);
-			});
-		}, []),
-	);
-
-	const toggleFavorite = useCallback((id: string) => {
-		setFavoriteIds((prev) => {
-			const next = prev.includes(id)
-				? prev.filter((fid) => fid !== id)
-				: [...prev, id];
-			AsyncStorage.setItem(FAVORITES_KEY, JSON.stringify(next));
-			return next;
-		});
-	}, []);
 
 	const onRefresh = useCallback(async () => {
 		setRefreshing(true);

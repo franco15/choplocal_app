@@ -3,7 +3,11 @@ import { useUserContext } from "@/contexts/UserContext";
 import { queryClient, queryKeys } from "@/lib/api/queryClient";
 import { useNotificationsApi } from "@/lib/api/useApi";
 import { horizontalScale, moderateScale, verticalScale } from "@/lib/metrics";
-import { INotification, IGiftCardNotificationData, NotificationType } from "@/lib/types/notification";
+import {
+	IGiftCardNotificationData,
+	INotification,
+	NotificationType,
+} from "@/lib/types/notification";
 import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
@@ -11,7 +15,6 @@ import { useCallback, useMemo, useState } from "react";
 import {
 	ActivityIndicator,
 	Animated,
-	Platform,
 	Pressable,
 	RefreshControl,
 	SectionList,
@@ -19,14 +22,21 @@ import {
 	TouchableOpacity,
 	View,
 } from "react-native";
-import { GestureHandlerRootView, Swipeable } from "react-native-gesture-handler";
+import {
+	GestureHandlerRootView,
+	Swipeable,
+} from "react-native-gesture-handler";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const TYPE_CONFIG: Record<
 	string,
 	{ icon: keyof typeof Ionicons.glyphMap; bg: string; color: string }
 > = {
-	[NotificationType.GiftCard]: { icon: "gift-outline", bg: "#FBF6F5", color: "#b42406" },
+	[NotificationType.GiftCard]: {
+		icon: "gift-outline",
+		bg: "#FBF6F5",
+		color: "#b42406",
+	},
 	default: { icon: "megaphone-outline", bg: "#E8F0FE", color: "#3B6CD4" },
 };
 
@@ -51,8 +61,14 @@ function getSectionTitle(dateStr: string): string {
 	if (isNaN(date.getTime())) return "Newest";
 	const now = new Date();
 	const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-	const notifDay = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-	const diffDays = Math.floor((today.getTime() - notifDay.getTime()) / (24 * 60 * 60 * 1000));
+	const notifDay = new Date(
+		date.getFullYear(),
+		date.getMonth(),
+		date.getDate(),
+	);
+	const diffDays = Math.floor(
+		(today.getTime() - notifDay.getTime()) / (24 * 60 * 60 * 1000),
+	);
 	if (diffDays === 0) return "Today";
 	if (diffDays <= 7) return "This Week";
 	return "Newest";
@@ -85,13 +101,14 @@ export default function NotificationsScreen() {
 		queryKey: queryKeys.notifications.byUser(user?.id ?? ""),
 		queryFn: () => notificationsApi.byUser(user!.id),
 		enabled: !!user?.id,
-		staleTime: 10000
+		staleTime: 10000,
 	});
 
 	const sections = useMemo(() => {
 		// Sort all notifications by date, newest first
 		const sorted = [...notifications].sort(
-			(a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
+			(a, b) =>
+				new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
 		);
 
 		const grouped: Record<string, INotification[]> = {};
@@ -112,178 +129,192 @@ export default function NotificationsScreen() {
 
 	const onRefresh = useCallback(async () => {
 		setRefreshing(true);
-		await queryClient.invalidateQueries({ queryKey: queryKeys.notifications.byUser(user.id) });
+		await queryClient.invalidateQueries({
+			queryKey: queryKeys.notifications.byUser(user.id),
+		});
 		setRefreshing(false);
 	}, [user.id]);
 
 	const isRead = (n: INotification) => n.read || (n as any).isRead;
 	const unreadCount = notifications.filter((n) => !isRead(n)).length;
 
-	const onDeleteNotification = useCallback((id: string) => {
-		queryClient.setQueryData<INotification[]>(
-			queryKeys.notifications.byUser(user?.id ?? ""),
-			(old) => old?.filter((n) => n.id !== id),
-		);
-	}, [user?.id]);
+	const onDeleteNotification = useCallback(
+		(id: string) => {
+			queryClient.setQueryData<INotification[]>(
+				queryKeys.notifications.byUser(user?.id ?? ""),
+				(old) => old?.filter((n) => n.id !== id),
+			);
+		},
+		[user?.id],
+	);
 
-	const renderRightActions = useCallback((progress: Animated.AnimatedInterpolation<number>, _dragX: Animated.AnimatedInterpolation<number>, id: string) => {
-		const translateX = progress.interpolate({
-			inputRange: [0, 1],
-			outputRange: [80, 0],
-		});
-		return (
-			<Animated.View style={{ transform: [{ translateX }], justifyContent: "center" }}>
-				<TouchableOpacity
-					activeOpacity={0.8}
-					onPress={() => onDeleteNotification(id)}
-					style={styles.deleteBtn}
+	const renderRightActions = useCallback(
+		(
+			progress: Animated.AnimatedInterpolation<number>,
+			_dragX: Animated.AnimatedInterpolation<number>,
+			id: string,
+		) => {
+			const translateX = progress.interpolate({
+				inputRange: [0, 1],
+				outputRange: [80, 0],
+			});
+			return (
+				<Animated.View
+					style={{ transform: [{ translateX }], justifyContent: "center" }}
 				>
-					<Ionicons name="trash-outline" size={moderateScale(22)} color="#FFFFFF" />
-				</TouchableOpacity>
-			</Animated.View>
-		);
-	}, [onDeleteNotification]);
+					<TouchableOpacity
+						activeOpacity={0.8}
+						onPress={() => onDeleteNotification(id)}
+						style={styles.deleteBtn}
+					>
+						<Ionicons
+							name="trash-outline"
+							size={moderateScale(22)}
+							color="#FFFFFF"
+						/>
+					</TouchableOpacity>
+				</Animated.View>
+			);
+		},
+		[onDeleteNotification],
+	);
 
-	const onNotificationPress = useCallback((item: INotification) => {
-		if (item.type === NotificationType.GiftCard) {
-			const parsed = parseNotificationData<IGiftCardNotificationData>(item.data);
-			const giftCardId = parsed?.GiftCardId ?? item.giftCardId ?? "";
+	const onNotificationPress = useCallback(
+		(item: INotification) => {
+			if (item.type === NotificationType.GiftCard) {
+				const parsed = parseNotificationData<IGiftCardNotificationData>(
+					item.data,
+				);
+				const giftCardId = parsed?.GiftCardId ?? item.giftCardId ?? "";
+
+				router.push({
+					pathname: "/gift-cards/notification-detail",
+					params: {
+						giftCardId,
+						notificationId: item.read ? "" : item.id,
+					},
+				});
+				return;
+			}
 
 			router.push({
 				pathname: "/gift-cards/notification-detail",
 				params: {
-					giftCardId,
+					giftCardId: item.giftCardId ?? "",
 					notificationId: item.read ? "" : item.id,
 				},
 			});
-			return;
-		}
-
-		router.push({
-			pathname: "/gift-cards/notification-detail",
-			params: {
-				giftCardId: item.giftCardId ?? "",
-				notificationId: item.read ? "" : item.id,
-			},
-		});
-	}, [router]);
+		},
+		[router],
+	);
 
 	return (
 		<GestureHandlerRootView style={{ flex: 1 }}>
-		<View
-			style={[
-				styles.root,
-				{
-					paddingTop:
-						Platform.OS === "ios" ? 0 : insets.top + verticalScale(16),
-				},
-			]}
-		>
-			{isPending ? (
-				<View style={styles.loadingContainer}>
-					<ActivityIndicator size="large" color="#b42406" />
-				</View>
-			) : (
-				<SectionList
-					sections={sections}
-					showsVerticalScrollIndicator={false}
-					refreshControl={
-						<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#b42406" progressViewOffset={100} />
-					}
-					stickySectionHeadersEnabled={false}
-					keyExtractor={(item) => item.id}
-					contentContainerStyle={{
-						paddingHorizontal: horizontalScale(16),
-						paddingBottom: verticalScale(60),
-					}}
-					ListHeaderComponent={
-						<View style={{ paddingBottom: verticalScale(8) }}>
-							<TextBold style={styles.title}>Notifications</TextBold>
-							{unreadCount > 0 && (
-								<Text style={styles.subtitle}>
-									{unreadCount} unread
-								</Text>
-							)}
-						</View>
-					}
-					renderSectionHeader={({ section: { title } }) => (
-						<View style={styles.sectionHeader}>
-							<TextBold style={styles.sectionTitle}>{title}</TextBold>
-						</View>
-					)}
-					renderItem={({ item }) => {
-						const config = getNotificationIcon(item);
-						return (
-							<Swipeable
-								renderRightActions={(progress, dragX) => renderRightActions(progress, dragX, item.id)}
-								overshootRight={false}
-							>
-								<Pressable
-									onPress={() => onNotificationPress(item)}
-									style={styles.card}
+			<View style={[styles.root, {}]}>
+				{isPending ? (
+					<View style={styles.loadingContainer}>
+						<ActivityIndicator size="large" color="#b42406" />
+					</View>
+				) : (
+					<SectionList
+						sections={sections}
+						showsVerticalScrollIndicator={false}
+						refreshControl={
+							<RefreshControl
+								refreshing={refreshing}
+								onRefresh={onRefresh}
+								tintColor="#b42406"
+								progressViewOffset={100}
+							/>
+						}
+						stickySectionHeadersEnabled={false}
+						keyExtractor={(item) => item.id}
+						contentContainerStyle={{
+							paddingHorizontal: horizontalScale(16),
+							paddingBottom: verticalScale(60),
+						}}
+						ListHeaderComponent={
+							<View style={{ paddingBottom: verticalScale(8) }}>
+								<TextBold style={styles.title}>Notifications</TextBold>
+								{unreadCount > 0 && (
+									<Text style={styles.subtitle}>{unreadCount} unread</Text>
+								)}
+							</View>
+						}
+						renderSectionHeader={({ section: { title } }) => (
+							<View style={styles.sectionHeader}>
+								<TextBold style={styles.sectionTitle}>{title}</TextBold>
+							</View>
+						)}
+						renderItem={({ item }) => {
+							const config = getNotificationIcon(item);
+							return (
+								<Swipeable
+									renderRightActions={(progress, dragX) =>
+										renderRightActions(progress, dragX, item.id)
+									}
+									overshootRight={false}
 								>
-									{/* Unread dot */}
-									{!isRead(item) && <View style={styles.unreadDot} />}
-
-									{/* Icon */}
-									<View
-										style={[
-											styles.iconCircle,
-											{ backgroundColor: config.bg },
-										]}
+									<Pressable
+										onPress={() => onNotificationPress(item)}
+										style={styles.card}
 									>
-										<Ionicons
-											name={config.icon}
-											size={moderateScale(20)}
-											color={config.color}
-										/>
-									</View>
+										{/* Unread dot */}
+										{!isRead(item) && <View style={styles.unreadDot} />}
 
-									{/* Content */}
-									<View style={{ flex: 1 }}>
-										<View style={styles.cardHeader}>
-											<TextBold
-												style={styles.cardTitle}
-												numberOfLines={1}
-											>
-												{item.title}
-											</TextBold>
-											<Text style={styles.cardTime}>
-												{getRelativeTime(item.timestamp)}
+										{/* Icon */}
+										<View
+											style={[
+												styles.iconCircle,
+												{ backgroundColor: config.bg },
+											]}
+										>
+											<Ionicons
+												name={config.icon}
+												size={moderateScale(20)}
+												color={config.color}
+											/>
+										</View>
+
+										{/* Content */}
+										<View style={{ flex: 1 }}>
+											<View style={styles.cardHeader}>
+												<TextBold style={styles.cardTitle} numberOfLines={1}>
+													{item.title}
+												</TextBold>
+												<Text style={styles.cardTime}>
+													{getRelativeTime(item.timestamp)}
+												</Text>
+											</View>
+											<Text style={styles.cardDescription} numberOfLines={2}>
+												{item.description}
 											</Text>
 										</View>
-										<Text
-											style={styles.cardDescription}
-											numberOfLines={2}
-										>
-											{item.description}
-										</Text>
-									</View>
-								</Pressable>
-							</Swipeable>
-						);
-					}}
-					ListEmptyComponent={
-						<View style={styles.emptyContainer}>
-							<View style={styles.emptyIcon}>
-								<Ionicons
-									name="notifications-outline"
-									size={moderateScale(32)}
-									color="#CCC"
-								/>
+									</Pressable>
+								</Swipeable>
+							);
+						}}
+						ListEmptyComponent={
+							<View style={styles.emptyContainer}>
+								<View style={styles.emptyIcon}>
+									<Ionicons
+										name="notifications-outline"
+										size={moderateScale(32)}
+										color="#CCC"
+									/>
+								</View>
+								<TextBold style={styles.emptyTitle}>
+									No notifications yet
+								</TextBold>
+								<Text style={styles.emptyText}>
+									You'll see gift card updates, recommendations,
+									{"\n"}and more here
+								</Text>
 							</View>
-							<TextBold style={styles.emptyTitle}>
-								No notifications yet
-							</TextBold>
-							<Text style={styles.emptyText}>
-								You'll see gift card updates, recommendations,
-								{"\n"}and more here
-							</Text>
-						</View>
-					}
-				/>
-			)}
-		</View>
+						}
+					/>
+				)}
+			</View>
 		</GestureHandlerRootView>
 	);
 }

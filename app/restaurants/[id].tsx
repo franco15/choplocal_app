@@ -1,5 +1,4 @@
-import { Text, TextBold } from "@/components";
-import GiftCardVisual, { CARD_THEMES } from "@/components/GiftCardVisual";
+import { CARD_THEMES, GiftCardVisual, Text, TextBold } from "@/components";
 import { useGiftCardContext } from "@/contexts/GiftCardContext";
 import { useUserContext } from "@/contexts/UserContext";
 import { queryClient, queryKeys } from "@/lib/api/queryClient";
@@ -7,6 +6,7 @@ import { useRestaurantApi } from "@/lib/api/useApi";
 import { horizontalScale, moderateScale, verticalScale } from "@/lib/metrics";
 
 import { ERestaurantStatus, IRestaurant } from "@/lib/types/restaurant";
+import { isNullOrWhitespace } from "@/lib/utils";
 import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -104,9 +104,9 @@ export default function Restaurant() {
 				queryKeys.users.restaurants,
 			]);
 			const cached = cachedList?.find((r) => r.id === id);
-			code = cached?.referralCode ?? null;
+			code = cached?.referralCode ?? "";
 		}
-		if (!code) return;
+		if (isNullOrWhitespace(code)) return;
 		try {
 			await Share.share({
 				message: `Check out ${displayName} on Chop Local! Use my recommendation code: ${code}`,
@@ -123,7 +123,6 @@ export default function Restaurant() {
 	const totalBalance = restaurant?.balance ?? 0;
 
 	return (
-		// <Container>
 		<View style={styles.root}>
 			<ScrollView
 				contentContainerStyle={{
@@ -140,12 +139,7 @@ export default function Restaurant() {
 					/>
 				}
 			>
-				<View
-					style={[
-						styles.cardList,
-						{ paddingTop: insets.top + verticalScale(8) },
-					]}
-				>
+				<View style={[styles.cardList, { paddingTop: verticalScale(8) }]}>
 					{/* ═══════════════════════════════════════════
 					    CARD 1 — Restaurant Info
 					    ═══════════════════════════════════════════ */}
@@ -392,7 +386,6 @@ export default function Restaurant() {
 				</TouchableOpacity>
 			</View>
 		</View>
-		// </Container>
 	);
 }
 

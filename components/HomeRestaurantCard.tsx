@@ -1,7 +1,7 @@
 import {
 	CustomText as Text,
 	CustomTextBold as TextBold,
-} from "@/components/Texts";
+} from "./Texts";
 import { Bookmark, BookmarkSolid } from "@/constants/svgs";
 import { horizontalScale, moderateScale, verticalScale } from "@/lib/metrics";
 import { IRestaurant } from "@/lib/types/restaurant";

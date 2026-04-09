@@ -1,4 +1,4 @@
-import { CustomText as Text, CustomTextBold as TextBold } from "@/components/Texts";
+import { CustomText as Text, CustomTextBold as TextBold } from "./Texts";
 import { Ionicons } from "@expo/vector-icons";
 import { horizontalScale, moderateScale, verticalScale } from "@/lib/metrics";
 import { Pressable, StyleSheet, View } from "react-native";

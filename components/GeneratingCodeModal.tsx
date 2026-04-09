@@ -1,4 +1,4 @@
-import { CustomText as Text, CustomTextBold as TextBold } from "@/components/Texts";
+import { CustomText as Text, CustomTextBold as TextBold } from "./Texts";
 import { moderateScale, verticalScale } from "@/lib/metrics";
 import { MotiView } from "moti";
 import { ActivityIndicator, Modal, StyleSheet, View } from "react-native";

@@ -1,5 +1,5 @@
+import { HeaderBackButton } from "@/components";
 import { Stack } from "expo-router";
-import { Platform } from "react-native";
 
 export default function QrLayout() {
 	return (
@@ -11,6 +11,7 @@ export default function QrLayout() {
 					headerTransparent: true,
 					headerStyle: { backgroundColor: "transparent" },
 					headerBlurEffect: undefined,
+					headerLeft: () => <HeaderBackButton />,
 				}}
 				name="index"
 			/>

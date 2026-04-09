@@ -1,24 +1,18 @@
 import { Container, Text, TextBold } from "@/components";
 import RestaurantCard from "@/components/RestaurantCard";
 import { useUserContext } from "@/contexts/UserContext";
+import { useFavorites } from "@/lib/hooks/useFavorites";
 import { queryClient, queryKeys } from "@/lib/api/queryClient";
 import { useUserApi } from "@/lib/api/useApi";
 import { horizontalScale, moderateScale, verticalScale } from "@/lib/metrics";
-import { isNullOrWhitespace } from "@/lib/utils";
 import { ERestaurantStatus, IRestaurant } from "@/lib/types/restaurant";
+import { isNullOrWhitespace } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { useLocalSearchParams } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
 import { FlatList, RefreshControl, StyleSheet, View } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useFocusEffect } from "expo-router";
 
-const FAVORITES_KEY = "choplocal-favorites";
-
-const SECTION_CONFIG: Record<
-	string,
-	{ title: string; subtitle: string }
-> = {
+const SECTION_CONFIG: Record<string, { title: string; subtitle: string }> = {
 	visited: {
 		title: "Recently Visited",
 		subtitle: "Your latest check-ins",
@@ -41,7 +35,7 @@ export default function RestaurantListScreen() {
 	const { type } = useLocalSearchParams<{ type: string }>();
 	const { user } = useUserContext();
 	const userApi = useUserApi();
-	const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
+	const { favoriteIds, toggleFavorite } = useFavorites();
 	const [refreshing, setRefreshing] = useState(false);
 
 	const config = SECTION_CONFIG[type ?? "visited"] ?? SECTION_CONFIG.visited;
@@ -55,29 +49,12 @@ export default function RestaurantListScreen() {
 		enabled: !!user && !isNullOrWhitespace(user?.id),
 	});
 
-	useFocusEffect(
-		useCallback(() => {
-			AsyncStorage.getItem(FAVORITES_KEY).then((val) => {
-				if (val) setFavoriteIds(JSON.parse(val));
-				else setFavoriteIds([]);
-			});
-		}, []),
-	);
-
 	const onRefresh = useCallback(async () => {
 		setRefreshing(true);
-		await queryClient.invalidateQueries({ queryKey: [queryKeys.users.restaurants] });
-		setRefreshing(false);
-	}, []);
-
-	const toggleFavorite = useCallback((id: string) => {
-		setFavoriteIds((prev) => {
-			const next = prev.includes(id)
-				? prev.filter((fid) => fid !== id)
-				: [...prev, id];
-			AsyncStorage.setItem(FAVORITES_KEY, JSON.stringify(next));
-			return next;
+		await queryClient.invalidateQueries({
+			queryKey: [queryKeys.users.restaurants],
 		});
+		setRefreshing(false);
 	}, []);
 
 	const filtered = useMemo(() => {
@@ -89,12 +66,13 @@ export default function RestaurantListScreen() {
 					(r) => r.status === ERestaurantStatus.Visited,
 				);
 			case "popular":
-				return [...restaurants].sort(
-					(a, b) => b.checkIns - a.checkIns,
-				);
+				return [...restaurants].sort((a, b) => b.checkIns - a.checkIns);
 			case "new":
 				return [...restaurants]
-					.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+					.sort(
+						(a, b) =>
+							new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+					)
 					.slice(0, 15);
 			case "recommended":
 				return restaurants.filter(
@@ -126,26 +104,25 @@ export default function RestaurantListScreen() {
 				data={filtered}
 				showsVerticalScrollIndicator={false}
 				refreshControl={
-					<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#b42406" progressViewOffset={100} />
+					<RefreshControl
+						refreshing={refreshing}
+						onRefresh={onRefresh}
+						tintColor="#b42406"
+						progressViewOffset={100}
+					/>
 				}
 				keyExtractor={(item) => String(item.id)}
 				renderItem={renderItem}
 				contentContainerStyle={styles.listContent}
 				ListHeaderComponent={
 					<View style={styles.header}>
-						<TextBold style={styles.title}>
-							{config.title}
-						</TextBold>
-						<Text style={styles.subtitle}>
-							{config.subtitle}
-						</Text>
+						<TextBold style={styles.title}>{config.title}</TextBold>
+						<Text style={styles.subtitle}>{config.subtitle}</Text>
 					</View>
 				}
 				ListEmptyComponent={
 					<View style={styles.empty}>
-						<Text style={styles.emptyText}>
-							No restaurants found
-						</Text>
+						<Text style={styles.emptyText}>No restaurants found</Text>
 					</View>
 				}
 			/>

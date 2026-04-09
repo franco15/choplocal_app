@@ -1,4 +1,9 @@
-import { IGiftCard, IGiftCardCreate, IGiftCardDetail, IRedeemCodeResult } from "../types/giftcard";
+import {
+	IGiftCard,
+	IGiftCardCreate,
+	IGiftCardDetail,
+	IRedeemCodeResult,
+} from "../types/giftcard";
 import { INotification } from "../types/notification";
 import { IRestaurant, IRestaurantTransactions } from "../types/restaurant";
 import { ISuggestion } from "../types/suggestions";
@@ -43,9 +48,18 @@ export const useUserApi = () => {
 			api.get(`api/app/users/${id}/restaurants/visited`),
 		delete: async (id: string): Promise<void> =>
 			api.delete(`api/app/users/${id}`),
-		requestPhoneChangeCode: async (userId: string, newPhoneNumber: string): Promise<void> =>
-			api.post(`api/app/users/${userId}/phone/request-code`, { newPhoneNumber }),
-		updatePhoneNumber: async (userId: string, newPhoneNumber: string, code: string): Promise<IUser> =>
+		requestPhoneChangeCode: async (
+			userId: string,
+			newPhoneNumber: string,
+		): Promise<void> =>
+			api.post(`api/app/users/${userId}/phone/request-code`, {
+				newPhoneNumber,
+			}),
+		updatePhoneNumber: async (
+			userId: string,
+			newPhoneNumber: string,
+			code: string,
+		): Promise<IUser> =>
 			api.put(`api/app/users/${userId}/phone`, { newPhoneNumber, code }),
 	};
 };
@@ -72,7 +86,10 @@ export const useGiftCardApi = () => {
 			api.get(`api/app/gift-card/user/${userId}`),
 		create: async (params: IGiftCardCreate): Promise<IGiftCard> =>
 			api.post("api/app/gift-card/restaurant", params),
-		redeem: async (params: { code: string; userId: string }): Promise<IRedeemCodeResult> =>
+		redeem: async (params: {
+			code: string;
+			userId: string;
+		}): Promise<IRedeemCodeResult> =>
 			api.post("api/app/gift-card/redeem", params),
 	};
 };
@@ -80,15 +97,15 @@ export const useGiftCardApi = () => {
 export const useNotificationsApi = () => {
 	const api = useAxios();
 	return {
-		byUser: async (userId: string): Promise<INotification[]> => {
-			const data = await api.get(`api/app/notifications/user/${userId}`);
-			return data.map((n: any) => ({
-				...n,
-				read: n.read ?? n.isRead ?? false,
-			}));
-		},
+		byUser: async (userId: string): Promise<INotification[]> =>
+			await api.get(`api/app/notifications/user/${userId}`),
 		markAsRead: async (notificationId: string): Promise<void> =>
 			api.put(`api/app/notifications/${notificationId}/read`, {}),
+		registerPushToken: async (params: {
+			token: string;
+			userId: string;
+			platform: string;
+		}): Promise<void> => api.post("api/app/notifications/register", params),
 	};
 };
 

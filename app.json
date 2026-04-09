@@ -18,7 +18,8 @@
 			"infoPlist": {
 				"ITSAppUsesNonExemptEncryption": false,
 				"NSCameraUsageDescription": "This app may use the camera to enable features such as capturing photos or scanning content when available."
-			}
+			},
+			"googleServicesFile": "./assets/GoogleService-Info.plist"
 		},
 		"android": {
 			"softwareKeyboardLayoutMode": "resize",
@@ -28,7 +29,9 @@
 			},
 			"edgeToEdgeEnabled": true,
 			"package": "com.choplocal",
-			"usesClearTextTraffic": true
+			"usesClearTextTraffic": true,
+			"useNextNotificationsApi": true,
+			"googleServicesFile": "./assets/google-services.json"
 		},
 		"web": {
 			"bundler": "metro",
@@ -56,7 +59,18 @@
 					"project": "choplocal",
 					"organization": "xipe"
 				}
-			]
+			],
+			[
+				"expo-notifications",
+				{
+					"icon": "assets/images/logo.png",
+					"color": "#ffffff",
+					"defaultChannel": "default",
+					"enableBackgroundRemoteNotifications": true
+				}
+			],
+			"expo-build-properties",
+			["./plugins/withAndroidTheme"]
 		],
 		"experiments": {
 			"typedRoutes": true

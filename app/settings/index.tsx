@@ -8,7 +8,6 @@ import { useState } from "react";
 import {
 	Alert,
 	Linking,
-	Platform,
 	ScrollView,
 	TouchableOpacity,
 	View,
@@ -60,8 +59,6 @@ export default function SettingsScreen() {
 			style={{
 				flex: 1,
 				backgroundColor: "#FFFFFF",
-				paddingTop:
-					Platform.OS === "ios" ? 0 : insets.top + verticalScale(16),
 			}}
 		>
 			<ScrollView
@@ -71,38 +68,6 @@ export default function SettingsScreen() {
 					paddingBottom: verticalScale(60),
 				}}
 			>
-				{/* Header (Android only) */}
-				{Platform.OS !== "ios" && (
-					<View
-						style={{
-							flexDirection: "row",
-							alignItems: "center",
-							justifyContent: "space-between",
-							marginBottom: verticalScale(16),
-						}}
-					>
-						<TouchableOpacity
-							onPress={() => router.back()}
-							hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-						>
-							<Ionicons
-								name="arrow-back"
-								size={moderateScale(24)}
-								color="#1A1A1A"
-							/>
-						</TouchableOpacity>
-						<TextBold
-							style={{
-								fontSize: moderateScale(18),
-								color: "#1A1A1A",
-							}}
-						>
-							Settings
-						</TextBold>
-						<View style={{ width: moderateScale(24) }} />
-					</View>
-				)}
-
 				<TextBold
 					style={{
 						fontSize: moderateScale(28),
@@ -127,7 +92,7 @@ export default function SettingsScreen() {
 
 				<TouchableOpacity
 					activeOpacity={0.6}
-					onPress={() => router.push("/edit-profile")}
+					onPress={() => router.push("/settings/edit-profile")}
 					style={{
 						backgroundColor: "#FFFFFF",
 						borderRadius: 16,
@@ -138,11 +103,21 @@ export default function SettingsScreen() {
 						marginBottom: 32,
 					}}
 				>
-					<View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+					<View
+						style={{
+							flexDirection: "row",
+							alignItems: "center",
+							justifyContent: "space-between",
+						}}
+					>
 						<Text style={{ fontSize: moderateScale(17), color: "#1A1A1A" }}>
 							Edit Profile
 						</Text>
-						<Ionicons name="chevron-forward" size={moderateScale(18)} color="#CCC" />
+						<Ionicons
+							name="chevron-forward"
+							size={moderateScale(18)}
+							color="#CCC"
+						/>
 					</View>
 				</TouchableOpacity>
 
@@ -171,11 +146,21 @@ export default function SettingsScreen() {
 						marginBottom: 14,
 					}}
 				>
-					<View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+					<View
+						style={{
+							flexDirection: "row",
+							alignItems: "center",
+							justifyContent: "space-between",
+						}}
+					>
 						<Text style={{ fontSize: moderateScale(17), color: "#1A1A1A" }}>
 							Terms and Conditions
 						</Text>
-						<Ionicons name="chevron-forward" size={moderateScale(18)} color="#CCC" />
+						<Ionicons
+							name="chevron-forward"
+							size={moderateScale(18)}
+							color="#CCC"
+						/>
 					</View>
 				</TouchableOpacity>
 
@@ -192,11 +177,21 @@ export default function SettingsScreen() {
 						marginBottom: 32,
 					}}
 				>
-					<View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+					<View
+						style={{
+							flexDirection: "row",
+							alignItems: "center",
+							justifyContent: "space-between",
+						}}
+					>
 						<Text style={{ fontSize: moderateScale(17), color: "#1A1A1A" }}>
 							Privacy Policy
 						</Text>
-						<Ionicons name="chevron-forward" size={moderateScale(18)} color="#CCC" />
+						<Ionicons
+							name="chevron-forward"
+							size={moderateScale(18)}
+							color="#CCC"
+						/>
 					</View>
 				</TouchableOpacity>
 
@@ -227,11 +222,21 @@ export default function SettingsScreen() {
 						opacity: isDeleting ? 0.4 : 1,
 					}}
 				>
-					<View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+					<View
+						style={{
+							flexDirection: "row",
+							alignItems: "center",
+							justifyContent: "space-between",
+						}}
+					>
 						<Text style={{ fontSize: moderateScale(17), color: "#DC3545" }}>
 							Delete Account
 						</Text>
-						<Ionicons name="chevron-forward" size={moderateScale(18)} color="#CCC" />
+						<Ionicons
+							name="chevron-forward"
+							size={moderateScale(18)}
+							color="#CCC"
+						/>
 					</View>
 				</TouchableOpacity>
 
@@ -250,11 +255,21 @@ export default function SettingsScreen() {
 						opacity: isDeleting ? 0.4 : 1,
 					}}
 				>
-					<View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+					<View
+						style={{
+							flexDirection: "row",
+							alignItems: "center",
+							justifyContent: "space-between",
+						}}
+					>
 						<Text style={{ fontSize: moderateScale(17), color: "#1A1A1A" }}>
 							Log Out
 						</Text>
-						<Ionicons name="chevron-forward" size={moderateScale(18)} color="#CCC" />
+						<Ionicons
+							name="chevron-forward"
+							size={moderateScale(18)}
+							color="#CCC"
+						/>
 					</View>
 				</TouchableOpacity>
 

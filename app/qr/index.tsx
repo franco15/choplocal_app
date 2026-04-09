@@ -1,12 +1,12 @@
 import { Text, TextBold } from "@/components";
 import { useUserContext } from "@/contexts/UserContext";
 import { horizontalScale, moderateScale, verticalScale } from "@/lib/metrics";
+import { BlurView } from "expo-blur";
+import { LinearGradient } from "expo-linear-gradient";
 import { Dimensions, Image, Platform, StyleSheet, View } from "react-native";
 import QRCode from "react-native-qrcode-svg";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { LinearGradient } from "expo-linear-gradient";
-import { BlurView } from "expo-blur";
-import Svg, { Defs, RadialGradient, Stop, Rect } from "react-native-svg";
+import Svg, { Defs, RadialGradient, Rect, Stop } from "react-native-svg";
 
 const { width: SCREEN_W } = Dimensions.get("window");
 
@@ -93,7 +93,11 @@ export default function QrScreen() {
 				<View style={styles.qrSection}>
 					<View style={styles.glassCard}>
 						{Platform.OS === "ios" ? (
-							<BlurView intensity={50} tint="light" style={StyleSheet.absoluteFill} />
+							<BlurView
+								intensity={50}
+								tint="light"
+								style={StyleSheet.absoluteFill}
+							/>
 						) : null}
 						<View style={styles.glassInner}>
 							<View style={styles.qrContainer}>
@@ -117,7 +121,11 @@ export default function QrScreen() {
 				<View style={styles.codeSection}>
 					<View style={styles.codePill}>
 						{Platform.OS === "ios" ? (
-							<BlurView intensity={30} tint="light" style={StyleSheet.absoluteFill} />
+							<BlurView
+								intensity={30}
+								tint="light"
+								style={StyleSheet.absoluteFill}
+							/>
 						) : null}
 						<View style={styles.codePillInner}>
 							<Text style={styles.codeLabel}>YOUR CODE</Text>
@@ -170,7 +178,10 @@ const styles = StyleSheet.create({
 	glassCard: {
 		borderRadius: moderateScale(30),
 		overflow: "hidden",
-		backgroundColor: Platform.OS === "ios" ? "rgba(255,255,255,0.35)" : "rgba(255,255,255,0.5)",
+		backgroundColor:
+			Platform.OS === "ios"
+				? "rgba(255,255,255,0.35)"
+				: "rgba(255,255,255,0.5)",
 		borderWidth: 1,
 		borderColor: "rgba(255,255,255,0.6)",
 		shadowColor: "#000",
@@ -212,7 +223,10 @@ const styles = StyleSheet.create({
 	codePill: {
 		borderRadius: moderateScale(50),
 		overflow: "hidden",
-		backgroundColor: Platform.OS === "ios" ? "rgba(255,255,255,0.35)" : "rgba(255,255,255,0.5)",
+		backgroundColor:
+			Platform.OS === "ios"
+				? "rgba(255,255,255,0.35)"
+				: "rgba(255,255,255,0.5)",
 		borderWidth: 1,
 		borderColor: "rgba(255,255,255,0.6)",
 	},

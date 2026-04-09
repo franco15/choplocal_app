@@ -1,9 +1,4 @@
-import {
-	createContext,
-	useCallback,
-	useContext,
-	useMemo,
-} from "react";
+import { createContext, useCallback, useContext, useMemo } from "react";
 
 import { useGiftCardApi } from "@/lib/api/useApi";
 import { IRedeemCodeResult } from "@/lib/types/giftcard";
@@ -73,7 +68,7 @@ const RedeemCodeProvider = ({ children }: { children: React.ReactNode }) => {
 
 const useRedeemCodeContext = () => {
 	const context = useContext(RedeemCodeContext);
-	if (!context) throw "RedeemCodeContext not defined";
+	if (!context) throw new Error("RedeemCodeContext not defined");
 	return context;
 };
 

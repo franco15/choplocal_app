@@ -7,7 +7,14 @@ import { Ionicons } from "@expo/vector-icons";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
-import { FlatList, RefreshControl, StyleSheet, TouchableOpacity, View } from "react-native";
+import {
+	FlatList,
+	RefreshControl,
+	StyleSheet,
+	TouchableOpacity,
+	View,
+} from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import TransactionsSkeleton from "../skeletons/transactions";
 
 export default function Transactions() {
@@ -16,10 +23,13 @@ export default function Transactions() {
 	const restaurantApi = useRestaurantApi();
 	const router = useRouter();
 	const [refreshing, setRefreshing] = useState(false);
+	const insets = useSafeAreaInsets();
 
 	const onRefresh = useCallback(async () => {
 		setRefreshing(true);
-		await queryClient.invalidateQueries({ queryKey: [queryKeys.restaurants.transactions(restaurantId as string)] });
+		await queryClient.invalidateQueries({
+			queryKey: [queryKeys.restaurants.transactions(restaurantId as string)],
+		});
 		setRefreshing(false);
 	}, [restaurantId]);
 
@@ -36,18 +46,22 @@ export default function Transactions() {
 
 	if (isPending) return <TransactionsSkeleton />;
 
-	const totalCashback = transactions.reduce(
-		(sum, t) => sum + t.cashback,
-		0,
-	);
+	const totalCashback = transactions.reduce((sum, t) => sum + t.cashback, 0);
 
 	return (
 		<View style={styles.root}>
 			<FlatList
-				data={[...transactions].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())}
+				data={[...transactions].sort(
+					(a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+				)}
 				showsVerticalScrollIndicator={false}
 				refreshControl={
-					<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#b42406" progressViewOffset={100} />
+					<RefreshControl
+						refreshing={refreshing}
+						onRefresh={onRefresh}
+						tintColor="#b42406"
+						progressViewOffset={100}
+					/>
 				}
 				initialNumToRender={10}
 				contentContainerStyle={{
@@ -56,15 +70,13 @@ export default function Transactions() {
 				}}
 				keyExtractor={(_, index) => String(index)}
 				ListHeaderComponent={
-					<View style={{ paddingBottom: verticalScale(8) }}>
-						<TextBold style={styles.title}>
-							Recent Activity
-						</TextBold>
+					<View style={{ paddingTop: insets.top + verticalScale(8) }}>
+						<TextBold style={styles.title}>Recent Activity</TextBold>
 						{transactions.length > 0 && (
 							<Text style={styles.subtitle}>
 								{transactions.length}{" "}
-								{transactions.length === 1 ? "visit" : "visits"}{" "}
-								· ${totalCashback.toFixed(2)} earned
+								{transactions.length === 1 ? "visit" : "visits"} · $
+								{totalCashback.toFixed(2)} earned
 							</Text>
 						)}
 					</View>
@@ -87,18 +99,13 @@ export default function Transactions() {
 						</View>
 						<View style={{ flex: 1 }}>
 							<TextBold style={styles.transactionDate}>
-								{new Date(item.date).toLocaleDateString(
-									"en-US",
-									{
-										month: "short",
-										day: "numeric",
-										year: "numeric",
-									},
-								)}
+								{new Date(item.date).toLocaleDateString("en-US", {
+									month: "short",
+									day: "numeric",
+									year: "numeric",
+								})}
 							</TextBold>
-							<Text style={styles.transactionLabel}>
-								Visit
-							</Text>
+							<Text style={styles.transactionLabel}>Visit</Text>
 						</View>
 						<TextBold style={styles.transactionAmount}>
 							+${item.cashback.toFixed(2)}
@@ -114,21 +121,16 @@ export default function Transactions() {
 								color="#CCC"
 							/>
 						</View>
-						<TextBold style={styles.emptyTitle}>
-							No visits yet
-						</TextBold>
+						<TextBold style={styles.emptyTitle}>No visits yet</TextBold>
 						<Text style={styles.emptyText}>
-							Visit the restaurant to start{"\n"}earning
-							cashback!
+							Visit the restaurant to start{"\n"}earning cashback!
 						</Text>
 						<TouchableOpacity
 							activeOpacity={0.8}
 							onPress={() => router.back()}
 							style={styles.emptyButton}
 						>
-							<TextBold style={styles.emptyButtonText}>
-								Go Back
-							</TextBold>
+							<TextBold style={styles.emptyButtonText}>Go Back</TextBold>
 						</TouchableOpacity>
 					</View>
 				}

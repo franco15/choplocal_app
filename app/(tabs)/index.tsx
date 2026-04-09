@@ -1,21 +1,23 @@
-import { Text, TextBold } from "@/components";
+import {
+	HomeRestaurantCard,
+	RedeemCodeBanner,
+	SectionHeader,
+	Text,
+	TextBold,
+} from "@/components";
 import CityDropdown, { AVAILABLE_CITIES } from "@/components/CityDropdown";
 import GiftCardBanner from "@/components/GiftCardBanner";
-import GradientBackground from "@/components/GradientBackground";
-import HomeRestaurantCard from "@/components/HomeRestaurantCard";
-import RedeemCodeBanner from "@/components/RedeemCodeBanner";
-import SectionHeader from "@/components/SectionHeader";
 import { Bell } from "@/constants/svgs";
 import { useUserContext } from "@/contexts/UserContext";
 import { queryClient, queryKeys } from "@/lib/api/queryClient";
 import { useNotificationsApi, useUserApi } from "@/lib/api/useApi";
+import { useFavorites } from "@/lib/hooks/useFavorites";
 import { horizontalScale, moderateScale, verticalScale } from "@/lib/metrics";
 import { ERestaurantStatus, IRestaurant } from "@/lib/types/restaurant";
 import { isNullOrWhitespace } from "@/lib/utils";
 import { Ionicons } from "@expo/vector-icons";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useQuery } from "@tanstack/react-query";
-import { router, useFocusEffect } from "expo-router";
+import { router } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
 	FlatList,
@@ -34,8 +36,6 @@ import Animated, {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import HomeSkeleton from "../skeletons/home";
 
-const FAVORITES_KEY = "choplocal-favorites";
-
 const COLLAPSE_DISTANCE = 100;
 
 export default function HomeScreen() {
@@ -43,7 +43,7 @@ export default function HomeScreen() {
 	const userApi = useUserApi();
 	const notificationsApi = useNotificationsApi();
 	const insets = useSafeAreaInsets();
-	const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
+	const { favoriteIds, toggleFavorite } = useFavorites();
 	const [selectedCity, setSelectedCity] = useState(AVAILABLE_CITIES[0]);
 	const [cityModalOpen, setCityModalOpen] = useState(false);
 	const scrollY = useSharedValue(0);
@@ -70,25 +70,6 @@ export default function HomeScreen() {
 	useEffect(() => {
 		if (!profileComplete) router.replace("/complete-profile");
 	}, [profileComplete]);
-
-	useFocusEffect(
-		useCallback(() => {
-			AsyncStorage.getItem(FAVORITES_KEY).then((val) => {
-				if (val) setFavoriteIds(JSON.parse(val));
-				else setFavoriteIds([]);
-			});
-		}, []),
-	);
-
-	const toggleFavorite = useCallback((id: string) => {
-		setFavoriteIds((prev) => {
-			const next = prev.includes(id)
-				? prev.filter((fid) => fid !== id)
-				: [...prev, id];
-			AsyncStorage.setItem(FAVORITES_KEY, JSON.stringify(next));
-			return next;
-		});
-	}, []);
 
 	const onRefresh = useCallback(async () => {
 		setRefreshing(true);
@@ -127,7 +108,7 @@ export default function HomeScreen() {
 
 	// Navigate to independent "See All" page
 	const goToSeeAll = useCallback((type: string) => {
-		router.push({ pathname: "/restaurant-list", params: { type } });
+		router.push({ pathname: "/restaurants/restaurant-list", params: { type } });
 	}, []);
 
 	// Animated scroll handler
@@ -195,9 +176,7 @@ export default function HomeScreen() {
 	};
 
 	return (
-		<View style={{ flex: 1 }}>
-			<GradientBackground />
-
+		<View style={{ flex: 1, backgroundColor: "#FFFFFF" }}>
 			{/* ── Sticky collapsed header ── */}
 			<Animated.View
 				style={[
