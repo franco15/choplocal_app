@@ -1,95 +1,92 @@
 {
-  "expo": {
-    "name": "choplocal",
-    "slug": "choplocal",
-    "version": "1.1.0",
-    "runtimeVersion": "sdkVersion",
-    "orientation": "portrait",
-    "icon": "assets/images/logo.png",
-    "scheme": "choplocal",
-    "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
-    "ios": {
-      "supportsTablet": true,
-      "runtimeVersion": {
-        "policy": "appVersion"
-      },
-      "bundleIdentifier": "com.choplocal.choplocal",
-      "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
-      },
-      "googleServicesFile": "./assets/GoogleService-Info.plist"
-    },
-    "android": {
-      "softwareKeyboardLayoutMode": "resize",
-      "adaptiveIcon": {
-        "foregroundImage": "assets/images/logo.png",
-        "backgroundColor": "#ffffff"
-      },
-      "edgeToEdgeEnabled": true,
-      "package": "com.choplocal",
-      "usesClearTextTraffic": true,
-      "useNextNotificationsApi": true,
-      "googleServicesFile": "./assets/google-services.json"
-    },
-    "web": {
-      "bundler": "metro",
-      "output": "static",
-      "favicon": "assets/images/logo.png"
-    },
-    "plugins": [
-      "expo-router",
-      [
-        "expo-splash-screen",
-        {
-          "image": "assets/images/logo.png",
-          "imageWidth": 200,
-          "resizeMode": "contain",
-          "backgroundColor": "#ffffff"
-        }
-      ],
-      "expo-font",
-      "expo-secure-store",
-      "expo-web-browser",
-      [
-        "@sentry/react-native/expo",
-        {
-          "url": "https://sentry.io/",
-          "project": "choplocal",
-          "organization": "xipe"
-        }
-      ],
-      [
-        "expo-notifications",
-        {
-          "icon": "assets/images/logo.png",
-          "color": "#ffffff",
-          "defaultChannel": "default",
-          "enableBackgroundRemoteNotifications": true
-        }
-      ],
-      "expo-build-properties"
-    ],
-    "experiments": {
-      "typedRoutes": true
-    },
-    "packagerOpts": {
-      "sourceExts": [
-        "js",
-        "jsx",
-        "svgx"
-      ],
-      "transformer": "node_modules/react-native-svg-transformer/index.js"
-    },
-    "extra": {
-      "router": {},
-      "eas": {
-        "projectId": "5163469b-a7c7-4433-9e65-0f5d86283be2"
-      }
-    },
-    "owner": "xipe",
-    "updates": {
-      "url": "https://u.expo.dev/5163469b-a7c7-4433-9e65-0f5d86283be2"
-    }
-  }
+	"expo": {
+		"name": "choplocal",
+		"slug": "choplocal",
+		"version": "1.1.0",
+		"runtimeVersion": "sdkVersion",
+		"orientation": "portrait",
+		"icon": "assets/images/logo.png",
+		"scheme": "choplocal",
+		"userInterfaceStyle": "automatic",
+		"newArchEnabled": true,
+		"ios": {
+			"supportsTablet": true,
+			"runtimeVersion": {
+				"policy": "appVersion"
+			},
+			"bundleIdentifier": "com.choplocal.choplocal",
+			"infoPlist": {
+				"ITSAppUsesNonExemptEncryption": false
+			},
+			"googleServicesFile": "./assets/GoogleService-Info.plist"
+		},
+		"android": {
+			"softwareKeyboardLayoutMode": "resize",
+			"adaptiveIcon": {
+				"foregroundImage": "assets/images/logo.png",
+				"backgroundColor": "#ffffff"
+			},
+			"edgeToEdgeEnabled": true,
+			"package": "com.choplocal",
+			"usesClearTextTraffic": true,
+			"useNextNotificationsApi": true,
+			"googleServicesFile": "./assets/google-services.json"
+		},
+		"web": {
+			"bundler": "metro",
+			"output": "static",
+			"favicon": "assets/images/logo.png"
+		},
+		"plugins": [
+			"expo-router",
+			[
+				"expo-splash-screen",
+				{
+					"image": "assets/images/logo.png",
+					"imageWidth": 200,
+					"resizeMode": "contain",
+					"backgroundColor": "#ffffff"
+				}
+			],
+			"expo-font",
+			"expo-secure-store",
+			"expo-web-browser",
+			[
+				"@sentry/react-native/expo",
+				{
+					"url": "https://sentry.io/",
+					"project": "choplocal",
+					"organization": "xipe"
+				}
+			],
+			[
+				"expo-notifications",
+				{
+					"icon": "assets/images/logo.png",
+					"color": "#ffffff",
+					"defaultChannel": "default",
+					"enableBackgroundRemoteNotifications": true
+				}
+			],
+			"expo-build-properties",
+			["./plugins/withAndroidTheme"]
+		],
+		"experiments": {
+			"typedRoutes": true
+		},
+		"packagerOpts": {
+			"sourceExts": ["js", "jsx", "svgx"],
+			"transformer": "node_modules/react-native-svg-transformer/index.js"
+		},
+		"extra": {
+			"router": {},
+			"eas": {
+				"projectId": "5163469b-a7c7-4433-9e65-0f5d86283be2"
+			}
+		},
+		"owner": "xipe",
+		"updates": {
+			"url": "https://u.expo.dev/5163469b-a7c7-4433-9e65-0f5d86283be2"
+		}
+	}
 }
