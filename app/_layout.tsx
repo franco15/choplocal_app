@@ -1,6 +1,7 @@
 import { HeaderBackButton } from "@/components";
 import { AuthProvider, useAuthContext } from "@/contexts/AuthContext";
 import { GiftCardProvider } from "@/contexts/GiftCardContext";
+import { NotificationsProvider } from "@/contexts/NotificationsContext";
 import { RedeemCodeProvider } from "@/contexts/RedeemCodeContext";
 import { SuggestionProvider } from "@/contexts/SuggestionsContext";
 import { UserProvider } from "@/contexts/UserContext";
@@ -76,72 +77,74 @@ const RootComponent = () => {
 
 	return (
 		<UserProvider>
-			<StripeWrapper>
-				<GiftCardProvider>
-					<RedeemCodeProvider>
-						<SuggestionProvider>
-							<Stack screenOptions={{ headerShown: false }}>
-								<Stack.Screen name="(tabs)" />
-								<Stack.Screen
-									name="restaurants"
-									options={{
-										headerShown: false,
-									}}
-								/>
-								<Stack.Screen
-									name="qr"
-									options={{
-										headerShown: false,
-									}}
-								/>
-								<Stack.Screen
-									name="suggestions"
-									options={{
-										headerShown: false,
-									}}
-								/>
-								<Stack.Screen
-									name="gift-cards"
-									options={{
-										headerShown: false,
-									}}
-								/>
-								<Stack.Screen
-									name="redeem-code"
-									options={{
-										headerShown: false,
-									}}
-								/>
-								<Stack.Screen
-									name="welcome-recommendation"
-									options={{
-										headerShown: false,
-										gestureEnabled: false,
-									}}
-								/>
-								<Stack.Screen
-									name="settings"
-									options={{
-										headerShown: false,
-									}}
-								/>
-								<Stack.Screen
-									name="notifications"
-									options={{
-										headerShown: true,
-										headerShadowVisible: false,
-										headerTitle: "",
-										headerStyle: {
-											backgroundColor: "#FFFFFF",
-										},
-										headerLeft: () => <HeaderBackButton />,
-									}}
-								/>
-							</Stack>
-						</SuggestionProvider>
-					</RedeemCodeProvider>
-				</GiftCardProvider>
-			</StripeWrapper>
+			<NotificationsProvider>
+				<StripeWrapper>
+					<GiftCardProvider>
+						<RedeemCodeProvider>
+							<SuggestionProvider>
+								<Stack screenOptions={{ headerShown: false }}>
+									<Stack.Screen name="(tabs)" />
+									<Stack.Screen
+										name="restaurants"
+										options={{
+											headerShown: false,
+										}}
+									/>
+									<Stack.Screen
+										name="qr"
+										options={{
+											headerShown: false,
+										}}
+									/>
+									<Stack.Screen
+										name="suggestions"
+										options={{
+											headerShown: false,
+										}}
+									/>
+									<Stack.Screen
+										name="gift-cards"
+										options={{
+											headerShown: false,
+										}}
+									/>
+									<Stack.Screen
+										name="redeem-code"
+										options={{
+											headerShown: false,
+										}}
+									/>
+									<Stack.Screen
+										name="welcome-recommendation"
+										options={{
+											headerShown: false,
+											gestureEnabled: false,
+										}}
+									/>
+									<Stack.Screen
+										name="settings"
+										options={{
+											headerShown: false,
+										}}
+									/>
+									<Stack.Screen
+										name="notifications"
+										options={{
+											headerShown: true,
+											headerShadowVisible: false,
+											headerTitle: "",
+											headerStyle: {
+												backgroundColor: "#FFFFFF",
+											},
+											headerLeft: () => <HeaderBackButton />,
+										}}
+									/>
+								</Stack>
+							</SuggestionProvider>
+						</RedeemCodeProvider>
+					</GiftCardProvider>
+				</StripeWrapper>
+			</NotificationsProvider>
 		</UserProvider>
 	);
 };

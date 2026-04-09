@@ -101,6 +101,11 @@ export const useNotificationsApi = () => {
 			await api.get(`api/app/notifications/user/${userId}`),
 		markAsRead: async (notificationId: string): Promise<void> =>
 			api.put(`api/app/notifications/${notificationId}/read`, {}),
+		registerPushToken: async (params: {
+			token: string;
+			userId: string;
+			platform: string;
+		}): Promise<void> => api.post("api/app/notifications/register", params),
 	};
 };
 

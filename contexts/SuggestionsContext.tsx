@@ -42,7 +42,7 @@ const useSuggestionContext = () => {
 	const context = useContext(SuggestionContext);
 
 	if (!context) {
-		throw new Error("auth context not defined");
+		throw new Error("suggestions context not defined");
 	}
 	return context;
 };
