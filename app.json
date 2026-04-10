@@ -19,7 +19,10 @@
 				"ITSAppUsesNonExemptEncryption": false,
 				"NSCameraUsageDescription": "This app may use the camera to enable features such as capturing photos or scanning content when available."
 			},
-			"googleServicesFile": "./assets/GoogleService-Info.plist"
+			"googleServicesFile": "./assets/GoogleService-Info.plist",
+			"entitlements": {
+				"aps-environment": "production"
+			}
 		},
 		"android": {
 			"softwareKeyboardLayoutMode": "resize",
