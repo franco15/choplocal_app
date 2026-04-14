@@ -22,6 +22,19 @@ import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useState } from "react";
 import "./global.css";
+import * as Notifications from "expo-notifications";
+
+Notifications.setNotificationHandler({
+	handleNotification: async () => {
+		console.log("Manejando notificación entrante...");
+		return {
+			shouldPlaySound: true,
+			shouldSetBadge: true,
+			shouldShowBanner: true,
+			shouldShowList: true,
+		}
+	},
+});
 
 Sentry.init({
 	dsn: "https://001dca4ce436bb2e1842ea56bee3ffd6@o275485.ingest.us.sentry.io/4510959168651264",

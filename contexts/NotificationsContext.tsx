@@ -3,15 +3,6 @@ import * as Notifications from "expo-notifications";
 import { createContext, useContext, useEffect, useMemo } from "react";
 import { useUserContext } from "./UserContext";
 
-Notifications.setNotificationHandler({
-	handleNotification: async () => ({
-		shouldPlaySound: true,
-		shouldSetBadge: false,
-		shouldShowBanner: true,
-		shouldShowList: true,
-	}),
-});
-
 interface INotificationsContext {}
 
 const NotificationsContext = createContext<INotificationsContext>(

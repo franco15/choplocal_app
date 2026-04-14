@@ -21,7 +21,7 @@
 			},
 			"googleServicesFile": "./assets/GoogleService-Info.plist",
 			"entitlements": {
-				"aps-environment": "production"
+				"aps-environment": "development"
 			}
 		},
 		"android": {
@@ -73,7 +73,10 @@
 				}
 			],
 			"expo-build-properties",
-			["./plugins/withAndroidTheme"]
+			"./plugins/withAndroidTheme",
+			"./fix-firebase-podspec",
+		    "@react-native-firebase/app",
+      		"@react-native-firebase/messaging"
 		],
 		"experiments": {
 			"typedRoutes": true

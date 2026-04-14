@@ -5,6 +5,7 @@ import { Platform } from "react-native";
 import { useRegisterPushToken } from "../api/queries/notificationQueries";
 import { registerForPushNotificationsAsync } from "../notifications";
 import { NotificationAppRoutes } from "../types/notification";
+import messaging, { getMessaging, onMessage, onTokenRefresh } from '@react-native-firebase/messaging';
 
 export function useNotifications() {
 	const notificationListener = useRef<Notifications.EventSubscription | null>(
@@ -59,6 +60,33 @@ export function useNotifications() {
 			notificationListener.current?.remove();
 			responseListener.current?.remove();
 		};
+	}, []);
+
+	useEffect(() => {
+		const unsubscribe = onTokenRefresh(getMessaging(), async (newToken: string) => {
+    		console.log('FCM Token refreshed:', newToken);
+			// if (newToken) await sendToken.mutateAsync({ newToken, userId, platform });
+
+  		});
+
+		const msg = getMessaging();
+		const unsubMessage = onMessage(msg, async (remoteMessage) => {
+			await Notifications.scheduleNotificationAsync({
+				content: {
+					title: remoteMessage.notification?.title || "Notificación",
+					body: remoteMessage.notification?.body || "",
+					data: remoteMessage.data,
+				},
+				trigger: {
+					type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
+					seconds: 1,
+					repeats: false,
+				},
+			});
+			console.log("Mensaje recibido en foreground:", remoteMessage);
+		});
+
+	  return () => {unsubscribe(); unsubMessage();};
 	}, []);
 
 	return { register };

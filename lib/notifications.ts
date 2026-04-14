@@ -1,11 +1,21 @@
 import * as Notifications from "expo-notifications";
 import { Platform } from "react-native";
+import { getMessaging, getToken, getAPNSToken, Messaging } from '@react-native-firebase/messaging';
+
+async function waitForAPNSToken(msg: Messaging, maxRetries = 10) {
+  for (let i = 0; i < maxRetries; i++) {
+    const apnsToken = await getAPNSToken(msg);
+    if (apnsToken) return apnsToken;
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+  }
+  return null;
+}
 
 export async function registerForPushNotificationsAsync() {
 	// if (!Device.isDevice) {
 	// 	throw new Error("Debes usar un dispositivo físico");
 	// }
-
+	const messaging = getMessaging();
 	const { status: existingStatus } = await Notifications.getPermissionsAsync();
 
 	let finalStatus = existingStatus;
@@ -20,28 +30,19 @@ export async function registerForPushNotificationsAsync() {
 		return;
 	}
 
-	// get token
-	// const projectId =
-	// 	Constants.expoConfig?.extra?.eas?.projectId ??
-	// 	Constants.easConfig?.projectId;
+	const apnsToken = await waitForAPNSToken(messaging);
 
-	// const expoPushToken = (
-	// 	await Notifications.getExpoPushTokenAsync({
-	// 		projectId,
-	// 	})
-	// ).data;
-
-	const token = (await Notifications.getDevicePushTokenAsync()).data;
+	// const token = (await Notifications.getDevicePushTokenAsync()).data;
+	const token = await getToken(messaging);
+	console.log("FCM Token:", token);
+	
 
 	// config Android
-	if (Platform.OS === "android") {
 		await Notifications.setNotificationChannelAsync("default", {
 			name: "default",
 			importance: Notifications.AndroidImportance.MAX,
 			vibrationPattern: [0, 250, 250, 250],
 			lightColor: "#FF231F7C",
 		});
-	}
-	console.log(token);
 	return token;
 }
