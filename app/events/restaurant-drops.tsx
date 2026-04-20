@@ -1,11 +1,11 @@
 import { CustomText as Text, CustomTextBold as TextBold } from "@/components/Texts";
 import EventListRow from "@/components/events/EventListRow";
+import { useAuthContext } from "@/contexts/AuthContext";
+import { useDropsByRestaurant } from "@/lib/api/queries/dropQueries";
 import { horizontalScale, moderateScale, verticalScale } from "@/lib/metrics";
-import { getEventsByRestaurant } from "@/lib/services/eventsService";
-import { IEvent } from "@/lib/types/event";
 import { Ionicons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useMemo } from "react";
 import {
 	ActivityIndicator,
 	FlatList,
@@ -21,24 +21,22 @@ export default function RestaurantDropsScreen() {
 		restaurantName: string;
 	}>();
 	const insets = useSafeAreaInsets();
-	const [events, setEvents] = useState<IEvent[]>([]);
-	const [loading, setLoading] = useState(true);
+	const { userAuth } = useAuthContext();
+	const userId = userAuth?.id;
 
-	useEffect(() => {
-		const load = async () => {
-			setLoading(true);
-			try {
-				const data = await getEventsByRestaurant(
-					restaurantId || "",
-					restaurantName || "",
-				);
-				setEvents(data);
-			} finally {
-				setLoading(false);
-			}
-		};
-		load();
-	}, [restaurantId, restaurantName]);
+	const { data, isLoading } = useDropsByRestaurant(restaurantId, userId);
+
+	const events = useMemo(
+		() =>
+			(data ?? [])
+				.filter((e) => e.status === "published")
+				.sort(
+					(a, b) =>
+						new Date(a.startDate).getTime() -
+						new Date(b.startDate).getTime(),
+				),
+		[data],
+	);
 
 	const goBack = useCallback(() => {
 		router.back();
@@ -71,7 +69,7 @@ export default function RestaurantDropsScreen() {
 			</View>
 
 			{/* Event list */}
-			{loading ? (
+			{isLoading ? (
 				<View style={styles.centered}>
 					<ActivityIndicator size="large" color="#1A1A1A" />
 				</View>

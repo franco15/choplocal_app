@@ -1,13 +1,13 @@
 import { CustomText as Text, CustomTextBold as TextBold } from "@/components/Texts";
 import EventListRow from "@/components/events/EventListRow";
+import { useAuthContext } from "@/contexts/AuthContext";
+import { useDropsList } from "@/lib/api/queries/dropQueries";
+import { ALL_CATEGORIES } from "@/lib/constants/dropCategories";
 import { horizontalScale, moderateScale, verticalScale } from "@/lib/metrics";
-import { ALL_CATEGORIES } from "@/lib/mock/eventsMock";
-import { getEvents, getEventsByTag } from "@/lib/services/eventsService";
-import { IEvent } from "@/lib/types/event";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { router, useLocalSearchParams } from "expo-router";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useMemo } from "react";
 import {
 	ActivityIndicator,
 	FlatList,
@@ -21,28 +21,28 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 export default function CategoryScreen() {
 	const { tag } = useLocalSearchParams<{ tag: string }>();
 	const insets = useSafeAreaInsets();
-	const [events, setEvents] = useState<IEvent[]>([]);
-	const [loading, setLoading] = useState(true);
+	const { userAuth } = useAuthContext();
+	const userId = userAuth?.id;
+
+	const { data, isLoading } = useDropsList(userId);
 
 	const category = ALL_CATEGORIES.find((c) => c.name === tag);
 	const accentColor = category?.color || "#1A1A1A";
 	const categoryImage = category?.image;
 
-	useEffect(() => {
-		const load = async () => {
-			setLoading(true);
-			try {
-				const data =
-					tag === "trending"
-						? await getEvents()
-						: await getEventsByTag(tag || "");
-				setEvents(data);
-			} finally {
-				setLoading(false);
-			}
-		};
-		load();
-	}, [tag]);
+	const events = useMemo(() => {
+		const published = (data ?? [])
+			.filter((e) => e.status === "published")
+			.sort(
+				(a, b) =>
+					new Date(a.startDate).getTime() -
+					new Date(b.startDate).getTime(),
+			);
+		if (tag === "trending") {
+			return [...published].sort((a, b) => b.rsvpCount - a.rsvpCount);
+		}
+		return published.filter((e) => e.tags.includes(tag || ""));
+	}, [data, tag]);
 
 	const goBack = useCallback(() => {
 		router.back();
@@ -99,7 +99,7 @@ export default function CategoryScreen() {
 			</View>
 
 			{/* Event list */}
-			{loading ? (
+			{isLoading ? (
 				<View style={styles.centered}>
 					<ActivityIndicator size="large" color="#1A1A1A" />
 				</View>

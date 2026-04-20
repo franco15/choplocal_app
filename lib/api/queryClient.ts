@@ -29,4 +29,12 @@ export const queryKeys = {
 	suggestions: {
 		create: ["new suggestion"] as const,
 	},
+	drops: {
+		all: ["drops"] as const,
+		list: (userId?: string) => ["drops", "list", userId ?? null] as const,
+		byId: (id: string, userId?: string) =>
+			["drop", id, userId ?? null] as const,
+		byRestaurant: (restaurantId: string, userId?: string) =>
+			["drops", "restaurant", restaurantId, userId ?? null] as const,
+	},
 };

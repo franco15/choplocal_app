@@ -1,5 +1,4 @@
 import { useNotifications } from "@/lib/hooks/useNotifications";
-import * as Notifications from "expo-notifications";
 import { createContext, useContext, useEffect, useMemo } from "react";
 import { useUserContext } from "./UserContext";
 
@@ -14,9 +13,7 @@ const NotificationsProvider = ({ children }: { children: React.ReactNode }) => {
 	const { register } = useNotifications();
 
 	useEffect(() => {
-		console.log("useeffect nots");
 		const initNots = async () => {
-			console.log("registre notd");
 			await register(user.id);
 		};
 		if (user?.id) initNots();

@@ -34,7 +34,12 @@
 			"package": "com.choplocal",
 			"usesClearTextTraffic": true,
 			"useNextNotificationsApi": true,
-			"googleServicesFile": "./assets/google-services.json"
+			"googleServicesFile": "./assets/google-services.json",
+			"config": {
+				"googleFirebaseMessaging": {
+					"defaultNotificationChannelId": "default"
+				}
+			}
 		},
 		"web": {
 			"bundler": "metro",
@@ -74,9 +79,10 @@
 			],
 			"expo-build-properties",
 			"./plugins/withAndroidTheme",
-			"./fix-firebase-podspec",
-		    "@react-native-firebase/app",
-      		"@react-native-firebase/messaging"
+			"./plugins/fix-firebase-podspec",
+			"./plugins/withFirebaseMessaging",
+			"@react-native-firebase/app",
+			"@react-native-firebase/messaging"
 		],
 		"experiments": {
 			"typedRoutes": true

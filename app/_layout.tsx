@@ -17,22 +17,22 @@ import {
 import * as Sentry from "@sentry/react-native";
 import { StripeProvider } from "@stripe/stripe-react-native";
 import { QueryClientProvider } from "@tanstack/react-query";
+import * as Notifications from "expo-notifications";
 import { Stack, useRouter } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useState } from "react";
 import "./global.css";
-import * as Notifications from "expo-notifications";
 
 Notifications.setNotificationHandler({
 	handleNotification: async () => {
-		console.log("Manejando notificación entrante...");
+		// console.log("Manejando notificación entrante...");
 		return {
 			shouldPlaySound: true,
 			shouldSetBadge: true,
 			shouldShowBanner: true,
 			shouldShowList: true,
-		}
+		};
 	},
 });
 

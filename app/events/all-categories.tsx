@@ -1,14 +1,12 @@
 import { CustomText as Text, CustomTextBold as TextBold } from "@/components/Texts";
+import { useAuthContext } from "@/contexts/AuthContext";
+import { useDropsList } from "@/lib/api/queries/dropQueries";
+import { ALL_CATEGORIES } from "@/lib/constants/dropCategories";
 import { horizontalScale, moderateScale, verticalScale } from "@/lib/metrics";
-import {
-	getAllCategories,
-	getEventCountByTag,
-} from "@/lib/services/eventsService";
-import { ICategory } from "@/lib/types/event";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useMemo } from "react";
 import {
 	ActivityIndicator,
 	Image,
@@ -22,26 +20,21 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function AllCategoriesScreen() {
 	const insets = useSafeAreaInsets();
-	const [categories, setCategories] = useState<ICategory[]>([]);
-	const [counts, setCounts] = useState<Record<string, number>>({});
-	const [loading, setLoading] = useState(true);
+	const { userAuth } = useAuthContext();
+	const userId = userAuth?.id;
 
-	useEffect(() => {
-		const load = async () => {
-			setLoading(true);
-			try {
-				const [cats, cts] = await Promise.all([
-					getAllCategories(),
-					getEventCountByTag(),
-				]);
-				setCategories(cats);
-				setCounts(cts);
-			} finally {
-				setLoading(false);
-			}
-		};
-		load();
-	}, []);
+	const { data, isLoading } = useDropsList(userId);
+
+	const counts = useMemo(() => {
+		const result: Record<string, number> = {};
+		const published = (data ?? []).filter((e) => e.status === "published");
+		for (const cat of ALL_CATEGORIES) {
+			result[cat.name] = published.filter((e) =>
+				e.tags.includes(cat.name),
+			).length;
+		}
+		return result;
+	}, [data]);
 
 	const navigateToCategory = useCallback((tag: string) => {
 		router.push({
@@ -50,7 +43,7 @@ export default function AllCategoriesScreen() {
 		});
 	}, []);
 
-	if (loading) {
+	if (isLoading) {
 		return (
 			<View style={[styles.centered, { paddingTop: insets.top }]}>
 				<ActivityIndicator size="large" color="#1A1A1A" />
@@ -81,7 +74,7 @@ export default function AllCategoriesScreen() {
 				showsVerticalScrollIndicator={false}
 				contentContainerStyle={styles.list}
 			>
-				{categories.map((cat) => (
+				{ALL_CATEGORIES.map((cat) => (
 					<Pressable
 						key={cat.name}
 						onPress={() => navigateToCategory(cat.name)}

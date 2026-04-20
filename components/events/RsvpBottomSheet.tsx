@@ -6,6 +6,7 @@ import {
 	ActivityIndicator,
 	Image,
 	StyleSheet,
+	TextInput,
 	TouchableOpacity,
 	View,
 } from "react-native";
@@ -16,7 +17,7 @@ type Props = {
 	event: IEvent | null;
 	isVisible: boolean;
 	onClose: () => void;
-	onConfirm: (eventId: string) => Promise<void>;
+	onConfirm: (eventId: string, password?: string) => Promise<void>;
 };
 
 const formatFullDate = (dateStr: string): string => {
@@ -63,27 +64,48 @@ export default function RsvpBottomSheet({
 	onConfirm,
 }: Props) {
 	const [loading, setLoading] = useState(false);
+	const [password, setPassword] = useState("");
+	const [error, setError] = useState<string | null>(null);
 
 	const handleConfirm = useCallback(async () => {
 		if (!event) return;
 		setLoading(true);
+		setError(null);
 		try {
-			await onConfirm(event.id);
+			await onConfirm(
+				event.id,
+				event.passwordProtected ? password : undefined,
+			);
+			setPassword("");
+		} catch (e) {
+			setError(
+				event.passwordProtected
+					? "Contraseña incorrecta o error al confirmar"
+					: "No se pudo confirmar la reserva",
+			);
 		} finally {
 			setLoading(false);
 		}
-	}, [event, onConfirm]);
+	}, [event, onConfirm, password]);
+
+	const handleClose = useCallback(() => {
+		setPassword("");
+		setError(null);
+		onClose();
+	}, [onClose]);
 
 	if (!event) return null;
 
 	const spotsLeft =
 		event.capacity !== null ? event.capacity - event.rsvpCount : null;
+	const confirmDisabled =
+		loading || (event.passwordProtected && password.trim().length === 0);
 
 	return (
 		<Modal
 			isVisible={isVisible}
-			onBackdropPress={onClose}
-			onSwipeComplete={onClose}
+			onBackdropPress={handleClose}
+			onSwipeComplete={handleClose}
 			swipeDirection="down"
 			backdropOpacity={0.4}
 			style={styles.modal}
@@ -170,6 +192,30 @@ export default function RsvpBottomSheet({
 							</Text>
 						</View>
 					)}
+
+					{/* Password input */}
+					{event.passwordProtected && (
+						<View style={styles.passwordSection}>
+							<Text style={styles.passwordLabel}>
+								Este drop requiere contraseña
+							</Text>
+							<TextInput
+								value={password}
+								onChangeText={(t) => {
+									setPassword(t);
+									if (error) setError(null);
+								}}
+								placeholder="Ingresa la contraseña"
+								placeholderTextColor="#BBB"
+								style={styles.passwordInput}
+								secureTextEntry
+								autoCapitalize="none"
+								autoCorrect={false}
+							/>
+						</View>
+					)}
+
+					{error && <Text style={styles.errorText}>{error}</Text>}
 				</View>
 
 				{/* Actions */}
@@ -177,10 +223,13 @@ export default function RsvpBottomSheet({
 					<TouchableOpacity
 						activeOpacity={0.8}
 						onPress={handleConfirm}
-						disabled={loading}
+						disabled={confirmDisabled}
 						style={[
 							styles.confirmBtn,
-							{ backgroundColor: event.accentColor },
+							{
+								backgroundColor: event.accentColor,
+								opacity: confirmDisabled ? 0.5 : 1,
+							},
 						]}
 					>
 						{loading ? (
@@ -194,7 +243,7 @@ export default function RsvpBottomSheet({
 
 					<TouchableOpacity
 						activeOpacity={0.7}
-						onPress={onClose}
+						onPress={handleClose}
 						style={styles.cancelLink}
 					>
 						<Text style={styles.cancelText}>Cancelar</Text>
@@ -266,6 +315,30 @@ const styles = StyleSheet.create({
 		alignItems: "center",
 		gap: horizontalScale(8),
 		marginTop: verticalScale(4),
+	},
+	passwordSection: {
+		marginTop: verticalScale(16),
+		gap: verticalScale(6),
+	},
+	passwordLabel: {
+		fontSize: moderateScale(13),
+		color: "#666",
+	},
+	passwordInput: {
+		height: verticalScale(44),
+		paddingHorizontal: horizontalScale(12),
+		borderRadius: moderateScale(10),
+		borderWidth: 1,
+		borderColor: "#E0E0E0",
+		backgroundColor: "#FAFAFA",
+		fontSize: moderateScale(15),
+		color: "#1A1A1A",
+		fontFamily: "Inter_400Regular",
+	},
+	errorText: {
+		fontSize: moderateScale(13),
+		color: "#EF4444",
+		marginTop: verticalScale(8),
 	},
 	actions: {
 		paddingHorizontal: horizontalScale(20),

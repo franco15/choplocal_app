@@ -1,19 +1,15 @@
 import { CustomText as Text, CustomTextBold as TextBold } from "@/components/Texts";
 import EventCardLarge from "@/components/events/EventCardLarge";
 import EventListRow from "@/components/events/EventListRow";
+import { useAuthContext } from "@/contexts/AuthContext";
+import { useDropsList } from "@/lib/api/queries/dropQueries";
+import { ALL_CATEGORIES } from "@/lib/constants/dropCategories";
 import { horizontalScale, moderateScale, verticalScale } from "@/lib/metrics";
-import {
-	getAllCategories,
-	getEvents,
-	getEventCountByTag,
-	getRestaurantsWithEvents,
-	getTrendingEvents,
-} from "@/lib/services/eventsService";
-import { ICategory, IEvent, IEventRestaurant } from "@/lib/types/event";
+import { IEventRestaurant } from "@/lib/types/event";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
 	ActivityIndicator,
 	FlatList,
@@ -29,50 +25,67 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function DropsScreen() {
 	const insets = useSafeAreaInsets();
-	const [events, setEvents] = useState<IEvent[]>([]);
-	const [trending, setTrending] = useState<IEvent[]>([]);
-	const [categories, setCategories] = useState<ICategory[]>([]);
-	const [eventCounts, setEventCounts] = useState<Record<string, number>>({});
-	const [spotsWithDrops, setSpotsWithDrops] = useState<
-		(IEventRestaurant & { eventCount: number })[]
-	>([]);
-	const [loading, setLoading] = useState(true);
+	const { userAuth } = useAuthContext();
+	const userId = userAuth?.id;
+
+	const { data, isLoading } = useDropsList(userId);
 	const [searchQuery, setSearchQuery] = useState("");
 	const [searchActive, setSearchActive] = useState(false);
 
-	const loadData = useCallback(async () => {
-		setLoading(true);
-		try {
-			const [evts, trendingData, cats, counts, spots] = await Promise.all([
-				getEvents(),
-				getTrendingEvents(5),
-				getAllCategories(),
-				getEventCountByTag(),
-				getRestaurantsWithEvents(),
-			]);
-			setEvents(evts);
-			setTrending(trendingData);
-			setCategories(cats);
-			setEventCounts(counts);
-			setSpotsWithDrops(spots);
-		} finally {
-			setLoading(false);
-		}
-	}, []);
+	const events = useMemo(
+		() =>
+			(data ?? [])
+				.filter((e) => e.status === "published")
+				.sort(
+					(a, b) =>
+						new Date(a.startDate).getTime() -
+						new Date(b.startDate).getTime(),
+				),
+		[data],
+	);
 
-	useEffect(() => {
-		loadData();
-	}, [loadData]);
+	const trending = useMemo(
+		() => [...events].sort((a, b) => b.rsvpCount - a.rsvpCount).slice(0, 5),
+		[events],
+	);
+
+	const eventCounts = useMemo(() => {
+		const counts: Record<string, number> = {};
+		for (const cat of ALL_CATEGORIES) {
+			counts[cat.name] = events.filter((e) =>
+				e.tags.includes(cat.name),
+			).length;
+		}
+		return counts;
+	}, [events]);
+
+	const spotsWithDrops = useMemo(() => {
+		const map = new Map<
+			string,
+			{ restaurant: IEventRestaurant; count: number }
+		>();
+		for (const e of events) {
+			const existing = map.get(e.restaurant.id);
+			if (existing) {
+				existing.count += 1;
+			} else {
+				map.set(e.restaurant.id, { restaurant: e.restaurant, count: 1 });
+			}
+		}
+		return Array.from(map.values())
+			.sort((a, b) => b.count - a.count)
+			.map((r) => ({ ...r.restaurant, eventCount: r.count }));
+	}, [events]);
 
 	// Show first 6 categories
-	const visibleCategories = categories.slice(0, 6);
+	const visibleCategories = ALL_CATEGORIES.slice(0, 6);
 
 	// Categories that actually have events — split into first 2 and rest
 	const categoriesWithEvents = useMemo(() => {
-		return categories.filter((cat) =>
+		return ALL_CATEGORIES.filter((cat) =>
 			events.some((e) => e.tags.includes(cat.name)),
 		);
-	}, [categories, events]);
+	}, [events]);
 
 	const firstCategoryCarousels = categoriesWithEvents.slice(0, 2);
 	const remainingCategoryCarousels = categoriesWithEvents.slice(2);
@@ -95,7 +108,7 @@ export default function DropsScreen() {
 		});
 	}, []);
 
-	if (loading) {
+	if (isLoading) {
 		return (
 			<View style={[styles.centered, { paddingTop: insets.top }]}>
 				<ActivityIndicator size="large" color="#1A1A1A" />

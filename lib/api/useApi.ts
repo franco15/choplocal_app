@@ -1,4 +1,9 @@
 import {
+	AppCreateRsvpDto,
+	DropOutput,
+	DropRsvpOutput,
+} from "../types/drop";
+import {
 	IGiftCard,
 	IGiftCardCreate,
 	IGiftCardDetail,
@@ -130,5 +135,34 @@ export const useSuggestionsApi = () => {
 	return {
 		create: async (params: ISuggestion): Promise<void> =>
 			api.post(`api/app/business-recommendations`, params),
+	};
+};
+
+export const useDropsApi = () => {
+	const api = useAxios();
+	const withUser = (path: string, userId?: string) =>
+		userId ? `${path}?userId=${userId}` : path;
+	return {
+		list: async (userId?: string): Promise<DropOutput[]> =>
+			api.get(withUser("api/app/drops", userId)),
+		byRestaurant: async (
+			restaurantId: string,
+			userId?: string,
+		): Promise<DropOutput[]> =>
+			api.get(
+				withUser(`api/app/drops/restaurant/${restaurantId}`, userId),
+			),
+		byId: async (id: string, userId?: string): Promise<DropOutput> =>
+			api.get(withUser(`api/app/drops/${id}`, userId)),
+		rsvp: async (
+			id: string,
+			body: AppCreateRsvpDto,
+		): Promise<DropRsvpOutput> =>
+			api.post(`api/app/drops/${id}/rsvp`, body),
+		cancelRsvp: async (
+			id: string,
+			rsvpId: string,
+		): Promise<{ message: string }> =>
+			api.delete(`api/app/drops/${id}/rsvp/${rsvpId}`),
 	};
 };

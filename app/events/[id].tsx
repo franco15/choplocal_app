@@ -1,16 +1,16 @@
 import { CustomText as Text, CustomTextBold as TextBold } from "@/components/Texts";
 import RsvpBottomSheet from "@/components/events/RsvpBottomSheet";
-import { horizontalScale, moderateScale, verticalScale } from "@/lib/metrics";
+import { useAuthContext } from "@/contexts/AuthContext";
 import {
-	cancelRsvp,
-	getEventById,
-	rsvpToEvent,
-} from "@/lib/services/eventsService";
-import { IEvent } from "@/lib/types/event";
+	useCancelRsvpMutation,
+	useDropById,
+	useRsvpMutation,
+} from "@/lib/api/queries/dropQueries";
+import { verticalScale } from "@/lib/metrics";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { router, useLocalSearchParams } from "expo-router";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
 	ActivityIndicator,
 	Image,
@@ -20,8 +20,10 @@ import {
 	Share,
 	StyleSheet,
 	TouchableOpacity,
+	useWindowDimensions,
 	View,
 } from "react-native";
+import RenderHtml from "react-native-render-html";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const formatFullDate = (startStr: string, endStr: string): string => {
@@ -52,51 +54,69 @@ const formatPrice = (price: number | null): string => {
 	return `$${price.toFixed(2)}`;
 };
 
+const stripHtml = (html: string): string =>
+	html
+		.replace(/<[^>]*>/g, "")
+		.replace(/&nbsp;/g, " ")
+		.replace(/&amp;/g, "&")
+		.replace(/&lt;/g, "<")
+		.replace(/&gt;/g, ">")
+		.replace(/&quot;/g, '"')
+		.replace(/&#39;/g, "'")
+		.replace(/\s+/g, " ")
+		.trim();
+
+const HTML_TAG_STYLES = {
+	p: { marginTop: 0, marginBottom: 12 },
+	a: { color: "#1A1A1A", textDecorationLine: "underline" as const },
+};
+
+const HTML_BASE_STYLE = {
+	fontSize: 15,
+	color: "#555",
+	lineHeight: 23,
+	fontFamily: "Inter_400Regular",
+};
+
 export default function EventDetailScreen() {
 	const { id } = useLocalSearchParams<{ id: string }>();
 	const insets = useSafeAreaInsets();
-	const [event, setEvent] = useState<IEvent | null>(null);
-	const [loading, setLoading] = useState(true);
+	const { userAuth } = useAuthContext();
+	const userId = userAuth?.id;
+
+	const { data: event, isLoading } = useDropById(id, userId);
+	const rsvpMutation = useRsvpMutation();
+	const cancelMutation = useCancelRsvpMutation();
+	const { width: windowWidth } = useWindowDimensions();
+	const contentWidth = windowWidth - 40; // matches content paddingHorizontal: 20
+
 	const [rsvpSheetOpen, setRsvpSheetOpen] = useState(false);
-	const [cancelLoading, setCancelLoading] = useState(false);
 	const [showFullDescription, setShowFullDescription] = useState(false);
 
-	const loadEvent = useCallback(async () => {
-		if (!id) return;
-		setLoading(true);
-		try {
-			const data = await getEventById(id);
-			setEvent(data);
-		} catch {
-			// handle error
-		} finally {
-			setLoading(false);
-		}
-	}, [id]);
-
-	useEffect(() => {
-		loadEvent();
-	}, [loadEvent]);
+	const descriptionPlain = useMemo(
+		() => (event?.description ? stripHtml(event.description) : ""),
+		[event?.description],
+	);
 
 	const handleConfirmRsvp = useCallback(
-		async (eventId: string) => {
-			await rsvpToEvent(eventId);
-			await loadEvent();
+		async (eventId: string, password?: string) => {
+			if (!userId) return;
+			await rsvpMutation.mutateAsync({
+				dropId: eventId,
+				body: { userId, password },
+			});
 			setRsvpSheetOpen(false);
 		},
-		[loadEvent],
+		[rsvpMutation, userId],
 	);
 
 	const handleCancelRsvp = useCallback(async () => {
-		if (!event) return;
-		setCancelLoading(true);
-		try {
-			await cancelRsvp(event.id);
-			await loadEvent();
-		} finally {
-			setCancelLoading(false);
-		}
-	}, [event, loadEvent]);
+		if (!event?.userRsvpId) return;
+		await cancelMutation.mutateAsync({
+			dropId: event.id,
+			rsvpId: event.userRsvpId,
+		});
+	}, [event, cancelMutation]);
 
 	const handleShare = useCallback(async () => {
 		if (!event) return;
@@ -117,7 +137,7 @@ export default function EventDetailScreen() {
 		if (url) Linking.openURL(url);
 	}, [event]);
 
-	if (loading || !event) {
+	if (isLoading || !event) {
 		return (
 			<View style={styles.centered}>
 				<ActivityIndicator size="large" color="#1A1A1A" />
@@ -251,13 +271,19 @@ export default function EventDetailScreen() {
 					</Text>
 
 					{/* Description */}
-					<Text
-						style={styles.summary}
-						numberOfLines={showFullDescription ? undefined : 3}
-					>
-						{event.description}
-					</Text>
-					{event.description.length > 120 && !showFullDescription && (
+					{showFullDescription ? (
+						<RenderHtml
+							contentWidth={contentWidth}
+							source={{ html: event.description }}
+							baseStyle={HTML_BASE_STYLE}
+							tagsStyles={HTML_TAG_STYLES}
+						/>
+					) : (
+						<Text style={styles.summary} numberOfLines={3}>
+							{descriptionPlain}
+						</Text>
+					)}
+					{descriptionPlain.length > 120 && !showFullDescription && (
 						<TouchableOpacity
 							onPress={() => setShowFullDescription(true)}
 							activeOpacity={0.7}
@@ -266,8 +292,8 @@ export default function EventDetailScreen() {
 						</TouchableOpacity>
 					)}
 
-					{/* Attendees */}
-					{event.attendees.length > 0 && (
+					{/* TODO: re-enable when backend returns attendees */}
+					{/* {event.attendees.length > 0 && (
 						<View style={styles.attendeesCard}>
 							<View style={styles.avatarStack}>
 								{event.attendees.slice(0, 4).map((att, i) => (
@@ -291,7 +317,7 @@ export default function EventDetailScreen() {
 								</Text>
 							</TouchableOpacity>
 						</View>
-					)}
+					)} */}
 
 					{/* Details section */}
 					<View style={styles.detailsSection}>
@@ -409,10 +435,10 @@ export default function EventDetailScreen() {
 						<TouchableOpacity
 							activeOpacity={0.7}
 							onPress={handleCancelRsvp}
-							disabled={cancelLoading}
+							disabled={cancelMutation.isPending}
 							style={styles.cancelLink}
 						>
-							{cancelLoading ? (
+							{cancelMutation.isPending ? (
 								<ActivityIndicator
 									size="small"
 									color="#EF4444"

@@ -35,6 +35,8 @@ export interface IEvent {
 	attendeeCount: number;
 	price: number | null;
 	organizer: string;
+	userRsvpId: string | null;
+	passwordProtected: boolean;
 }
 
 export interface ICategory {

@@ -1,3 +1,8 @@
+import {
+	getMessaging,
+	onMessage,
+	onTokenRefresh,
+} from "@react-native-firebase/messaging";
 import * as Notifications from "expo-notifications";
 import { router } from "expo-router";
 import { useEffect, useRef } from "react";
@@ -5,7 +10,6 @@ import { Platform } from "react-native";
 import { useRegisterPushToken } from "../api/queries/notificationQueries";
 import { registerForPushNotificationsAsync } from "../notifications";
 import { NotificationAppRoutes } from "../types/notification";
-import messaging, { getMessaging, onMessage, onTokenRefresh } from '@react-native-firebase/messaging';
 
 export function useNotifications() {
 	const notificationListener = useRef<Notifications.EventSubscription | null>(
@@ -25,7 +29,7 @@ export function useNotifications() {
 		// 📩 Recibir notificación (foreground)
 		notificationListener.current =
 			Notifications.addNotificationReceivedListener((notification) => {
-				console.log("Notificación recibida:", notification);
+				// console.log("Notificación recibida:", notification);
 			});
 
 		// 👉 Usuario toca notificación
@@ -37,7 +41,7 @@ export function useNotifications() {
 					pathname: data.screen as NotificationAppRoutes,
 					params: parsedParams,
 				});
-				console.log("Usuario interactuó:", response);
+				// console.log("Usuario interactuó:", response);
 			});
 
 		const handleInitialNotification = async () => {
@@ -63,11 +67,13 @@ export function useNotifications() {
 	}, []);
 
 	useEffect(() => {
-		const unsubscribe = onTokenRefresh(getMessaging(), async (newToken: string) => {
-    		console.log('FCM Token refreshed:', newToken);
-			// if (newToken) await sendToken.mutateAsync({ newToken, userId, platform });
-
-  		});
+		const unsubscribe = onTokenRefresh(
+			getMessaging(),
+			async (newToken: string) => {
+				// console.log('FCM Token refreshed:', newToken);
+				// if (newToken) await sendToken.mutateAsync({ newToken, userId, platform });
+			},
+		);
 
 		const msg = getMessaging();
 		const unsubMessage = onMessage(msg, async (remoteMessage) => {
@@ -83,10 +89,13 @@ export function useNotifications() {
 					repeats: false,
 				},
 			});
-			console.log("Mensaje recibido en foreground:", remoteMessage);
+			// console.log("Mensaje recibido en foreground:", remoteMessage);
 		});
 
-	  return () => {unsubscribe(); unsubMessage();};
+		return () => {
+			unsubscribe();
+			unsubMessage();
+		};
 	}, []);
 
 	return { register };

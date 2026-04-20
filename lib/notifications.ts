@@ -1,14 +1,18 @@
+import {
+	getAPNSToken,
+	getMessaging,
+	getToken,
+	Messaging,
+} from "@react-native-firebase/messaging";
 import * as Notifications from "expo-notifications";
-import { Platform } from "react-native";
-import { getMessaging, getToken, getAPNSToken, Messaging } from '@react-native-firebase/messaging';
 
 async function waitForAPNSToken(msg: Messaging, maxRetries = 10) {
-  for (let i = 0; i < maxRetries; i++) {
-    const apnsToken = await getAPNSToken(msg);
-    if (apnsToken) return apnsToken;
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-  }
-  return null;
+	for (let i = 0; i < maxRetries; i++) {
+		const apnsToken = await getAPNSToken(msg);
+		if (apnsToken) return apnsToken;
+		await new Promise((resolve) => setTimeout(resolve, 1000));
+	}
+	return null;
 }
 
 export async function registerForPushNotificationsAsync() {
@@ -26,7 +30,7 @@ export async function registerForPushNotificationsAsync() {
 	}
 
 	if (finalStatus !== "granted") {
-		console.log("Permissions not granted");
+		// console.log("Permissions not granted");
 		return;
 	}
 
@@ -34,15 +38,14 @@ export async function registerForPushNotificationsAsync() {
 
 	// const token = (await Notifications.getDevicePushTokenAsync()).data;
 	const token = await getToken(messaging);
-	console.log("FCM Token:", token);
-	
+	// console.log("FCM Token:", token);
 
 	// config Android
-		await Notifications.setNotificationChannelAsync("default", {
-			name: "default",
-			importance: Notifications.AndroidImportance.MAX,
-			vibrationPattern: [0, 250, 250, 250],
-			lightColor: "#FF231F7C",
-		});
+	await Notifications.setNotificationChannelAsync("default", {
+		name: "default",
+		importance: Notifications.AndroidImportance.MAX,
+		vibrationPattern: [0, 250, 250, 250],
+		lightColor: "#FF231F7C",
+	});
 	return token;
 }
