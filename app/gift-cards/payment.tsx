@@ -3,11 +3,7 @@ import { Lock } from "@/constants/svgs";
 import { useGiftCardContext } from "@/contexts/GiftCardContext";
 import { useUserContext } from "@/contexts/UserContext";
 import { useStripeApi } from "@/lib/api/useApi";
-import {
-	horizontalScale,
-	moderateScale,
-	verticalScale,
-} from "@/lib/metrics";
+import { horizontalScale, moderateScale, verticalScale } from "@/lib/metrics";
 import { Ionicons } from "@expo/vector-icons";
 import { CardForm, useStripe } from "@stripe/stripe-react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -63,18 +59,22 @@ export default function Payment() {
 
 		try {
 			// Step 1: Create payment intent on backend
-			const { clientSecret, giftCardCode } = await stripeApi.createPaymentIntent({
-				amount,
-				restaurantId: restaurantId ?? "",
-				senderId: user.id,
-				receiverPhoneNumber: recipientPhone ?? "",
-				message: message ?? "",
-			});
+			const { clientSecret, giftCardCode } =
+				await stripeApi.createPaymentIntent({
+					amount,
+					restaurantId: restaurantId ?? "",
+					senderId: user.id,
+					receiverPhoneNumber: recipientPhone ?? "",
+					message: message ?? "",
+				});
 
 			// Step 2: Confirm payment with card form details
-			const { error: confirmError, paymentIntent } = await confirmPayment(clientSecret, {
-				paymentMethodType: "Card",
-			});
+			const { error: confirmError, paymentIntent } = await confirmPayment(
+				clientSecret,
+				{
+					paymentMethodType: "Card",
+				},
+			);
 
 			if (confirmError) {
 				setError(confirmError.message ?? "Payment failed. Please try again.");
@@ -118,9 +118,7 @@ export default function Payment() {
 						transition={{ type: "timing", duration: 300 }}
 					>
 						<TextBold style={styles.title}>Review & Pay</TextBold>
-						<Text style={styles.subtitle}>
-							Review your gift card details
-						</Text>
+						<Text style={styles.subtitle}>Review your gift card details</Text>
 					</MotiView>
 
 					{/* Order Summary */}
@@ -139,9 +137,7 @@ export default function Payment() {
 							<View style={styles.divider} />
 							<View style={styles.summaryRow}>
 								<Text style={styles.label}>Gift Card</Text>
-								<TextBold style={styles.summaryValue}>
-									${amount}.00
-								</TextBold>
+								<TextBold style={styles.summaryValue}>${amount}.00</TextBold>
 							</View>
 							<View style={styles.divider} />
 							<View style={styles.summaryRow}>
@@ -155,7 +151,10 @@ export default function Payment() {
 									<View style={styles.divider} />
 									<View style={styles.summaryRow}>
 										<Text style={styles.label}>Message</Text>
-										<Text style={[styles.summaryValue, { fontStyle: "italic" }]} numberOfLines={2}>
+										<Text
+											style={[styles.summaryValue, { fontStyle: "italic" }]}
+											numberOfLines={2}
+										>
 											"{message}"
 										</Text>
 									</View>
@@ -163,10 +162,14 @@ export default function Payment() {
 							) : null}
 							<View style={styles.dividerThick} />
 							<View style={styles.summaryRow}>
-								<TextBold style={{ fontSize: moderateScale(15), color: "#1A1A1A" }}>
+								<TextBold
+									style={{ fontSize: moderateScale(15), color: "#1A1A1A" }}
+								>
 									Total
 								</TextBold>
-								<TextBold style={{ fontSize: moderateScale(22), color: "#1A1A1A" }}>
+								<TextBold
+									style={{ fontSize: moderateScale(22), color: "#1A1A1A" }}
+								>
 									${amount}.00
 								</TextBold>
 							</View>
@@ -203,10 +206,7 @@ export default function Payment() {
 
 					{/* Secure badge */}
 					<View style={styles.secureBadge}>
-						<Lock
-							width={horizontalScale(14)}
-							height={verticalScale(14)}
-						/>
+						<Lock width={horizontalScale(14)} height={verticalScale(14)} />
 						<Text style={styles.secureText}>
 							Secure payment powered by Stripe
 						</Text>
@@ -215,7 +215,11 @@ export default function Payment() {
 					{/* Error */}
 					{error ? (
 						<View style={styles.errorContainer}>
-							<Ionicons name="alert-circle" size={moderateScale(16)} color="#E53935" />
+							<Ionicons
+								name="alert-circle"
+								size={moderateScale(16)}
+								color="#E53935"
+							/>
 							<Text style={styles.errorText}>{error}</Text>
 						</View>
 					) : null}
@@ -227,9 +231,7 @@ export default function Payment() {
 						styles.bottomBar,
 						{
 							paddingBottom:
-								insets.bottom > 0
-									? insets.bottom
-									: verticalScale(16),
+								insets.bottom > 0 ? insets.bottom : verticalScale(16),
 						},
 					]}
 				>
