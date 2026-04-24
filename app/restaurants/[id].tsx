@@ -18,6 +18,7 @@ import {
 import { useCallback, useState } from "react";
 import {
 	Alert,
+	Platform,
 	RefreshControl,
 	ScrollView,
 	Share,
@@ -108,8 +109,12 @@ export default function Restaurant() {
 		}
 		if (isNullOrWhitespace(code)) return;
 		try {
+			const url =
+				Platform.OS === "ios"
+					? "https://apps.apple.com/co/app/chop-local/id6754047000"
+					: "https://play.google.com/store/apps/details?id=com.choplocal";
 			await Share.share({
-				message: `Check out ${displayName} on Chop Local! Use my recommendation code: ${code}`,
+				message: `Check out ${displayName} on Chop Local! Use my recommendation code: ${code}.\nDownload the app now at ${url}`,
 			});
 		} catch {
 			// User cancelled share

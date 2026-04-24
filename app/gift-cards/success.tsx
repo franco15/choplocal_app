@@ -1,16 +1,19 @@
-import { Container, Text, TextBold, GiftCardVisual, CARD_THEMES } from "@/components";
 import {
-	horizontalScale,
-	moderateScale,
-	verticalScale,
-} from "@/lib/metrics";
+	CARD_THEMES,
+	Container,
+	GiftCardVisual,
+	Text,
+	TextBold,
+} from "@/components";
+import { horizontalScale, moderateScale, verticalScale } from "@/lib/metrics";
 import { Ionicons } from "@expo/vector-icons";
-import { useLocalSearchParams, useRouter } from "expo-router";
 import * as Clipboard from "expo-clipboard";
 import * as Haptics from "expo-haptics";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { MotiView } from "moti";
 import { useEffect, useMemo } from "react";
 import {
+	Platform,
 	ScrollView,
 	Share,
 	StyleSheet,
@@ -37,26 +40,18 @@ const CONFETTI_COLORS = [
 export default function GiftCardSuccess() {
 	const router = useRouter();
 	const insets = useSafeAreaInsets();
-	const {
-		restaurantName,
-		value,
-		recipientPhone,
-		colorThemeId,
-		code,
-		message,
-	} = useLocalSearchParams<{
-		restaurantName: string;
-		value: string;
-		recipientPhone: string;
-		colorThemeId: string;
-		code: string;
-		message: string;
-	}>();
+	const { restaurantName, value, recipientPhone, colorThemeId, code, message } =
+		useLocalSearchParams<{
+			restaurantName: string;
+			value: string;
+			recipientPhone: string;
+			colorThemeId: string;
+			code: string;
+			message: string;
+		}>();
 
 	const selectedTheme = useMemo(
-		() =>
-			CARD_THEMES.find((t) => t.id === colorThemeId) ??
-			CARD_THEMES[0],
+		() => CARD_THEMES.find((t) => t.id === colorThemeId) ?? CARD_THEMES[0],
 		[colorThemeId],
 	);
 
@@ -87,10 +82,15 @@ export default function GiftCardSuccess() {
 	};
 
 	const onShare = async () => {
+		const url =
+			Platform.OS === "ios"
+				? "https://apps.apple.com/co/app/chop-local/id6754047000"
+				: "https://play.google.com/store/apps/details?id=com.choplocal";
 		let shareMsg = `I sent you a $${value} gift card for ${restaurantName}!`;
 		if (message) shareMsg += ` "${message}"`;
 		if (code) shareMsg += `\nRedeem it with code: ${code}`;
-		else shareMsg += `\nYou'll receive it in your Chop Local app shortly.`;
+		else
+			shareMsg += `\nYou'll receive it in your Chop Local app shortly.\nDownload the app now at ${url}`;
 		await Share.share({ message: shareMsg });
 	};
 
@@ -127,9 +127,7 @@ export default function GiftCardSuccess() {
 								{
 									width: piece.size,
 									height: piece.size,
-									borderRadius: piece.isCircle
-										? piece.size / 2
-										: 2,
+									borderRadius: piece.isCircle ? piece.size / 2 : 2,
 									backgroundColor: piece.color,
 								},
 							]}
@@ -204,22 +202,14 @@ export default function GiftCardSuccess() {
 					>
 						<View style={styles.codeCard}>
 							<Text style={styles.codeLabel}>GIFT CARD CODE</Text>
-							<TextBold style={styles.codeText}>
-								{code}
-							</TextBold>
+							<TextBold style={styles.codeText}>{code}</TextBold>
 							<TouchableOpacity
 								onPress={onCopyCode}
 								activeOpacity={0.7}
 								style={styles.copyButton}
 							>
-								<Ionicons
-									name="copy-outline"
-									size={18}
-									color="#1A1A1A"
-								/>
-								<Text style={styles.copyButtonText}>
-									Copy Code
-								</Text>
+								<Ionicons name="copy-outline" size={18} color="#1A1A1A" />
+								<Text style={styles.copyButtonText}>Copy Code</Text>
 							</TouchableOpacity>
 						</View>
 					</MotiView>
@@ -239,14 +229,10 @@ export default function GiftCardSuccess() {
 						{recipientPhone ? (
 							<View style={styles.detailRow}>
 								<Text style={styles.detailLabel}>To</Text>
-								<TextBold style={styles.detailValue}>
-									{recipientPhone}
-								</TextBold>
+								<TextBold style={styles.detailValue}>{recipientPhone}</TextBold>
 							</View>
 						) : null}
-						{recipientPhone && value ? (
-							<View style={styles.divider} />
-						) : null}
+						{recipientPhone && value ? <View style={styles.divider} /> : null}
 						<View style={styles.detailRow}>
 							<Text style={styles.detailLabel}>Amount</Text>
 							<TextBold style={styles.detailValue}>
@@ -255,12 +241,8 @@ export default function GiftCardSuccess() {
 						</View>
 						<View style={styles.divider} />
 						<View style={styles.detailRow}>
-							<Text style={styles.detailLabel}>
-								Restaurant
-							</Text>
-							<TextBold style={styles.detailValue}>
-								{restaurantName}
-							</TextBold>
+							<Text style={styles.detailLabel}>Restaurant</Text>
+							<TextBold style={styles.detailValue}>{restaurantName}</TextBold>
 						</View>
 					</View>
 				</MotiView>
@@ -285,14 +267,8 @@ export default function GiftCardSuccess() {
 					onPress={onShare}
 					style={styles.shareButton}
 				>
-					<Ionicons
-						name="share-outline"
-						size={20}
-						color="#FFFFFF"
-					/>
-					<TextBold style={styles.shareButtonText}>
-						Share with Friend
-					</TextBold>
+					<Ionicons name="share-outline" size={20} color="#FFFFFF" />
+					<TextBold style={styles.shareButtonText}>Share with Friend</TextBold>
 				</TouchableOpacity>
 
 				<TouchableOpacity

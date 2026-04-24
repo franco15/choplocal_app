@@ -1,7 +1,3 @@
-import {
-	CustomText as Text,
-	CustomTextBold as TextBold,
-} from "./Texts";
 import { Bookmark, BookmarkSolid } from "@/constants/svgs";
 import { horizontalScale, moderateScale, verticalScale } from "@/lib/metrics";
 import { IRestaurant } from "@/lib/types/restaurant";
@@ -9,12 +5,14 @@ import { router } from "expo-router";
 import { useCallback } from "react";
 import {
 	Image,
+	Platform,
 	Pressable,
 	Share,
 	StyleSheet,
 	TouchableOpacity,
 	View,
 } from "react-native";
+import { CustomText as Text, CustomTextBold as TextBold } from "./Texts";
 
 type Props = {
 	restaurant: IRestaurant;
@@ -49,8 +47,12 @@ export default function HomeRestaurantCard({
 		const code = restaurant.referralCode;
 		if (!code) return;
 		try {
+			const url =
+				Platform.OS === "ios"
+					? "https://apps.apple.com/co/app/chop-local/id6754047000"
+					: "https://play.google.com/store/apps/details?id=com.choplocal";
 			await Share.share({
-				message: `Check out ${restaurant.name} on Chop Local! Use my recommendation code: ${code}`,
+				message: `Check out ${restaurant.name} on Chop Local! Use my recommendation code: ${code}.\nDownload the app now at ${url}`,
 			});
 		} catch {
 			// User cancelled share

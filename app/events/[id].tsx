@@ -1,4 +1,7 @@
-import { CustomText as Text, CustomTextBold as TextBold } from "@/components/Texts";
+import {
+	CustomText as Text,
+	CustomTextBold as TextBold,
+} from "@/components/Texts";
 import RsvpBottomSheet from "@/components/events/RsvpBottomSheet";
 import { useAuthContext } from "@/contexts/AuthContext";
 import {
@@ -31,8 +34,18 @@ const formatFullDate = (startStr: string, endStr: string): string => {
 	const end = new Date(endStr);
 	const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 	const months = [
-		"Jan", "Feb", "Mar", "Apr", "May", "Jun",
-		"Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+		"Jan",
+		"Feb",
+		"Mar",
+		"Apr",
+		"May",
+		"Jun",
+		"Jul",
+		"Aug",
+		"Sep",
+		"Oct",
+		"Nov",
+		"Dec",
 	];
 
 	const dayName = days[start.getDay()];
@@ -121,8 +134,12 @@ export default function EventDetailScreen() {
 	const handleShare = useCallback(async () => {
 		if (!event) return;
 		try {
+			const url =
+				Platform.OS === "ios"
+					? "https://apps.apple.com/co/app/chop-local/id6754047000"
+					: "https://play.google.com/store/apps/details?id=com.choplocal";
 			await Share.share({
-				message: `Check out "${event.title}" at ${event.venueName}! ${formatFullDate(event.startDate, event.endDate)}`,
+				message: `Check out "${event.title}" at ${event.venueName}! ${formatFullDate(event.startDate, event.endDate)}\nDownload the app now at ${url}`,
 			});
 		} catch {}
 	}, [event]);
@@ -189,34 +206,18 @@ export default function EventDetailScreen() {
 					<TouchableOpacity
 						onPress={() => router.back()}
 						activeOpacity={0.7}
-						style={[
-							styles.navBtn,
-							styles.navBtnLeft,
-							{ top: insets.top + 8 },
-						]}
+						style={[styles.navBtn, styles.navBtnLeft, { top: insets.top + 8 }]}
 					>
-						<Ionicons
-							name="chevron-back"
-							size={22}
-							color="#FFFFFF"
-						/>
+						<Ionicons name="chevron-back" size={22} color="#FFFFFF" />
 					</TouchableOpacity>
 
 					{/* Share button */}
 					<TouchableOpacity
 						onPress={handleShare}
 						activeOpacity={0.7}
-						style={[
-							styles.navBtn,
-							styles.navBtnRight,
-							{ top: insets.top + 8 },
-						]}
+						style={[styles.navBtn, styles.navBtnRight, { top: insets.top + 8 }]}
 					>
-						<Ionicons
-							name="share-outline"
-							size={20}
-							color="#FFFFFF"
-						/>
+						<Ionicons name="share-outline" size={20} color="#FFFFFF" />
 					</TouchableOpacity>
 
 					{/* Centered event image */}
@@ -244,16 +245,10 @@ export default function EventDetailScreen() {
 					<View style={styles.organizerRow}>
 						<View style={styles.organizerLeft}>
 							<View style={styles.organizerDot} />
-							<Text style={styles.organizer}>
-								{event.organizer}
-							</Text>
+							<Text style={styles.organizer}>{event.organizer}</Text>
 						</View>
 						<TouchableOpacity activeOpacity={0.7} hitSlop={10}>
-							<Ionicons
-								name="bookmark-outline"
-								size={22}
-								color="#CCCCCC"
-							/>
+							<Ionicons name="bookmark-outline" size={22} color="#CCCCCC" />
 						</TouchableOpacity>
 					</View>
 
@@ -261,9 +256,7 @@ export default function EventDetailScreen() {
 					<TextBold style={styles.title}>{event.title}</TextBold>
 
 					{/* Venue */}
-					<Text style={styles.venue}>
-						{event.venueName}
-					</Text>
+					<Text style={styles.venue}>{event.venueName}</Text>
 
 					{/* Date & time */}
 					<Text style={styles.datetime}>
@@ -321,19 +314,11 @@ export default function EventDetailScreen() {
 
 					{/* Details section */}
 					<View style={styles.detailsSection}>
-						<TextBold style={styles.detailsTitle}>
-							Details
-						</TextBold>
+						<TextBold style={styles.detailsTitle}>Details</TextBold>
 
 						<View style={styles.detailRow}>
-							<Ionicons
-								name="pricetag-outline"
-								size={18}
-								color="#888"
-							/>
-							<Text style={styles.detailText}>
-								{formatPrice(event.price)}
-							</Text>
+							<Ionicons name="pricetag-outline" size={18} color="#888" />
+							<Text style={styles.detailText}>{formatPrice(event.price)}</Text>
 						</View>
 
 						<TouchableOpacity
@@ -341,33 +326,17 @@ export default function EventDetailScreen() {
 							activeOpacity={0.7}
 							style={styles.detailRow}
 						>
-							<Ionicons
-								name="location-outline"
-								size={18}
-								color="#888"
-							/>
+							<Ionicons name="location-outline" size={18} color="#888" />
 							<View style={{ flex: 1 }}>
-								<Text style={styles.detailText}>
-									{event.venueName}
-								</Text>
-								<Text style={styles.detailSubtext}>
-									{event.address}
-								</Text>
+								<Text style={styles.detailText}>{event.venueName}</Text>
+								<Text style={styles.detailSubtext}>{event.address}</Text>
 							</View>
-							<Ionicons
-								name="open-outline"
-								size={14}
-								color="#CCC"
-							/>
+							<Ionicons name="open-outline" size={14} color="#CCC" />
 						</TouchableOpacity>
 
 						{event.capacity !== null && (
 							<View style={styles.detailRow}>
-								<Ionicons
-									name="people-outline"
-									size={18}
-									color="#888"
-								/>
+								<Ionicons name="people-outline" size={18} color="#888" />
 								<Text style={styles.detailText}>
 									{isSoldOut
 										? "Sold out"
@@ -411,9 +380,7 @@ export default function EventDetailScreen() {
 
 				{event.userRsvp === null && isSoldOut && (
 					<View style={[styles.rsvpBtn, styles.rsvpBtnDisabled]}>
-						<TextBold style={styles.rsvpBtnTextDisabled}>
-							Sold out
-						</TextBold>
+						<TextBold style={styles.rsvpBtnTextDisabled}>Sold out</TextBold>
 					</View>
 				)}
 
@@ -439,14 +406,9 @@ export default function EventDetailScreen() {
 							style={styles.cancelLink}
 						>
 							{cancelMutation.isPending ? (
-								<ActivityIndicator
-									size="small"
-									color="#EF4444"
-								/>
+								<ActivityIndicator size="small" color="#EF4444" />
 							) : (
-								<Text style={styles.cancelLinkText}>
-									Cancel RSVP
-								</Text>
+								<Text style={styles.cancelLinkText}>Cancel RSVP</Text>
 							)}
 						</TouchableOpacity>
 					</View>
