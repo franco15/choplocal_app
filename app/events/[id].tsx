@@ -4,6 +4,7 @@ import {
 } from "@/components/Texts";
 import RsvpBottomSheet from "@/components/events/RsvpBottomSheet";
 import { useAuthContext } from "@/contexts/AuthContext";
+import { useUserContext } from "@/contexts/UserContext";
 import {
 	useCancelRsvpMutation,
 	useDropById,
@@ -94,10 +95,9 @@ const HTML_BASE_STYLE = {
 export default function EventDetailScreen() {
 	const { id } = useLocalSearchParams<{ id: string }>();
 	const insets = useSafeAreaInsets();
-	const { userAuth } = useAuthContext();
-	const userId = userAuth?.id;
+	const { user } = useUserContext();
 
-	const { data: event, isLoading } = useDropById(id, userId);
+	const { data: event, isLoading } = useDropById(id, user.id);
 	const rsvpMutation = useRsvpMutation();
 	const cancelMutation = useCancelRsvpMutation();
 	const { width: windowWidth } = useWindowDimensions();
@@ -113,14 +113,14 @@ export default function EventDetailScreen() {
 
 	const handleConfirmRsvp = useCallback(
 		async (eventId: string, password?: string) => {
-			if (!userId) return;
+			if (!user.id) return;
 			await rsvpMutation.mutateAsync({
 				dropId: eventId,
-				body: { userId, password },
+				body: { userId: user.id, password },
 			});
 			setRsvpSheetOpen(false);
 		},
-		[rsvpMutation, userId],
+		[rsvpMutation, user],
 	);
 
 	const handleCancelRsvp = useCallback(async () => {

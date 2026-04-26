@@ -1,8 +1,4 @@
-import {
-	AppCreateRsvpDto,
-	DropOutput,
-	DropRsvpOutput,
-} from "../types/drop";
+import { AppCreateRsvpDto, DropOutput, DropRsvpOutput } from "../types/drop";
 import {
 	IGiftCard,
 	IGiftCardCreate,
@@ -149,15 +145,10 @@ export const useDropsApi = () => {
 			restaurantId: string,
 			userId?: string,
 		): Promise<DropOutput[]> =>
-			api.get(
-				withUser(`api/app/drops/restaurant/${restaurantId}`, userId),
-			),
+			api.get(withUser(`api/app/drops/restaurant/${restaurantId}`, userId)),
 		byId: async (id: string, userId?: string): Promise<DropOutput> =>
 			api.get(withUser(`api/app/drops/${id}`, userId)),
-		rsvp: async (
-			id: string,
-			body: AppCreateRsvpDto,
-		): Promise<DropRsvpOutput> =>
+		rsvp: async (id: string, body: AppCreateRsvpDto): Promise<DropRsvpOutput> =>
 			api.post(`api/app/drops/${id}/rsvp`, body),
 		cancelRsvp: async (
 			id: string,
