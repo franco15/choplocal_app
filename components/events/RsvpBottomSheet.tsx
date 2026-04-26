@@ -1,16 +1,21 @@
 import { horizontalScale, moderateScale, verticalScale } from "@/lib/metrics";
 import { IEvent } from "@/lib/types/event";
 import { Ionicons } from "@expo/vector-icons";
-import { useCallback, useState } from "react";
+import {
+	BottomSheetBackdrop,
+	type BottomSheetBackdropProps,
+	BottomSheetModal,
+	BottomSheetTextInput,
+	BottomSheetView,
+} from "@gorhom/bottom-sheet";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
 	ActivityIndicator,
 	Image,
 	StyleSheet,
-	TextInput,
 	TouchableOpacity,
 	View,
 } from "react-native";
-import Modal from "react-native-modal";
 import { CustomText as Text, CustomTextBold as TextBold } from "../Texts";
 
 type Props = {
@@ -63,19 +68,22 @@ export default function RsvpBottomSheet({
 	onClose,
 	onConfirm,
 }: Props) {
+	const sheetRef = useRef<BottomSheetModal>(null);
 	const [loading, setLoading] = useState(false);
 	const [password, setPassword] = useState("");
 	const [error, setError] = useState<string | null>(null);
+
+	useEffect(() => {
+		if (isVisible) sheetRef.current?.present();
+		else sheetRef.current?.dismiss();
+	}, [isVisible]);
 
 	const handleConfirm = useCallback(async () => {
 		if (!event) return;
 		setLoading(true);
 		setError(null);
 		try {
-			await onConfirm(
-				event.id,
-				event.passwordProtected ? password : undefined,
-			);
+			await onConfirm(event.id, event.passwordProtected ? password : undefined);
 			setPassword("");
 		} catch (e) {
 			setError(
@@ -88,11 +96,24 @@ export default function RsvpBottomSheet({
 		}
 	}, [event, onConfirm, password]);
 
-	const handleClose = useCallback(() => {
+	const handleDismiss = useCallback(() => {
 		setPassword("");
 		setError(null);
 		onClose();
 	}, [onClose]);
+
+	const renderBackdrop = useCallback(
+		(props: BottomSheetBackdropProps) => (
+			<BottomSheetBackdrop
+				{...props}
+				appearsOnIndex={0}
+				disappearsOnIndex={-1}
+				opacity={0.4}
+				pressBehavior="close"
+			/>
+		),
+		[],
+	);
 
 	if (!event) return null;
 
@@ -102,19 +123,16 @@ export default function RsvpBottomSheet({
 		loading || (event.passwordProtected && password.trim().length === 0);
 
 	return (
-		<Modal
-			isVisible={isVisible}
-			onBackdropPress={handleClose}
-			onSwipeComplete={handleClose}
-			swipeDirection="down"
-			backdropOpacity={0.4}
-			style={styles.modal}
-			propagateSwipe
+		<BottomSheetModal
+			ref={sheetRef}
+			enableDynamicSizing
+			enablePanDownToClose
+			onDismiss={handleDismiss}
+			backdropComponent={renderBackdrop}
+			handleIndicatorStyle={styles.handleIndicator}
+			backgroundStyle={styles.sheetBackground}
 		>
-			<View style={styles.sheet}>
-				{/* Handle */}
-				<View style={styles.handle} />
-
+			<BottomSheetView style={styles.sheetContent}>
 				{/* Event banner */}
 				{event.coverImage ? (
 					<Image
@@ -124,10 +142,7 @@ export default function RsvpBottomSheet({
 					/>
 				) : (
 					<View
-						style={[
-							styles.banner,
-							{ backgroundColor: event.accentColor },
-						]}
+						style={[styles.banner, { backgroundColor: event.accentColor }]}
 					/>
 				)}
 
@@ -141,9 +156,7 @@ export default function RsvpBottomSheet({
 							size={moderateScale(16)}
 							color="#888"
 						/>
-						<Text style={styles.infoText}>
-							{event.restaurant.name}
-						</Text>
+						<Text style={styles.infoText}>{event.restaurant.name}</Text>
 					</View>
 
 					<View style={styles.infoRow}>
@@ -199,7 +212,7 @@ export default function RsvpBottomSheet({
 							<Text style={styles.passwordLabel}>
 								Este drop requiere contraseña
 							</Text>
-							<TextInput
+							<BottomSheetTextInput
 								value={password}
 								onChangeText={(t) => {
 									setPassword(t);
@@ -235,44 +248,36 @@ export default function RsvpBottomSheet({
 						{loading ? (
 							<ActivityIndicator color="#FFFFFF" size="small" />
 						) : (
-							<TextBold style={styles.confirmText}>
-								Confirmar reserva
-							</TextBold>
+							<TextBold style={styles.confirmText}>Confirmar reserva</TextBold>
 						)}
 					</TouchableOpacity>
 
 					<TouchableOpacity
 						activeOpacity={0.7}
-						onPress={handleClose}
+						onPress={() => sheetRef.current?.dismiss()}
 						style={styles.cancelLink}
 					>
 						<Text style={styles.cancelText}>Cancelar</Text>
 					</TouchableOpacity>
 				</View>
-			</View>
-		</Modal>
+			</BottomSheetView>
+		</BottomSheetModal>
 	);
 }
 
 const styles = StyleSheet.create({
-	modal: {
-		justifyContent: "flex-end",
-		margin: 0,
-	},
-	sheet: {
+	sheetBackground: {
 		backgroundColor: "#FFFFFF",
 		borderTopLeftRadius: moderateScale(24),
 		borderTopRightRadius: moderateScale(24),
-		paddingBottom: verticalScale(40),
 	},
-	handle: {
+	handleIndicator: {
+		backgroundColor: "#E0E0E0",
 		width: horizontalScale(36),
 		height: verticalScale(4),
-		borderRadius: 2,
-		backgroundColor: "#E0E0E0",
-		alignSelf: "center",
-		marginTop: verticalScale(12),
-		marginBottom: verticalScale(12),
+	},
+	sheetContent: {
+		paddingBottom: verticalScale(40),
 	},
 	banner: {
 		width: "100%",

@@ -2,10 +2,16 @@ import { Text, TextBold } from "@/components";
 import { useRedeemCodeContext } from "@/contexts/RedeemCodeContext";
 import { horizontalScale, moderateScale, verticalScale } from "@/lib/metrics";
 import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
+import {
+	BottomSheetBackdrop,
+	type BottomSheetBackdropProps,
+	BottomSheetModal,
+	BottomSheetView,
+} from "@gorhom/bottom-sheet";
 import * as Haptics from "expo-haptics";
+import { useRouter } from "expo-router";
 import { MotiView } from "moti";
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
 	ActivityIndicator,
 	Keyboard,
@@ -16,7 +22,6 @@ import {
 	TouchableOpacity,
 	View,
 } from "react-native";
-import Modal from "react-native-modal";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function RedeemCodeScreen() {
@@ -31,6 +36,30 @@ export default function RedeemCodeScreen() {
 		title: "",
 		message: "",
 	});
+
+	const errorSheetRef = useRef<BottomSheetModal>(null);
+
+	useEffect(() => {
+		if (errorModal.visible) errorSheetRef.current?.present();
+		else errorSheetRef.current?.dismiss();
+	}, [errorModal.visible]);
+
+	const closeErrorModal = useCallback(() => {
+		setErrorModal((prev) => ({ ...prev, visible: false }));
+	}, []);
+
+	const renderErrorBackdrop = useCallback(
+		(props: BottomSheetBackdropProps) => (
+			<BottomSheetBackdrop
+				{...props}
+				appearsOnIndex={0}
+				disappearsOnIndex={-1}
+				opacity={0.4}
+				pressBehavior="close"
+			/>
+		),
+		[],
+	);
 
 	const handleRedeem = async () => {
 		if (!code.trim() || isValidating) return;
@@ -196,29 +225,16 @@ export default function RedeemCodeScreen() {
 			</KeyboardAvoidingView>
 
 			{/* ── Error Modal ── */}
-			<Modal
-				isVisible={errorModal.visible}
-				onBackdropPress={() =>
-					setErrorModal((prev) => ({ ...prev, visible: false }))
-				}
-				onSwipeComplete={() =>
-					setErrorModal((prev) => ({ ...prev, visible: false }))
-				}
-				swipeDirection="down"
-				backdropOpacity={0.4}
-				animationIn="slideInUp"
-				animationOut="slideOutDown"
-				animationInTiming={450}
-				animationOutTiming={400}
-				backdropTransitionInTiming={400}
-				backdropTransitionOutTiming={300}
-				useNativeDriverForBackdrop
-				hideModalContentWhileAnimating
-				style={styles.modal}
+			<BottomSheetModal
+				ref={errorSheetRef}
+				enableDynamicSizing
+				enablePanDownToClose
+				onDismiss={closeErrorModal}
+				backdropComponent={renderErrorBackdrop}
+				handleIndicatorStyle={styles.modalHandleIndicator}
+				backgroundStyle={styles.modalSheetBackground}
 			>
-				<View style={styles.modalSheet}>
-					<View style={styles.modalHandle} />
-
+				<BottomSheetView style={styles.modalSheet}>
 					<Ionicons
 						name="alert-circle"
 						size={moderateScale(48)}
@@ -226,29 +242,18 @@ export default function RedeemCodeScreen() {
 						style={{ marginBottom: verticalScale(12) }}
 					/>
 
-					<TextBold style={styles.modalTitle}>
-						{errorModal.title}
-					</TextBold>
-					<Text style={styles.modalMessage}>
-						{errorModal.message}
-					</Text>
+					<TextBold style={styles.modalTitle}>{errorModal.title}</TextBold>
+					<Text style={styles.modalMessage}>{errorModal.message}</Text>
 
 					<TouchableOpacity
 						activeOpacity={0.8}
-						onPress={() =>
-							setErrorModal((prev) => ({
-								...prev,
-								visible: false,
-							}))
-						}
+						onPress={() => errorSheetRef.current?.dismiss()}
 						style={styles.modalBtn}
 					>
-						<TextBold style={styles.modalBtnText}>
-							Got it
-						</TextBold>
+						<TextBold style={styles.modalBtnText}>Got it</TextBold>
 					</TouchableOpacity>
-				</View>
-			</Modal>
+				</BottomSheetView>
+			</BottomSheetModal>
 		</View>
 	);
 }
@@ -351,25 +356,21 @@ const styles = StyleSheet.create({
 	},
 
 	/* ── Error modal ── */
-	modal: {
-		justifyContent: "flex-end",
-		margin: 0,
-	},
-	modalSheet: {
+	modalSheetBackground: {
 		backgroundColor: "#FFFFFF",
 		borderTopLeftRadius: moderateScale(28),
 		borderTopRightRadius: moderateScale(28),
+	},
+	modalHandleIndicator: {
+		backgroundColor: "#E0E0E0",
+		width: horizontalScale(40),
+		height: 4,
+	},
+	modalSheet: {
 		paddingHorizontal: horizontalScale(28),
 		paddingTop: verticalScale(14),
 		paddingBottom: verticalScale(50),
 		alignItems: "center",
-	},
-	modalHandle: {
-		width: horizontalScale(40),
-		height: 4,
-		borderRadius: 2,
-		backgroundColor: "#E0E0E0",
-		marginBottom: verticalScale(28),
 	},
 	modalTitle: {
 		fontSize: moderateScale(22),

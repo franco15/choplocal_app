@@ -1,12 +1,16 @@
-import { CustomText as Text, CustomTextBold as TextBold } from "./Texts";
 import { horizontalScale, moderateScale, verticalScale } from "@/lib/metrics";
+import {
+	BottomSheetBackdrop,
+	type BottomSheetBackdropProps,
+	BottomSheetModal,
+	BottomSheetView,
+} from "@gorhom/bottom-sheet";
+import { useCallback, useEffect, useRef } from "react";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
-import Modal from "react-native-modal";
+import { CustomText as Text, CustomTextBold as TextBold } from "./Texts";
 
 // Will be populated by API when backend supports cities
-export const AVAILABLE_CITIES = [
-	"All",
-];
+export const AVAILABLE_CITIES = ["All"];
 
 type Props = {
 	isOpen: boolean;
@@ -21,24 +25,42 @@ export default function CityDropdown({
 	selectedCity,
 	onSelectCity,
 }: Props) {
+	const sheetRef = useRef<BottomSheetModal>(null);
+
+	useEffect(() => {
+		if (isOpen) sheetRef.current?.present();
+		else sheetRef.current?.dismiss();
+	}, [isOpen]);
+
+	const renderBackdrop = useCallback(
+		(props: BottomSheetBackdropProps) => (
+			<BottomSheetBackdrop
+				{...props}
+				appearsOnIndex={0}
+				disappearsOnIndex={-1}
+				opacity={0.4}
+				pressBehavior="close"
+			/>
+		),
+		[],
+	);
+
 	const onPick = (city: string) => {
 		onSelectCity(city);
-		onClose();
+		sheetRef.current?.dismiss();
 	};
 
 	return (
-		<Modal
-			isVisible={isOpen}
-			onBackdropPress={onClose}
-			onSwipeComplete={onClose}
-			swipeDirection="down"
-			backdropOpacity={0.4}
-			style={styles.modal}
+		<BottomSheetModal
+			ref={sheetRef}
+			enableDynamicSizing
+			enablePanDownToClose
+			onDismiss={onClose}
+			backdropComponent={renderBackdrop}
+			handleIndicatorStyle={styles.handleIndicator}
+			backgroundStyle={styles.sheetBackground}
 		>
-			<View style={styles.sheet}>
-				{/* Handle */}
-				<View style={styles.handle} />
-
+			<BottomSheetView style={styles.sheetContent}>
 				<TextBold style={styles.sheetTitle}>Select City</TextBold>
 
 				{AVAILABLE_CITIES.map((city) => {
@@ -48,10 +70,7 @@ export default function CityDropdown({
 							key={city}
 							onPress={() => onPick(city)}
 							activeOpacity={0.7}
-							style={[
-								styles.option,
-								isSelected && styles.optionSelected,
-							]}
+							style={[styles.option, isSelected && styles.optionSelected]}
 						>
 							<Text
 								style={[
@@ -61,37 +80,30 @@ export default function CityDropdown({
 							>
 								{city}
 							</Text>
-							{isSelected && (
-								<TextBold style={styles.check}>✓</TextBold>
-							)}
+							{isSelected && <TextBold style={styles.check}>✓</TextBold>}
 						</TouchableOpacity>
 					);
 				})}
-			</View>
-		</Modal>
+			</BottomSheetView>
+		</BottomSheetModal>
 	);
 }
 
 const styles = StyleSheet.create({
-	modal: {
-		justifyContent: "flex-end",
-		margin: 0,
-	},
-	sheet: {
+	sheetBackground: {
 		backgroundColor: "#FFFFFF",
 		borderTopLeftRadius: moderateScale(20),
 		borderTopRightRadius: moderateScale(20),
-		paddingHorizontal: horizontalScale(20),
-		paddingBottom: verticalScale(40),
-		paddingTop: verticalScale(12),
 	},
-	handle: {
+	handleIndicator: {
+		backgroundColor: "#E0E0E0",
 		width: horizontalScale(36),
 		height: verticalScale(4),
-		borderRadius: 2,
-		backgroundColor: "#E0E0E0",
-		alignSelf: "center",
-		marginBottom: verticalScale(16),
+	},
+	sheetContent: {
+		paddingHorizontal: horizontalScale(20),
+		paddingBottom: verticalScale(40),
+		paddingTop: verticalScale(4),
 	},
 	sheetTitle: {
 		fontSize: moderateScale(18),

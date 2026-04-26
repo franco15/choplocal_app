@@ -9,7 +9,9 @@ import { useState } from "react";
 import {
 	Keyboard,
 	KeyboardAvoidingView,
+	Modal,
 	Platform,
+	Pressable,
 	ScrollView,
 	StyleSheet,
 	TextInput,
@@ -19,7 +21,6 @@ import {
 } from "react-native";
 // import CountryPicker, { CountryCode } from "react-native-country-picker-modal";
 import CountrySelect, { ICountry } from "react-native-country-select";
-import Modal from "react-native-modal";
 
 export default function LoginScreen() {
 	const router = useRouter();
@@ -185,61 +186,63 @@ export default function LoginScreen() {
 				</ScrollView>
 			</KeyboardAvoidingView>
 			<Modal
-				isVisible={showDeletedUserAlert}
-				onBackdropPress={() => setShowDeletedUserAlert(false)}
-				animationIn="slideInUp"
-				animationOut="slideOutDown"
-				useNativeDriver
-				hideModalContentWhileAnimating
-				backdropOpacity={0}
-				style={{
-					margin: 0,
-					alignItems: "center",
-					justifyContent: "flex-end",
-					marginBottom: verticalScale(50),
-				}}
+				visible={showDeletedUserAlert}
+				transparent
+				animationType="slide"
+				onRequestClose={() => setShowDeletedUserAlert(false)}
 			>
-				<View
-					className={`flex bg-white w-[90%] justify-center items-center`}
+				<Pressable
+					onPress={() => setShowDeletedUserAlert(false)}
 					style={{
-						elevation: 5,
-						borderWidth: 1,
-						borderColor: "rgba(0, 0, 0, 0.2)",
-						height: verticalScale(275),
-						borderRadius: moderateScale(30),
-						paddingHorizontal: horizontalScale(40),
+						flex: 1,
+						alignItems: "center",
+						justifyContent: "flex-end",
+						marginBottom: verticalScale(50),
 					}}
 				>
-					<TextBold
-						className="text-center"
+					<Pressable
+						onPress={(e) => e.stopPropagation()}
+						className={`flex bg-white w-[90%] justify-center items-center`}
 						style={{
-							fontSize: moderateScale(20),
-							marginBottom: verticalScale(20),
-						}}
-					>
-						Your account has been successfully deleted.
-					</TextBold>
-					<TouchableOpacity
-						className="bg-[#E3C6FB] w-1/2 flex items-center justify-center"
-						activeOpacity={0.8}
-						onPress={() => setShowDeletedUserAlert(false)}
-						style={{
-							height: verticalScale(50),
+							elevation: 5,
+							borderWidth: 1,
+							borderColor: "rgba(0, 0, 0, 0.2)",
+							height: verticalScale(275),
 							borderRadius: moderateScale(30),
-							marginTop: verticalScale(10),
+							paddingHorizontal: horizontalScale(40),
 						}}
 					>
-						<Text
-							className=""
+						<TextBold
+							className="text-center"
 							style={{
-								fontSize: moderateScale(14),
-								paddingTop: Platform.OS === "ios" ? verticalScale(10) : 0,
+								fontSize: moderateScale(20),
+								marginBottom: verticalScale(20),
 							}}
 						>
-							Ok
-						</Text>
-					</TouchableOpacity>
-				</View>
+							Your account has been successfully deleted.
+						</TextBold>
+						<TouchableOpacity
+							className="bg-[#E3C6FB] w-1/2 flex items-center justify-center"
+							activeOpacity={0.8}
+							onPress={() => setShowDeletedUserAlert(false)}
+							style={{
+								height: verticalScale(50),
+								borderRadius: moderateScale(30),
+								marginTop: verticalScale(10),
+							}}
+						>
+							<Text
+								className=""
+								style={{
+									fontSize: moderateScale(14),
+									paddingTop: Platform.OS === "ios" ? verticalScale(10) : 0,
+								}}
+							>
+								Ok
+							</Text>
+						</TouchableOpacity>
+					</Pressable>
+				</Pressable>
 			</Modal>
 		</Container>
 	);

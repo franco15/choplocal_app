@@ -14,6 +14,7 @@ import {
 	Inter_700Bold,
 	useFonts,
 } from "@expo-google-fonts/inter";
+import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import * as Sentry from "@sentry/react-native";
 import { StripeProvider } from "@stripe/stripe-react-native";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -22,6 +23,7 @@ import { Stack, useRouter } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useState } from "react";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import "./global.css";
 
 Notifications.setNotificationHandler({
@@ -57,12 +59,16 @@ function RootLayout() {
 	}
 
 	return (
-		<QueryClientProvider client={queryClient}>
-			<StatusBar style="dark" />
-			<AuthProvider>
-				<RootComponent />
-			</AuthProvider>
-		</QueryClientProvider>
+		<GestureHandlerRootView style={{ flex: 1 }}>
+			<BottomSheetModalProvider>
+				<QueryClientProvider client={queryClient}>
+					<StatusBar style="dark" />
+					<AuthProvider>
+						<RootComponent />
+					</AuthProvider>
+				</QueryClientProvider>
+			</BottomSheetModalProvider>
+		</GestureHandlerRootView>
 	);
 }
 
