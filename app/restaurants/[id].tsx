@@ -26,6 +26,7 @@ import {
 	TouchableOpacity,
 	View,
 } from "react-native";
+import branch from "react-native-branch";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import RestaurantSkeleton from "../skeletons/restaurant";
 
@@ -109,12 +110,33 @@ export default function Restaurant() {
 		}
 		if (isNullOrWhitespace(code)) return;
 		try {
-			const url =
-				Platform.OS === "ios"
-					? "https://apps.apple.com/co/app/chop-local/id6754047000"
-					: "https://play.google.com/store/apps/details?id=com.choplocal";
+			let shareUrl: string;
+			try {
+				const buo = await branch.createBranchUniversalObject(
+					`restaurants/${id}`,
+					{
+						title: displayName,
+						contentDescription: `Check out ${displayName} on Chop Local`,
+						contentMetadata: {
+							customMetadata: {
+								route: `/restaurants/${id}`,
+							},
+						},
+					},
+				);
+				const { url } = await buo.generateShortUrl(
+					{ feature: "share", channel: "app" },
+					{},
+				);
+				shareUrl = url;
+			} catch {
+				shareUrl =
+					Platform.OS === "ios"
+						? "https://apps.apple.com/co/app/chop-local/id6754047000"
+						: "https://play.google.com/store/apps/details?id=com.choplocal";
+			}
 			await Share.share({
-				message: `Check out ${displayName} on Chop Local! Use my recommendation code: ${code}.\nDownload the app now at ${url}`,
+				message: `Check out ${displayName} on Chop Local! Use my recommendation code: ${code}.\n${shareUrl}`,
 			});
 		} catch {
 			// User cancelled share

@@ -1,10 +1,11 @@
 import { HeaderBackButton } from "@/components";
 import { AuthProvider, useAuthContext } from "@/contexts/AuthContext";
+import { DeepLinkProvider, useDeepLinkContext } from "@/contexts/DeepLinkContext";
 import { GiftCardProvider } from "@/contexts/GiftCardContext";
 import { NotificationsProvider } from "@/contexts/NotificationsContext";
 import { RedeemCodeProvider } from "@/contexts/RedeemCodeContext";
 import { SuggestionProvider } from "@/contexts/SuggestionsContext";
-import { UserProvider } from "@/contexts/UserContext";
+import { UserProvider, useUserContext } from "@/contexts/UserContext";
 import { queryClient } from "@/lib/api/queryClient";
 import { useStripeApi } from "@/lib/api/useApi";
 import {
@@ -24,7 +25,19 @@ import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useState } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import branch from "react-native-branch";
 import "./global.css";
+
+const ALLOWED_ROUTE_PREFIXES = ["/restaurants/"];
+
+const buildRouteFromParams = (params: Record<string, any>): string | null => {
+	const route = params?.route;
+	if (typeof route !== "string") return null;
+	if (!ALLOWED_ROUTE_PREFIXES.some((prefix) => route.startsWith(prefix))) {
+		return null;
+	}
+	return route;
+};
 
 Notifications.setNotificationHandler({
 	handleNotification: async () => {
@@ -64,7 +77,9 @@ function RootLayout() {
 				<QueryClientProvider client={queryClient}>
 					<StatusBar style="dark" />
 					<AuthProvider>
-						<RootComponent />
+						<DeepLinkProvider>
+							<RootComponent />
+						</DeepLinkProvider>
 					</AuthProvider>
 				</QueryClientProvider>
 			</BottomSheetModalProvider>
@@ -77,6 +92,7 @@ export default Sentry.wrap(RootLayout);
 const RootComponent = () => {
 	const router = useRouter();
 	const { authenticated } = useAuthContext();
+	const { setPendingRoute } = useDeepLinkContext();
 
 	useEffect(() => {
 		if (authenticated !== null) SplashScreen.hide();
@@ -86,6 +102,18 @@ const RootComponent = () => {
 			router.replace("/(tabs)");
 		}
 	}, [authenticated]);
+
+	useEffect(() => {
+		const unsubscribe = branch.subscribe(({ error, params }) => {
+			if (error || !params) return;
+			if (params["+clicked_branch_link"] !== true) return;
+			const route = buildRouteFromParams(params as Record<string, any>);
+			if (route) setPendingRoute(route);
+		});
+		return () => {
+			unsubscribe();
+		};
+	}, []);
 
 	if (!authenticated)
 		return (
@@ -101,6 +129,7 @@ const RootComponent = () => {
 					<GiftCardProvider>
 						<RedeemCodeProvider>
 							<SuggestionProvider>
+								<DeferredDeepLinkBridge />
 								<Stack screenOptions={{ headerShown: false }}>
 									<Stack.Screen name="(tabs)" />
 									<Stack.Screen
@@ -166,6 +195,33 @@ const RootComponent = () => {
 			</NotificationsProvider>
 		</UserProvider>
 	);
+};
+
+const DeferredDeepLinkBridge = () => {
+	const router = useRouter();
+	const { authenticated, isNewUser } = useAuthContext();
+	const { user, isUserLoading, profileComplete } = useUserContext();
+	const { pendingRoute, consumePendingRoute } = useDeepLinkContext();
+
+	useEffect(() => {
+		if (!authenticated) return;
+		if (isNewUser) return;
+		if (isUserLoading) return;
+		if (!user) return;
+		if (!profileComplete) return;
+		if (!pendingRoute) return;
+		const target = consumePendingRoute();
+		if (target) router.push(target as any);
+	}, [
+		authenticated,
+		isNewUser,
+		isUserLoading,
+		user,
+		profileComplete,
+		pendingRoute,
+	]);
+
+	return null;
 };
 
 const StripeWrapper = ({ children }: { children: React.ReactNode }) => {

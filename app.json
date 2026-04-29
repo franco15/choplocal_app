@@ -22,7 +22,12 @@
       "googleServicesFile": "./assets/GoogleService-Info.plist",
       "entitlements": {
         "aps-environment": "development"
-      }
+      },
+       "associatedDomains": [
+        "applinks:choplocal.app.link",
+        "applinks:choplocal-alternate.app.link",
+        "applinks:choplocally.com"
+      ]
     },
     "android": {
       "softwareKeyboardLayoutMode": "resize",
@@ -38,7 +43,38 @@
         "googleFirebaseMessaging": {
           "defaultNotificationChannelId": "default"
         }
-      }
+      },
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            {
+              "scheme": "https",
+              "host": "choplocal.app.link",
+              "pathPrefix": "/"
+            },
+            {
+              "scheme": "https",
+              "host": "choplocal-alternate.app.link",
+              "pathPrefix": "/"
+            },
+            {
+              "scheme": "https",
+              "host": "choplocally.com",
+              "pathPrefix": "/"
+            },
+            {
+              "scheme": "choplocal",
+              "host": "*"
+            }
+          ],
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
+        }
+      ]
     },
     "web": {
       "bundler": "metro",
@@ -84,7 +120,18 @@
       "@react-native-firebase/messaging",
       "@react-native-community/datetimepicker",
       "@sentry/react-native",
-      "expo-image"
+      "expo-image",
+      [
+        "@config-plugins/react-native-branch",
+        {
+          "apiKey": "key_live_hBAF2wCyWQC57K2dSS7pLmjfyAfnqpOb",
+          "iosUniversalLinkDomains": [
+            "choplocal.app.link",
+            "choplocal-alternate.app.link",
+            "choplocally.com"
+          ]
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true
