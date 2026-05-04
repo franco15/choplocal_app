@@ -13,6 +13,7 @@ import { queryClient, queryKeys } from "@/lib/api/queryClient";
 import { useNotificationsApi, useUserApi } from "@/lib/api/useApi";
 import { useFavorites } from "@/lib/hooks/useFavorites";
 import { horizontalScale, moderateScale, verticalScale } from "@/lib/metrics";
+import { isNotificationRead } from "@/lib/types/notification";
 import { ERestaurantStatus, IRestaurant } from "@/lib/types/restaurant";
 import { isNullOrWhitespace } from "@/lib/utils";
 import { Ionicons } from "@expo/vector-icons";
@@ -65,7 +66,7 @@ export default function HomeScreen() {
 		staleTime: 10000,
 	});
 
-	const hasUnread = notifications.some((n) => !n.read && !(n as any).isRead);
+	const hasUnread = notifications.some((n) => !isNotificationRead(n));
 
 	useEffect(() => {
 		if (!profileComplete) router.replace("/complete-profile");

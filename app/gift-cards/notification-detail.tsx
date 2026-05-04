@@ -36,21 +36,32 @@ export default function GiftCardNotificationDetail() {
 
 	// Mark notification as read when screen loads (optimistic update)
 	useEffect(() => {
-		if (notificationId && notificationId.length > 0 && user?.id && !markedRef.current) {
-			markedRef.current = true;
-			queryClient.setQueryData<INotification[]>(
-				queryKeys.notifications.byUser(user.id),
-				(old) =>
-					old?.map((n) =>
-						n.id === notificationId ? { ...n, read: true, isRead: true } : n,
-					),
-			);
-			notificationsApi.markAsRead(notificationId).then(() => {
-				queryClient.invalidateQueries({
-					queryKey: queryKeys.notifications.byUser(user!.id),
-				});
-			}).catch(() => {});
+		if (
+			!notificationId ||
+			notificationId.length === 0 ||
+			!user?.id ||
+			markedRef.current
+		) {
+			return;
 		}
+		markedRef.current = true;
+		queryClient.setQueryData<INotification[]>(
+			queryKeys.notifications.byUser(user.id),
+			(old) =>
+				old?.map((n) =>
+					n.id === notificationId
+						? { ...n, read: true, isRead: true, IsRead: true }
+						: n,
+				),
+		);
+		(async () => {
+			try {
+				await notificationsApi.markAsRead(notificationId);
+				await queryClient.invalidateQueries({
+					queryKey: queryKeys.notifications.byUser(user.id),
+				});
+			} catch {}
+		})();
 	}, [notificationId, user?.id]);
 
 	const { data: card, isPending, isError } = useQuery({

@@ -10,11 +10,14 @@ import {
 	useDropById,
 	useRsvpMutation,
 } from "@/lib/api/queries/dropQueries";
+import { queryClient, queryKeys } from "@/lib/api/queryClient";
+import { useNotificationsApi } from "@/lib/api/useApi";
 import { verticalScale } from "@/lib/metrics";
+import { INotification } from "@/lib/types/notification";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { router, useLocalSearchParams } from "expo-router";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
 	ActivityIndicator,
 	Image,
@@ -93,9 +96,14 @@ const HTML_BASE_STYLE = {
 };
 
 export default function EventDetailScreen() {
-	const { id } = useLocalSearchParams<{ id: string }>();
+	const { id, notificationId } = useLocalSearchParams<{
+		id: string;
+		notificationId?: string;
+	}>();
 	const insets = useSafeAreaInsets();
 	const { user } = useUserContext();
+	const notificationsApi = useNotificationsApi();
+	const markedRef = useRef(false);
 
 	const { data: event, isLoading } = useDropById(id, user.id);
 	const rsvpMutation = useRsvpMutation();
@@ -105,6 +113,35 @@ export default function EventDetailScreen() {
 
 	const [rsvpSheetOpen, setRsvpSheetOpen] = useState(false);
 	const [showFullDescription, setShowFullDescription] = useState(false);
+
+	useEffect(() => {
+		if (
+			!notificationId ||
+			notificationId.length === 0 ||
+			!user?.id ||
+			markedRef.current
+		) {
+			return;
+		}
+		markedRef.current = true;
+		queryClient.setQueryData<INotification[]>(
+			queryKeys.notifications.byUser(user.id),
+			(old) =>
+				old?.map((n) =>
+					n.id === notificationId
+						? { ...n, read: true, isRead: true, IsRead: true }
+						: n,
+				),
+		);
+		(async () => {
+			try {
+				await notificationsApi.markAsRead(notificationId);
+				await queryClient.invalidateQueries({
+					queryKey: queryKeys.notifications.byUser(user.id),
+				});
+			} catch {}
+		})();
+	}, [notificationId, user?.id]);
 
 	const descriptionPlain = useMemo(
 		() => (event?.description ? stripHtml(event.description) : ""),

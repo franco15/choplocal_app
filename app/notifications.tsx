@@ -7,6 +7,7 @@ import {
 	IGiftCardNotificationData,
 	INotification,
 	NotificationType,
+	isNotificationRead,
 } from "@/lib/types/notification";
 import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
@@ -14,7 +15,6 @@ import { useRouter } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
 import {
 	ActivityIndicator,
-	Animated,
 	Pressable,
 	RefreshControl,
 	SectionList,
@@ -22,10 +22,12 @@ import {
 	TouchableOpacity,
 	View,
 } from "react-native";
-import {
-	GestureHandlerRootView,
-	Swipeable,
-} from "react-native-gesture-handler";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+import ReanimatedSwipeable from "react-native-gesture-handler/ReanimatedSwipeable";
+import Animated, {
+	SharedValue,
+	useAnimatedStyle,
+} from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const TYPE_CONFIG: Record<
@@ -36,6 +38,16 @@ const TYPE_CONFIG: Record<
 		icon: "gift-outline",
 		bg: "#FBF6F5",
 		color: "#b42406",
+	},
+	[NotificationType.DropReminderDayBefore]: {
+		icon: "calendar-outline",
+		bg: "#FFF4E5",
+		color: "#C67A00",
+	},
+	[NotificationType.DropReminderDayOf]: {
+		icon: "alarm-outline",
+		bg: "#FFEAE5",
+		color: "#D24300",
 	},
 	default: { icon: "megaphone-outline", bg: "#E8F0FE", color: "#3B6CD4" },
 };
@@ -91,6 +103,33 @@ function parseNotificationData<T>(data?: string): T | null {
 	}
 }
 
+function DeleteAction({
+	progress,
+	onDelete,
+}: {
+	progress: SharedValue<number>;
+	onDelete: () => void;
+}) {
+	const animatedStyle = useAnimatedStyle(() => ({
+		transform: [{ translateX: 80 - progress.value * 80 }],
+	}));
+	return (
+		<Animated.View style={[{ justifyContent: "center" }, animatedStyle]}>
+			<TouchableOpacity
+				activeOpacity={0.8}
+				onPress={onDelete}
+				style={styles.deleteBtn}
+			>
+				<Ionicons
+					name="trash-outline"
+					size={moderateScale(22)}
+					color="#FFFFFF"
+				/>
+			</TouchableOpacity>
+		</Animated.View>
+	);
+}
+
 export default function NotificationsScreen() {
 	const insets = useSafeAreaInsets();
 	const router = useRouter();
@@ -135,8 +174,7 @@ export default function NotificationsScreen() {
 		setRefreshing(false);
 	}, [user.id]);
 
-	const isRead = (n: INotification) => n.read || (n as any).isRead;
-	const unreadCount = notifications.filter((n) => !isRead(n)).length;
+	const unreadCount = notifications.filter((n) => !isNotificationRead(n)).length;
 
 	const onDeleteNotification = useCallback(
 		(id: string) => {
@@ -149,61 +187,55 @@ export default function NotificationsScreen() {
 	);
 
 	const renderRightActions = useCallback(
-		(
-			progress: Animated.AnimatedInterpolation<number>,
-			_dragX: Animated.AnimatedInterpolation<number>,
-			id: string,
-		) => {
-			const translateX = progress.interpolate({
-				inputRange: [0, 1],
-				outputRange: [80, 0],
-			});
-			return (
-				<Animated.View
-					style={{ transform: [{ translateX }], justifyContent: "center" }}
-				>
-					<TouchableOpacity
-						activeOpacity={0.8}
-						onPress={() => onDeleteNotification(id)}
-						style={styles.deleteBtn}
-					>
-						<Ionicons
-							name="trash-outline"
-							size={moderateScale(22)}
-							color="#FFFFFF"
-						/>
-					</TouchableOpacity>
-				</Animated.View>
-			);
-		},
+		(progress: SharedValue<number>, id: string) => (
+			<DeleteAction
+				progress={progress}
+				onDelete={() => onDeleteNotification(id)}
+			/>
+		),
 		[onDeleteNotification],
 	);
 
 	const onNotificationPress = useCallback(
 		(item: INotification) => {
-			if (item.type === NotificationType.GiftCard) {
-				const parsed = parseNotificationData<IGiftCardNotificationData>(
-					item.data,
-				);
-				const giftCardId = parsed?.GiftCardId ?? item.giftCardId ?? "";
-
-				router.push({
-					pathname: "/gift-cards/notification-detail",
-					params: {
-						giftCardId,
-						notificationId: item.read ? "" : item.id,
-					},
-				});
-				return;
+			switch (item.type) {
+				case NotificationType.GiftCard: {
+					const parsed = parseNotificationData<IGiftCardNotificationData>(
+						item.data,
+					);
+					const giftCardId = parsed?.GiftCardId ?? item.giftCardId ?? "";
+					router.push({
+						pathname: "/gift-cards/notification-detail",
+						params: {
+							giftCardId,
+							notificationId: isNotificationRead(item) ? "" : item.id,
+						},
+					});
+					return;
+				}
+				case NotificationType.DropReminderDayBefore:
+				case NotificationType.DropReminderDayOf: {
+					const parsed =
+						typeof item.data === "string"
+							? parseNotificationData<Record<string, unknown>>(item.data)
+							: ((item.data ?? null) as Record<string, unknown> | null);
+					const dropId =
+						(parsed?.dropId as string | undefined) ??
+						(parsed?.DropId as string | undefined) ??
+						"";
+					if (!dropId) return;
+					router.push({
+						pathname: "/events/[id]",
+						params: {
+							id: dropId,
+							notificationId: isNotificationRead(item) ? "" : item.id,
+						},
+					});
+					return;
+				}
+				default:
+					return;
 			}
-
-			router.push({
-				pathname: "/gift-cards/notification-detail",
-				params: {
-					giftCardId: item.giftCardId ?? "",
-					notificationId: item.read ? "" : item.id,
-				},
-			});
 		},
 		[router],
 	);
@@ -249,9 +281,9 @@ export default function NotificationsScreen() {
 						renderItem={({ item }) => {
 							const config = getNotificationIcon(item);
 							return (
-								<Swipeable
-									renderRightActions={(progress, dragX) =>
-										renderRightActions(progress, dragX, item.id)
+								<ReanimatedSwipeable
+									renderRightActions={(progress) =>
+										renderRightActions(progress, item.id)
 									}
 									overshootRight={false}
 								>
@@ -260,7 +292,9 @@ export default function NotificationsScreen() {
 										style={styles.card}
 									>
 										{/* Unread dot */}
-										{!isRead(item) && <View style={styles.unreadDot} />}
+										{!isNotificationRead(item) && (
+											<View style={styles.unreadDot} />
+										)}
 
 										{/* Icon */}
 										<View
@@ -291,7 +325,7 @@ export default function NotificationsScreen() {
 											</Text>
 										</View>
 									</Pressable>
-								</Swipeable>
+								</ReanimatedSwipeable>
 							);
 						}}
 						ListEmptyComponent={

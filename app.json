@@ -24,7 +24,7 @@
         "aps-environment": "development"
       },
        "associatedDomains": [
-        "applinks:choplocal.app.link",
+        "applinks:app.choplocally.com",
         "applinks:choplocal-alternate.app.link",
         "applinks:choplocally.com"
       ]
@@ -51,7 +51,7 @@
           "data": [
             {
               "scheme": "https",
-              "host": "choplocal.app.link",
+              "host": "app.choplocally.com",
               "pathPrefix": "/"
             },
             {
@@ -126,7 +126,7 @@
         {
           "apiKey": "key_live_hBAF2wCyWQC57K2dSS7pLmjfyAfnqpOb",
           "iosUniversalLinkDomains": [
-            "choplocal.app.link",
+            "app.choplocally.com",
             "choplocal-alternate.app.link",
             "choplocally.com"
           ]
