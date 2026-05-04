@@ -7,15 +7,15 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const ICON_SIZE = moderateScale(24);
 
-type TabIconName = "home" | "restaurant" | "bookmark" | "qr-code" | "person";
+type TabIconName =
+	| "home"
+	| "restaurant"
+	| "bookmark"
+	| "qr-code"
+	| "balloon"
+	| "person";
 
-function TabIcon({
-	focused,
-	name,
-}: {
-	focused: boolean;
-	name: TabIconName;
-}) {
+function TabIcon({ focused, name }: { focused: boolean; name: TabIconName }) {
 	const outlineName = `${name}-outline` as keyof typeof Ionicons.glyphMap;
 	const filledName = name as keyof typeof Ionicons.glyphMap;
 
@@ -100,6 +100,15 @@ const TabsLayout = () => {
 					title: "QR",
 					tabBarIcon: ({ focused }) => (
 						<TabIcon focused={focused} name="qr-code" />
+					),
+				}}
+			/>
+			<Tabs.Screen
+				name="events"
+				options={{
+					title: "Events",
+					tabBarIcon: ({ focused }) => (
+						<TabIcon focused={focused} name="balloon" />
 					),
 				}}
 			/>
