@@ -12,6 +12,7 @@ import {
 } from "@/lib/api/queries/dropQueries";
 import { queryClient, queryKeys } from "@/lib/api/queryClient";
 import { useNotificationsApi } from "@/lib/api/useApi";
+import { useEventFavorites } from "@/lib/hooks/useEventFavorites";
 import { verticalScale } from "@/lib/metrics";
 import { INotification } from "@/lib/types/notification";
 import { Ionicons } from "@expo/vector-icons";
@@ -108,6 +109,8 @@ export default function EventDetailScreen() {
 	const { data: event, isLoading } = useDropById(id, user.id);
 	const rsvpMutation = useRsvpMutation();
 	const cancelMutation = useCancelRsvpMutation();
+	const { favoriteEventIds, toggleEventFavorite } = useEventFavorites();
+	const isFavorited = !!id && favoriteEventIds.includes(id);
 	const { width: windowWidth } = useWindowDimensions();
 	const contentWidth = windowWidth - 40; // matches content paddingHorizontal: 20
 
@@ -284,8 +287,16 @@ export default function EventDetailScreen() {
 							<View style={styles.organizerDot} />
 							<Text style={styles.organizer}>{event.organizer}</Text>
 						</View>
-						<TouchableOpacity activeOpacity={0.7} hitSlop={10}>
-							<Ionicons name="bookmark-outline" size={22} color="#CCCCCC" />
+						<TouchableOpacity
+							activeOpacity={0.7}
+							hitSlop={10}
+							onPress={() => id && toggleEventFavorite(id)}
+						>
+							<Ionicons
+								name={isFavorited ? "bookmark" : "bookmark-outline"}
+								size={22}
+								color={isFavorited ? "#1A1A1A" : "#CCCCCC"}
+							/>
 						</TouchableOpacity>
 					</View>
 
@@ -431,11 +442,26 @@ export default function EventDetailScreen() {
 
 				{event.userRsvp === "confirmed" && (
 					<View>
-						<View style={[styles.rsvpBtn, styles.rsvpBtnConfirmed]}>
+						<TouchableOpacity
+							activeOpacity={0.85}
+							onPress={() =>
+								router.push({
+									pathname: "/events/ticket",
+									params: { id: event.id },
+								})
+							}
+							style={[styles.rsvpBtn, styles.rsvpBtnConfirmed]}
+						>
+							<Ionicons
+								name="ticket-outline"
+								size={18}
+								color="#065F46"
+								style={{ marginRight: 8 }}
+							/>
 							<TextBold style={styles.rsvpBtnTextConfirmed}>
-								{"✓ You're going!"}
+								View ticket
 							</TextBold>
-						</View>
+						</TouchableOpacity>
 						<TouchableOpacity
 							activeOpacity={0.7}
 							onPress={handleCancelRsvp}
@@ -661,6 +687,7 @@ const styles = StyleSheet.create({
 		borderTopColor: "#F5F5F5",
 	},
 	rsvpBtn: {
+		flexDirection: "row",
 		height: 52,
 		borderRadius: 14,
 		alignItems: "center",

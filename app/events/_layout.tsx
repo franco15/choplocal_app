@@ -7,6 +7,7 @@ const EventsLayout = () => {
 			<Stack.Screen name="category" />
 			<Stack.Screen name="all-categories" />
 			<Stack.Screen name="restaurant-drops" />
+			<Stack.Screen name="ticket" />
 		</Stack>
 	);
 };

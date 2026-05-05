@@ -3,6 +3,7 @@ import EventCardLarge from "@/components/events/EventCardLarge";
 import EventListRow from "@/components/events/EventListRow";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { useDropsList } from "@/lib/api/queries/dropQueries";
+import { queryKeys } from "@/lib/api/queryClient";
 import { ALL_CATEGORIES } from "@/lib/constants/dropCategories";
 import { horizontalScale, moderateScale, verticalScale } from "@/lib/metrics";
 import { IEventRestaurant } from "@/lib/types/event";
@@ -15,12 +16,14 @@ import {
 	FlatList,
 	Image,
 	Pressable,
+	RefreshControl,
 	ScrollView,
 	StyleSheet,
 	TextInput,
 	TouchableOpacity,
 	View,
 } from "react-native";
+import { useQueryClient } from "@tanstack/react-query";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function DropsScreen() {
@@ -28,9 +31,21 @@ export default function DropsScreen() {
 	const { userAuth } = useAuthContext();
 	const userId = userAuth?.id;
 
-	const { data, isLoading } = useDropsList(userId);
+	const { data, isLoading, refetch } = useDropsList(userId);
+	const queryClient = useQueryClient();
 	const [searchQuery, setSearchQuery] = useState("");
 	const [searchActive, setSearchActive] = useState(false);
+	const [refreshing, setRefreshing] = useState(false);
+
+	const onRefresh = useCallback(async () => {
+		setRefreshing(true);
+		try {
+			await queryClient.invalidateQueries({ queryKey: queryKeys.drops.all });
+			await refetch();
+		} finally {
+			setRefreshing(false);
+		}
+	}, [queryClient, refetch]);
 
 	const events = useMemo(
 		() =>
@@ -205,6 +220,14 @@ export default function DropsScreen() {
 					contentContainerStyle={{
 						paddingBottom: verticalScale(120),
 					}}
+					refreshControl={
+						<RefreshControl
+							refreshing={refreshing}
+							onRefresh={onRefresh}
+							tintColor="#b42406"
+							progressViewOffset={20}
+						/>
+					}
 				>
 					{/* ── Trending ── */}
 					{trending.length > 0 && (
@@ -234,7 +257,10 @@ export default function DropsScreen() {
 								keyExtractor={(item) => `trend_${item.id}`}
 								contentContainerStyle={styles.carouselContent}
 								renderItem={({ item }) => (
-									<EventCardLarge event={item} />
+									<EventCardLarge
+										event={item}
+										showAttendees
+									/>
 								)}
 							/>
 						</View>
@@ -306,10 +332,10 @@ export default function DropsScreen() {
 									<Pressable
 										onPress={() =>
 											router.push({
-												pathname: "/events/restaurant-drops",
+												pathname: "/restaurants/[id]",
 												params: {
-													restaurantId: item.id,
-													restaurantName: item.name,
+													id: item.id,
+													name: item.name,
 												},
 											})
 										}
@@ -422,14 +448,10 @@ export default function DropsScreen() {
 										resizeMode="repeat"
 									/>
 									<View style={styles.categoryContent}>
-										<TextBold
-											style={styles.categoryName}
-										>
+										<TextBold style={styles.categoryName}>
 											{cat.name.toLowerCase()}
 										</TextBold>
-										<Text
-											style={styles.categoryCount}
-										>
+										<Text style={styles.categoryCount}>
 											{eventCounts[cat.name] ?? 0} drops
 										</Text>
 									</View>
@@ -646,7 +668,7 @@ const styles = StyleSheet.create({
 		marginTop: verticalScale(2),
 	},
 
-	/* ── Category cards (unified) ── */
+	/* ── Category cards (gradient) ── */
 	categoryCards: {
 		paddingHorizontal: horizontalScale(16),
 		gap: verticalScale(8),

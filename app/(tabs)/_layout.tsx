@@ -12,7 +12,7 @@ type TabIconName =
 	| "restaurant"
 	| "bookmark"
 	| "qr-code"
-	| "balloon"
+	| "calendar"
 	| "person";
 
 function TabIcon({ focused, name }: { focused: boolean; name: TabIconName }) {
@@ -106,9 +106,9 @@ const TabsLayout = () => {
 			<Tabs.Screen
 				name="events"
 				options={{
-					title: "Events",
+					title: "Drops",
 					tabBarIcon: ({ focused }) => (
-						<TabIcon focused={focused} name="balloon" />
+						<TabIcon focused={focused} name="calendar" />
 					),
 				}}
 			/>

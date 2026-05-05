@@ -1,9 +1,20 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { AppCreateRsvpDto } from "@/lib/types/drop";
+import { IEvent } from "@/lib/types/event";
 import { mapDropToEvent } from "../mappers/dropMapper";
 import { queryKeys } from "../queryClient";
 import { useDropsApi } from "../useApi";
+
+/** Keep only events that haven't ended yet (endDate >= now). */
+const filterOutPast = (events: IEvent[]): IEvent[] => {
+	const now = Date.now();
+	return events.filter((e) => {
+		const ref = e.endDate || e.startDate;
+		if (!ref) return true;
+		return new Date(ref).getTime() >= now;
+	});
+};
 
 export const useDropsList = (userId?: string) => {
 	const api = useDropsApi();
@@ -11,7 +22,7 @@ export const useDropsList = (userId?: string) => {
 		queryKey: queryKeys.drops.list(userId),
 		queryFn: async () => {
 			const drops = await api.list(userId);
-			return drops.map(mapDropToEvent);
+			return filterOutPast(drops.map(mapDropToEvent));
 		},
 	});
 };
@@ -34,7 +45,7 @@ export const useDropsByRestaurant = (
 		queryKey: queryKeys.drops.byRestaurant(restaurantId ?? "", userId),
 		queryFn: async () => {
 			const drops = await api.byRestaurant(restaurantId!, userId);
-			return drops.map(mapDropToEvent);
+			return filterOutPast(drops.map(mapDropToEvent));
 		},
 		enabled: !!restaurantId,
 	});

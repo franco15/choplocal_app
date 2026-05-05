@@ -6,3 +6,4 @@ export const REFRESH_TOKEN_KEY = "choplocal-refresh-token";
 export const API_URL = "http://localhost:5274/"; // localhost ios simulator
 
 export const FAVORITES_KEY = "choplocal-favorites";
+export const EVENT_FAVORITES_KEY = "choplocal-event-favorites";

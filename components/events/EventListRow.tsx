@@ -1,3 +1,4 @@
+import { useEventFavorites } from "@/lib/hooks/useEventFavorites";
 import { IEvent } from "@/lib/types/event";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
@@ -60,9 +61,16 @@ const formatPrice = (price: number | null): string => {
 };
 
 export default function EventListRow({ event }: Props) {
+	const { favoriteEventIds, toggleEventFavorite } = useEventFavorites();
+	const isFavorited = favoriteEventIds.includes(event.id);
+
 	const onPress = useCallback(() => {
 		router.push({ pathname: "/events/[id]", params: { id: event.id } });
 	}, [event.id]);
+
+	const onToggleBookmark = useCallback(() => {
+		toggleEventFavorite(event.id);
+	}, [event.id, toggleEventFavorite]);
 
 	return (
 		<TouchableOpacity
@@ -100,13 +108,18 @@ export default function EventListRow({ event }: Props) {
 				</View>
 
 				{/* Bookmark icon */}
-				<View style={rowStyles.bookmarkWrap}>
+				<TouchableOpacity
+					onPress={onToggleBookmark}
+					activeOpacity={0.6}
+					hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+					style={rowStyles.bookmarkWrap}
+				>
 					<Ionicons
-						name="bookmark-outline"
+						name={isFavorited ? "bookmark" : "bookmark-outline"}
 						size={22}
-						color="#CCC"
+						color={isFavorited ? "#1A1A1A" : "#CCC"}
 					/>
-				</View>
+				</TouchableOpacity>
 			</View>
 		</TouchableOpacity>
 	);

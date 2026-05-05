@@ -1,7 +1,9 @@
 import { Text, TextBold } from "@/components";
+import EventCardLarge from "@/components/events/EventCardLarge";
 import HomeRestaurantCard from "@/components/HomeRestaurantCard";
 import { useUserContext } from "@/contexts/UserContext";
 import { useFavorites } from "@/lib/hooks/useFavorites";
+import { useDropsList } from "@/lib/api/queries/dropQueries";
 import { queryClient, queryKeys } from "@/lib/api/queryClient";
 import { useUserApi } from "@/lib/api/useApi";
 import { horizontalScale, moderateScale, verticalScale } from "@/lib/metrics";
@@ -37,13 +39,20 @@ export default function ProfileScreen() {
 		enabled: !!user && !isNullOrWhitespace(user?.id),
 	});
 
+	const { data: drops } = useDropsList(user?.id);
+
 	const onRefresh = useCallback(async () => {
 		setRefreshing(true);
-		await queryClient.invalidateQueries({
-			queryKey: [queryKeys.users.restaurants],
-		});
+		await Promise.all([
+			queryClient.invalidateQueries({
+				queryKey: [queryKeys.users.restaurants],
+			}),
+			queryClient.invalidateQueries({
+				queryKey: queryKeys.drops.list(user?.id),
+			}),
+		]);
 		setRefreshing(false);
-	}, []);
+	}, [user?.id]);
 
 	const initials = useMemo(() => {
 		if (!user) return "";
@@ -67,6 +76,17 @@ export default function ProfileScreen() {
 			.sort((a, b) => b.checkIns - a.checkIns)
 			.slice(0, 3);
 	}, [restaurants]);
+
+	const myDrops = useMemo(() => {
+		if (!drops) return [];
+		return drops
+			.filter((d) => d.userRsvp !== null && d.status === "published")
+			.sort(
+				(a, b) =>
+					new Date(a.startDate).getTime() -
+					new Date(b.startDate).getTime(),
+			);
+	}, [drops]);
 
 	if (!user) return null;
 
@@ -191,6 +211,31 @@ export default function ProfileScreen() {
 						/>
 					</View>
 				</TouchableOpacity>
+
+				{/* ── Your Drops (RSVP'd events) ── */}
+				{myDrops.length > 0 && (
+					<View style={styles.topSection}>
+						<View style={styles.sectionHeader}>
+							<TextBold style={styles.sectionTitle}>
+								Your Drops
+							</TextBold>
+							<Text style={styles.sectionMeta}>
+								{myDrops.length}{" "}
+								{myDrops.length === 1 ? "event" : "events"} coming up
+							</Text>
+						</View>
+						<FlatList
+							data={myDrops}
+							horizontal
+							showsHorizontalScrollIndicator={false}
+							keyExtractor={(item) => `mydrop_${item.id}`}
+							contentContainerStyle={styles.carouselContent}
+							renderItem={({ item }) => (
+								<EventCardLarge event={item} />
+							)}
+						/>
+					</View>
+				)}
 
 				{/* ── Top Spots (horizontal carousel) ── */}
 				<View style={styles.topSection}>
@@ -369,6 +414,19 @@ const styles = StyleSheet.create({
 	/* ── Top Spots ── */
 	topSection: {
 		marginTop: verticalScale(28),
+	},
+	sectionHeader: {
+		paddingHorizontal: horizontalScale(20),
+		marginBottom: verticalScale(14),
+	},
+	sectionTitle: {
+		fontSize: moderateScale(17),
+		color: "#1A1A1A",
+	},
+	sectionMeta: {
+		fontSize: moderateScale(12),
+		color: "#999",
+		marginTop: verticalScale(2),
 	},
 	topTitle: {
 		fontSize: moderateScale(17),

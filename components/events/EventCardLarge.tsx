@@ -1,5 +1,6 @@
 import { horizontalScale, moderateScale, verticalScale } from "@/lib/metrics";
 import { IEvent } from "@/lib/types/event";
+import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useCallback } from "react";
 import { Image, Pressable, StyleSheet, View } from "react-native";
@@ -7,6 +8,7 @@ import { CustomText as Text, CustomTextBold as TextBold } from "../Texts";
 
 type Props = {
 	event: IEvent;
+	showAttendees?: boolean;
 };
 
 const formatDate = (dateStr: string): string => {
@@ -42,10 +44,16 @@ const formatPrice = (price: number | null): string => {
 	return `$${price.toFixed(2)}`;
 };
 
-export default function EventCardLarge({ event }: Props) {
+export default function EventCardLarge({
+	event,
+	showAttendees = false,
+}: Props) {
 	const onPress = useCallback(() => {
 		router.push({ pathname: "/events/[id]", params: { id: event.id } });
 	}, [event.id]);
+
+	const attendeeCount = event.attendeeCount ?? event.rsvpCount ?? 0;
+	const showBadge = showAttendees && attendeeCount > 0;
 
 	return (
 		<Pressable
@@ -70,6 +78,20 @@ export default function EventCardLarge({ event }: Props) {
 							{ backgroundColor: event.accentColor },
 						]}
 					/>
+				)}
+
+				{/* Attendees badge */}
+				{showBadge && (
+					<View style={styles.attendeesBadge}>
+						<Ionicons
+							name="people"
+							size={moderateScale(12)}
+							color="#FFFFFF"
+						/>
+						<TextBold style={styles.attendeesText}>
+							{attendeeCount} going
+						</TextBold>
+					</View>
 				)}
 			</View>
 
@@ -104,6 +126,23 @@ const styles = StyleSheet.create({
 	image: {
 		width: "100%",
 		height: "100%",
+	},
+	attendeesBadge: {
+		position: "absolute",
+		bottom: 10,
+		left: 10,
+		flexDirection: "row",
+		alignItems: "center",
+		gap: 4,
+		paddingHorizontal: 10,
+		paddingVertical: 5,
+		borderRadius: 20,
+		backgroundColor: "rgba(0,0,0,0.6)",
+	},
+	attendeesText: {
+		fontSize: moderateScale(11),
+		color: "#FFFFFF",
+		letterSpacing: 0.2,
 	},
 	info: {
 		paddingTop: verticalScale(10),

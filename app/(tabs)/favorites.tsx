@@ -1,22 +1,42 @@
 import { Container, Text, TextBold } from "@/components";
+import EventListRow from "@/components/events/EventListRow";
 import RestaurantCard from "@/components/RestaurantCard";
 import { Bookmark } from "@/constants/svgs";
 import { useUserContext } from "@/contexts/UserContext";
+import { useDropsList } from "@/lib/api/queries/dropQueries";
 import { queryClient, queryKeys } from "@/lib/api/queryClient";
 import { useUserApi } from "@/lib/api/useApi";
+import { useEventFavorites } from "@/lib/hooks/useEventFavorites";
 import { useFavorites } from "@/lib/hooks/useFavorites";
 import { horizontalScale, moderateScale, verticalScale } from "@/lib/metrics";
+import { IEvent } from "@/lib/types/event";
 import { IRestaurant } from "@/lib/types/restaurant";
 import { isNullOrWhitespace } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { useCallback, useMemo, useState } from "react";
-import { FlatList, RefreshControl, StyleSheet, View } from "react-native";
+import {
+	FlatList,
+	LayoutAnimation,
+	Pressable,
+	RefreshControl,
+	StyleSheet,
+	View,
+} from "react-native";
+
+type Segment = "restaurants" | "drops";
+
+const SEGMENTS: { key: Segment; label: string }[] = [
+	{ key: "restaurants", label: "Restaurants" },
+	{ key: "drops", label: "Drops" },
+];
 
 export default function FavoritesScreen() {
 	const { user } = useUserContext();
 	const userApi = useUserApi();
 	const { favoriteIds, toggleFavorite } = useFavorites();
+	const { favoriteEventIds } = useEventFavorites();
 	const [refreshing, setRefreshing] = useState(false);
+	const [segment, setSegment] = useState<Segment>("restaurants");
 
 	const { data: restaurants } = useQuery({
 		queryKey: [queryKeys.users.restaurants],
@@ -27,20 +47,32 @@ export default function FavoritesScreen() {
 		enabled: !!user && !isNullOrWhitespace(user?.id),
 	});
 
+	const { data: drops } = useDropsList(user?.id);
+
 	const onRefresh = useCallback(async () => {
 		setRefreshing(true);
-		await queryClient.invalidateQueries({
-			queryKey: [queryKeys.users.restaurants],
-		});
+		await Promise.all([
+			queryClient.invalidateQueries({
+				queryKey: [queryKeys.users.restaurants],
+			}),
+			queryClient.invalidateQueries({
+				queryKey: queryKeys.drops.list(user?.id),
+			}),
+		]);
 		setRefreshing(false);
-	}, []);
+	}, [user?.id]);
 
 	const favoriteRestaurants = useMemo(() => {
 		if (!restaurants) return [];
 		return restaurants.filter((r) => favoriteIds.includes(r.id));
 	}, [restaurants, favoriteIds]);
 
-	const renderItem = ({
+	const favoriteDrops = useMemo(() => {
+		if (!drops) return [];
+		return drops.filter((d) => favoriteEventIds.includes(d.id));
+	}, [drops, favoriteEventIds]);
+
+	const renderRestaurant = ({
 		item,
 		index,
 	}: {
@@ -55,6 +87,22 @@ export default function FavoritesScreen() {
 		/>
 	);
 
+	const renderEvent = ({ item }: { item: IEvent }) => (
+		<EventListRow event={item} />
+	);
+
+	const isRestaurants = segment === "restaurants";
+	const showRestaurantList = isRestaurants && favoriteRestaurants.length > 0;
+	const showDropsList = !isRestaurants && favoriteDrops.length > 0;
+
+	const subtitle = isRestaurants
+		? favoriteRestaurants.length > 0
+			? `${favoriteRestaurants.length} bookmarked ${favoriteRestaurants.length === 1 ? "restaurant" : "restaurants"}`
+			: "Your favorite spots live here"
+		: favoriteDrops.length > 0
+			? `${favoriteDrops.length} saved ${favoriteDrops.length === 1 ? "drop" : "drops"}`
+			: "Your saved drops live here";
+
 	return (
 		<Container>
 			<View
@@ -63,7 +111,8 @@ export default function FavoritesScreen() {
 					paddingHorizontal: horizontalScale(12),
 				}}
 			>
-				<View style={{ marginBottom: verticalScale(20) }}>
+				{/* Header */}
+				<View style={{ marginBottom: verticalScale(16) }}>
 					<TextBold
 						style={{
 							fontSize: moderateScale(30),
@@ -80,13 +129,59 @@ export default function FavoritesScreen() {
 							marginTop: verticalScale(3),
 						}}
 					>
-						{favoriteRestaurants.length > 0
-							? `${favoriteRestaurants.length} bookmarked restaurants`
-							: "Your favorite spots live here"}
+						{subtitle}
 					</Text>
 				</View>
 
-				{favoriteRestaurants.length > 0 ? (
+				{/* Segment toggle */}
+				<View style={styles.segmentRow}>
+					{SEGMENTS.map((s) => {
+						const active = segment === s.key;
+						const count =
+							s.key === "restaurants"
+								? favoriteRestaurants.length
+								: favoriteDrops.length;
+						return (
+							<Pressable
+								key={s.key}
+								onPress={() => {
+									LayoutAnimation.configureNext(
+										LayoutAnimation.create(
+											180,
+											"easeInEaseOut",
+											"opacity",
+										),
+									);
+									setSegment(s.key);
+								}}
+								style={[
+									styles.segmentBtn,
+									{
+										backgroundColor: active
+											? "#1A1A1A"
+											: "#FFFFFF",
+										borderColor: "#1A1A1A",
+									},
+								]}
+							>
+								{active ? (
+									<TextBold style={styles.segmentTextActive}>
+										{s.label}{" "}
+										{count > 0 ? `· ${count}` : ""}
+									</TextBold>
+								) : (
+									<Text style={styles.segmentText}>
+										{s.label}{" "}
+										{count > 0 ? `· ${count}` : ""}
+									</Text>
+								)}
+							</Pressable>
+						);
+					})}
+				</View>
+
+				{/* Lists */}
+				{showRestaurantList ? (
 					<FlatList
 						data={favoriteRestaurants}
 						showsVerticalScrollIndicator={false}
@@ -98,8 +193,26 @@ export default function FavoritesScreen() {
 								progressViewOffset={100}
 							/>
 						}
-						keyExtractor={(item, index) => `fav_${index}_${item.id}`}
-						renderItem={renderItem}
+						keyExtractor={(item, index) => `fav_r_${index}_${item.id}`}
+						renderItem={renderRestaurant}
+						contentContainerStyle={{
+							paddingBottom: verticalScale(80),
+						}}
+					/>
+				) : showDropsList ? (
+					<FlatList
+						data={favoriteDrops}
+						showsVerticalScrollIndicator={false}
+						refreshControl={
+							<RefreshControl
+								refreshing={refreshing}
+								onRefresh={onRefresh}
+								tintColor="#b42406"
+								progressViewOffset={100}
+							/>
+						}
+						keyExtractor={(item) => `fav_e_${item.id}`}
+						renderItem={renderEvent}
 						contentContainerStyle={{
 							paddingBottom: verticalScale(80),
 						}}
@@ -130,7 +243,9 @@ export default function FavoritesScreen() {
 								marginBottom: verticalScale(6),
 							}}
 						>
-							No restaurants saved
+							{isRestaurants
+								? "No restaurants saved"
+								: "No drops saved"}
 						</TextBold>
 						<Text
 							style={{
@@ -140,8 +255,9 @@ export default function FavoritesScreen() {
 								lineHeight: moderateScale(20),
 							}}
 						>
-							Your future food obsessions go here!{"\n"}Tap the bookmark on any
-							restaurant{"\n"}to start your collection
+							{isRestaurants
+								? `Your future food obsessions go here!\nTap the bookmark on any restaurant\nto start your collection`
+								: `Your most-anticipated events go here!\nTap the bookmark on any drop\nto start your collection`}
 						</Text>
 					</View>
 				)}
@@ -151,6 +267,25 @@ export default function FavoritesScreen() {
 }
 
 const styles = StyleSheet.create({
+	segmentRow: {
+		flexDirection: "row",
+		gap: horizontalScale(10),
+		marginBottom: verticalScale(16),
+	},
+	segmentBtn: {
+		paddingVertical: verticalScale(8),
+		paddingHorizontal: horizontalScale(16),
+		borderRadius: moderateScale(20),
+		borderWidth: 1,
+	},
+	segmentTextActive: {
+		fontSize: moderateScale(13),
+		color: "#FFFFFF",
+	},
+	segmentText: {
+		fontSize: moderateScale(13),
+		color: "#000000",
+	},
 	emptyState: {
 		flex: 1,
 		alignItems: "center",

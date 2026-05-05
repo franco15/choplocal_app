@@ -1,6 +1,8 @@
 import { CARD_THEMES, GiftCardVisual, Text, TextBold } from "@/components";
+import EventCardLarge from "@/components/events/EventCardLarge";
 import { useGiftCardContext } from "@/contexts/GiftCardContext";
 import { useUserContext } from "@/contexts/UserContext";
+import { useDropsByRestaurant } from "@/lib/api/queries/dropQueries";
 import { queryClient, queryKeys } from "@/lib/api/queryClient";
 import { useRestaurantApi } from "@/lib/api/useApi";
 import { horizontalScale, moderateScale, verticalScale } from "@/lib/metrics";
@@ -15,9 +17,10 @@ import {
 	useLocalSearchParams,
 	useRouter,
 } from "expo-router";
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
 	Alert,
+	FlatList,
 	Platform,
 	RefreshControl,
 	ScrollView,
@@ -56,6 +59,21 @@ export default function Restaurant() {
 		enabled: !!id && !!user,
 	});
 
+	const { data: restaurantDrops } = useDropsByRestaurant(
+		id as string,
+		user?.id,
+	);
+
+	const upcomingDrops = useMemo(() => {
+		return (restaurantDrops ?? [])
+			.filter((e) => e.status === "published")
+			.sort(
+				(a, b) =>
+					new Date(a.startDate).getTime() -
+					new Date(b.startDate).getTime(),
+			);
+	}, [restaurantDrops]);
+
 	// Refresh gift cards every time screen gains focus (e.g. after notification)
 	useFocusEffect(
 		useCallback(() => {
@@ -78,6 +96,9 @@ export default function Restaurant() {
 			}),
 			queryClient.invalidateQueries({
 				queryKey: queryKeys.giftCards.byUser(user?.id ?? ""),
+			}),
+			queryClient.invalidateQueries({
+				queryKey: queryKeys.drops.byRestaurant(id as string, user?.id),
 			}),
 		]);
 		setRefreshing(false);
@@ -148,6 +169,19 @@ export default function Restaurant() {
 	const isRecommended = restaurant?.status === ERestaurantStatus.Recommended;
 	const hasVisits = (restaurant?.checkIns ?? 0) > 0;
 	const totalBalance = restaurant?.balance ?? 0;
+	const nextReward = restaurant?.nextReward ?? null;
+	const rewardIcon: keyof typeof Ionicons.glyphMap = (() => {
+		switch (nextReward?.rewardType) {
+			case "FakeMoney":
+				return "cash-outline";
+			case "Percentage":
+				return "pricetag-outline";
+			case "FreeItem":
+				return "gift-outline";
+			default:
+				return "trophy-outline";
+		}
+	})();
 
 	return (
 		<View style={styles.root}>
@@ -197,6 +231,34 @@ export default function Restaurant() {
 									</TextBold>
 								</View>
 							</View>
+
+							{/* Next reward */}
+							{nextReward && (
+								<View style={styles.rewardBlock}>
+									<View style={styles.rewardHeaderRow}>
+										<View style={styles.rewardIconCircle}>
+											<Ionicons
+												name={rewardIcon}
+												size={18}
+												color="#b42406"
+											/>
+										</View>
+										<View style={{ flex: 1 }}>
+											<Text style={styles.rewardLabel}>
+												NEXT VISIT REWARD
+											</Text>
+											<TextBold style={styles.rewardName}>
+												{nextReward.title}
+											</TextBold>
+											{nextReward.descripcion ? (
+												<Text style={styles.rewardSub}>
+													{nextReward.descripcion}
+												</Text>
+											) : null}
+										</View>
+									</View>
+								</View>
+							)}
 						</View>
 					</View>
 
@@ -313,7 +375,58 @@ export default function Restaurant() {
 					</View>
 
 					{/* ═══════════════════════════════════════════
-					    CARD 3 — Recent Activity
+					    CARD 3 — Upcoming Drops
+					    ═══════════════════════════════════════════ */}
+					{upcomingDrops.length > 0 && (
+						<View style={styles.card}>
+							<View style={styles.cardBody}>
+								<View style={styles.cardSectionHeader}>
+									<View>
+										<TextBold style={styles.cardSectionTitle}>
+											Upcoming Drops
+										</TextBold>
+										<Text style={styles.cardSectionMeta}>
+											{upcomingDrops.length}{" "}
+											{upcomingDrops.length === 1 ? "event" : "events"}{" "}
+											coming up
+										</Text>
+									</View>
+									{upcomingDrops.length > 1 && (
+										<TouchableOpacity
+											activeOpacity={0.7}
+											onPress={() =>
+												router.push({
+													pathname: "/events/restaurant-drops",
+													params: {
+														restaurantId: id as string,
+														restaurantName: displayName,
+													},
+												})
+											}
+										>
+											<Text style={styles.seeAllLink}>See all</Text>
+										</TouchableOpacity>
+									)}
+								</View>
+
+								<FlatList
+									data={upcomingDrops.slice(0, 5)}
+									horizontal
+									showsHorizontalScrollIndicator={false}
+									keyExtractor={(item) => `rest_drop_${item.id}`}
+									contentContainerStyle={{
+										gap: horizontalScale(12),
+									}}
+									renderItem={({ item }) => (
+										<EventCardLarge event={item} />
+									)}
+								/>
+							</View>
+						</View>
+					)}
+
+					{/* ═══════════════════════════════════════════
+					    CARD 4 — Recent Activity
 					    ═══════════════════════════════════════════ */}
 					<View style={styles.card}>
 						<View style={styles.cardBody}>
@@ -494,6 +607,41 @@ const styles = StyleSheet.create({
 		backgroundColor: "#F0F0F0",
 	},
 
+	/* ── Next reward ── */
+	rewardBlock: {
+		marginTop: verticalScale(20),
+		paddingTop: verticalScale(18),
+		borderTopWidth: 1,
+		borderTopColor: "#F0F0F0",
+	},
+	rewardHeaderRow: {
+		flexDirection: "row",
+		alignItems: "center",
+		gap: horizontalScale(12),
+	},
+	rewardIconCircle: {
+		width: moderateScale(40),
+		height: moderateScale(40),
+		borderRadius: moderateScale(20),
+		backgroundColor: "rgba(180, 36, 6, 0.10)",
+		alignItems: "center",
+		justifyContent: "center",
+	},
+	rewardLabel: {
+		fontSize: moderateScale(10),
+		color: "#999",
+		letterSpacing: 1.2,
+		marginBottom: verticalScale(2),
+	},
+	rewardName: {
+		fontSize: moderateScale(15),
+		color: "#1A1A1A",
+	},
+	rewardSub: {
+		fontSize: moderateScale(12),
+		color: "#888",
+		marginTop: verticalScale(2),
+	},
 	/* Empty card state */
 	emptyCardContent: {
 		alignItems: "center",
