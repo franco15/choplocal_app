@@ -14,6 +14,7 @@
       "runtimeVersion": {
         "policy": "appVersion"
       },
+      "buildNumber": "22",
       "bundleIdentifier": "com.choplocal.choplocal",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
@@ -30,6 +31,7 @@
       ]
     },
     "android": {
+      "versionCode": 26,
       "softwareKeyboardLayoutMode": "resize",
       "adaptiveIcon": {
         "foregroundImage": "assets/images/logo.png",
@@ -95,14 +97,8 @@
       "expo-font",
       "expo-secure-store",
       "expo-web-browser",
-      [
-        "@sentry/react-native/expo",
-        {
-          "url": "https://sentry.io/",
-          "project": "choplocal",
-          "organization": "xipe"
-        }
-      ],
+      "./plugins/withSentryAuthToken",
+      "./plugins/withAndroidSigning",
       [
         "expo-notifications",
         {
@@ -119,7 +115,6 @@
       "@react-native-firebase/app",
       "@react-native-firebase/messaging",
       "@react-native-community/datetimepicker",
-      "@sentry/react-native",
       "expo-image",
       [
         "@config-plugins/react-native-branch",
