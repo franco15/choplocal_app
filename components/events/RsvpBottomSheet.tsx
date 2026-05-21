@@ -28,27 +28,27 @@ type Props = {
 const formatFullDate = (dateStr: string): string => {
 	const date = new Date(dateStr);
 	const days = [
-		"Domingo",
-		"Lunes",
-		"Martes",
-		"Miercoles",
-		"Jueves",
-		"Viernes",
-		"Sabado",
+		"Sunday",
+		"Monday",
+		"Tuesday",
+		"Wednesday",
+		"Thursday",
+		"Friday",
+		"Saturday",
 	];
 	const months = [
-		"Enero",
-		"Febrero",
-		"Marzo",
-		"Abril",
-		"Mayo",
-		"Junio",
-		"Julio",
-		"Agosto",
-		"Septiembre",
-		"Octubre",
-		"Noviembre",
-		"Diciembre",
+		"January",
+		"February",
+		"March",
+		"April",
+		"May",
+		"June",
+		"July",
+		"August",
+		"September",
+		"October",
+		"November",
+		"December",
 	];
 	const dayName = days[date.getDay()];
 	const num = date.getDate();
@@ -59,7 +59,7 @@ const formatFullDate = (dateStr: string): string => {
 	const ampm = hours >= 12 ? "PM" : "AM";
 	const h = hours % 12 || 12;
 	const m = minutes > 0 ? `:${minutes.toString().padStart(2, "0")}` : ":00";
-	return `${dayName} ${num} de ${month}, ${year} · ${h}${m} ${ampm}`;
+	return `${dayName}, ${month} ${num}, ${year} · ${h}${m} ${ampm}`;
 };
 
 export default function RsvpBottomSheet({
@@ -88,8 +88,8 @@ export default function RsvpBottomSheet({
 		} catch (e) {
 			setError(
 				event.passwordProtected
-					? "Contraseña incorrecta o error al confirmar"
-					: "No se pudo confirmar la reserva",
+					? "Incorrect password or confirmation failed"
+					: "Could not confirm your RSVP",
 			);
 		} finally {
 			setLoading(false);
@@ -184,7 +184,7 @@ export default function RsvpBottomSheet({
 						<View style={styles.warningBox}>
 							<Text style={styles.warningText}>
 								{
-									"⚠️ Este evento requiere aprobacion del organizador. Te notificaremos cuando tu lugar sea confirmado."
+									"⚠️ This event requires organizer approval. We'll notify you when your spot is confirmed."
 								}
 							</Text>
 						</View>
@@ -200,8 +200,8 @@ export default function RsvpBottomSheet({
 							/>
 							<Text style={styles.infoText}>
 								{spotsLeft > 0
-									? `${spotsLeft} ${spotsLeft === 1 ? "lugar disponible" : "lugares disponibles"}`
-									: "Sin lugares disponibles"}
+									? `${spotsLeft} ${spotsLeft === 1 ? "spot available" : "spots available"}`
+									: "No spots available"}
 							</Text>
 						</View>
 					)}
@@ -210,7 +210,7 @@ export default function RsvpBottomSheet({
 					{event.passwordProtected && (
 						<View style={styles.passwordSection}>
 							<Text style={styles.passwordLabel}>
-								Este drop requiere contraseña
+								This drop requires a password
 							</Text>
 							<BottomSheetTextInput
 								value={password}
@@ -218,7 +218,7 @@ export default function RsvpBottomSheet({
 									setPassword(t);
 									if (error) setError(null);
 								}}
-								placeholder="Ingresa la contraseña"
+								placeholder="Enter password"
 								placeholderTextColor="#BBB"
 								style={styles.passwordInput}
 								secureTextEntry
@@ -248,7 +248,7 @@ export default function RsvpBottomSheet({
 						{loading ? (
 							<ActivityIndicator color="#FFFFFF" size="small" />
 						) : (
-							<TextBold style={styles.confirmText}>Confirmar reserva</TextBold>
+							<TextBold style={styles.confirmText}>Confirm RSVP</TextBold>
 						)}
 					</TouchableOpacity>
 
@@ -257,7 +257,7 @@ export default function RsvpBottomSheet({
 						onPress={() => sheetRef.current?.dismiss()}
 						style={styles.cancelLink}
 					>
-						<Text style={styles.cancelText}>Cancelar</Text>
+						<Text style={styles.cancelText}>Cancel</Text>
 					</TouchableOpacity>
 				</View>
 			</BottomSheetView>

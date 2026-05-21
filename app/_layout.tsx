@@ -41,7 +41,7 @@ const buildRouteFromParams = (params: Record<string, any>): string | null => {
 
 Notifications.setNotificationHandler({
 	handleNotification: async () => {
-		// console.log("Manejando notificación entrante...");
+		// console.log("Handling incoming notification...");
 		return {
 			shouldPlaySound: true,
 			shouldSetBadge: true,

@@ -162,9 +162,7 @@ export default function SignUpScreen() {
 						By signing up, you agree to our{" "}
 						<Text
 							onPress={() =>
-								Linking.openURL(
-									"https://www.choplocally.com/terms-and-conditions",
-								)
+								Linking.openURL("https://www.choplocally.com/terms")
 							}
 							className="text-[#B91E18] underline"
 							style={{ fontSize: moderateScale(14) }}
@@ -174,7 +172,7 @@ export default function SignUpScreen() {
 						and{" "}
 						<Text
 							onPress={() =>
-								Linking.openURL("https://www.choplocally.com/privacy-policy")
+								Linking.openURL("https://www.choplocally.com/privacy")
 							}
 							className="text-[#B91E18] underline"
 							style={{ fontSize: moderateScale(14) }}

@@ -15,18 +15,18 @@ type Props = {
 const formatDateCompact = (dateStr: string): string => {
 	const date = new Date(dateStr);
 	const months = [
-		"Ene",
+		"Jan",
 		"Feb",
 		"Mar",
-		"Abr",
+		"Apr",
 		"May",
 		"Jun",
 		"Jul",
-		"Ago",
+		"Aug",
 		"Sep",
 		"Oct",
 		"Nov",
-		"Dic",
+		"Dec",
 	];
 	const num = date.getDate();
 	const month = months[date.getMonth()];
@@ -139,7 +139,7 @@ export default function EventCardSmall({ event, onRsvp, containerStyle }: Props)
 					<Text style={styles.soldOutText}>Sold out</Text>
 				) : spotsLeft !== null && spotsLeft <= 10 ? (
 					<Text style={styles.spotsText}>
-						{spotsLeft} {spotsLeft === 1 ? "lugar" : "lugares"}
+						{spotsLeft} {spotsLeft === 1 ? "spot" : "spots"}
 					</Text>
 				) : null}
 			</View>
