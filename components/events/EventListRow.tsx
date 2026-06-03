@@ -1,5 +1,6 @@
 import { useEventFavorites } from "@/lib/hooks/useEventFavorites";
 import { IEvent } from "@/lib/types/event";
+import { formatPrice } from "@/lib/utils";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useCallback } from "react";
@@ -55,10 +56,6 @@ const formatDate = (dateStr: string): string => {
 	return `${dayName}, ${month} ${num} at ${h}${ampm}`;
 };
 
-const formatPrice = (price: number | null): string => {
-	if (price === null || price === 0) return "Free";
-	return `$${price.toFixed(2)}`;
-};
 
 export default function EventListRow({ event }: Props) {
 	const { favoriteEventIds, toggleEventFavorite } = useEventFavorites();

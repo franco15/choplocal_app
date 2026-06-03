@@ -26,13 +26,13 @@ export function useNotifications() {
 	}
 
 	useEffect(() => {
-		// 📩 Recibir notificación (foreground)
+		// 📩 Receive notification (foreground)
 		notificationListener.current =
 			Notifications.addNotificationReceivedListener((notification) => {
-				// console.log("Notificación recibida:", notification);
+				// console.log("Notification received:", notification);
 			});
 
-		// 👉 Usuario toca notificación
+		// 👉 User taps notification
 		responseListener.current =
 			Notifications.addNotificationResponseReceivedListener((response) => {
 				const data = response.notification.request.content.data;
@@ -41,7 +41,7 @@ export function useNotifications() {
 					pathname: data.screen as NotificationAppRoutes,
 					params: parsedParams,
 				});
-				// console.log("Usuario interactuó:", response);
+				// console.log("User interacted:", response);
 			});
 
 		const handleInitialNotification = async () => {
@@ -79,7 +79,7 @@ export function useNotifications() {
 		const unsubMessage = onMessage(msg, async (remoteMessage) => {
 			await Notifications.scheduleNotificationAsync({
 				content: {
-					title: remoteMessage.notification?.title || "Notificación",
+					title: remoteMessage.notification?.title || "Notification",
 					body: remoteMessage.notification?.body || "",
 					data: remoteMessage.data,
 				},
@@ -89,7 +89,7 @@ export function useNotifications() {
 					repeats: false,
 				},
 			});
-			// console.log("Mensaje recibido en foreground:", remoteMessage);
+			// console.log("Message received in foreground:", remoteMessage);
 		});
 
 		return () => {

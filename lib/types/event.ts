@@ -1,3 +1,5 @@
+import { DropPaymentStatus } from "./drop";
+
 export type EventStatus = "published" | "draft" | "ended";
 export type RsvpStatus = "confirmed" | "pending";
 
@@ -34,6 +36,7 @@ export interface IEvent {
 	attendees: IEventAttendee[];
 	attendeeCount: number;
 	price: number | null;
+	paymentStatus: DropPaymentStatus;
 	organizer: string;
 	userRsvpId: string | null;
 	passwordProtected: boolean;

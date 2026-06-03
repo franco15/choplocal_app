@@ -17,7 +17,7 @@ async function waitForAPNSToken(msg: Messaging, maxRetries = 10) {
 
 export async function registerForPushNotificationsAsync() {
 	// if (!Device.isDevice) {
-	// 	throw new Error("Debes usar un dispositivo físico");
+	// 	throw new Error("You must use a physical device");
 	// }
 	const messaging = getMessaging();
 	const { status: existingStatus } = await Notifications.getPermissionsAsync();

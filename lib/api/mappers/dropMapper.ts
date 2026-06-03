@@ -1,4 +1,4 @@
-import { DropOutput, DropStatus, DropType } from "@/lib/types/drop";
+import { DropOutput, DropPaymentStatus, DropStatus } from "@/lib/types/drop";
 import { EventStatus, IEvent } from "@/lib/types/event";
 
 const combineDateAndTime = (dateIso: string, time: string | null): string => {
@@ -53,7 +53,8 @@ export const mapDropToEvent = (drop: DropOutput): IEvent => {
 		userRsvp: drop.userRsvpId ? "confirmed" : null,
 		userRsvpId: drop.userRsvpId,
 		attendees: [],
-		price: drop.type === DropType.Paid ? 0 : null,
+		price: drop.price ?? null,
+		paymentStatus: drop.paymentStatus ?? DropPaymentStatus.None,
 		organizer: drop.restaurantName ?? "",
 		passwordProtected: drop.passwordProtected,
 	};

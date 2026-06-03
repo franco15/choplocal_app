@@ -2,33 +2,33 @@ import { ICategory } from "../types/event";
 
 export const EVENT_TAGS = [
 	"Party",
-	"Music",
-	"Food",
+	"Networking",
+	"Music & Culture",
 	"Sports",
-	"Lifestyle",
-	"Healthy",
+	"Community",
+	"Clubs",
 	"Other",
 ];
 
 /** Emoji for each category — used as the visual accent on cards */
 export const CATEGORY_EMOJI: Record<string, string> = {
 	Party: "🎉",
-	Music: "🎵",
-	Food: "🍔",
+	Networking: "🎵",
+	"Music & Culture": "🍔",
 	Sports: "⚽",
-	Lifestyle: "🌿",
-	Healthy: "🥗",
+	Community: "🌿",
+	Clubs: "🥗",
 	Other: "✨",
 };
 
 /** Tints kept for backwards compat (not used in gradient design). */
 export const CATEGORY_TINT: Record<string, string> = {
 	Party: "#F4EEEC",
-	Music: "#EFEEF2",
-	Food: "#F3EEE6",
+	Networking: "#EFEEF2",
+	"Music & Culture": "#F3EEE6",
 	Sports: "#EBEEF1",
-	Lifestyle: "#ECEFEA",
-	Healthy: "#EAEFEC",
+	Community: "#ECEFEA",
+	Clubs: "#EAEFEC",
 	Other: "#EFEFEF",
 };
 
@@ -39,14 +39,14 @@ export const ALL_CATEGORIES: ICategory[] = [
 		color: "#8B2942",
 	},
 	{
-		name: "Music",
-		image: "https://picsum.photos/seed/music-drop/800/400",
-		color: "#2C3759",
+		name: "Networking",
+		image: "https://picsum.photos/seed/networking-drop/800/400",
+		color: "#523068",
 	},
 	{
-		name: "Food",
-		image: "https://picsum.photos/seed/food-drop/800/400",
-		color: "#A04A2C",
+		name: "Music & Culture",
+		image: "https://picsum.photos/seed/music-drop/800/400",
+		color: "#2C3759",
 	},
 	{
 		name: "Sports",
@@ -54,13 +54,13 @@ export const ALL_CATEGORIES: ICategory[] = [
 		color: "#2C6B4A",
 	},
 	{
-		name: "Lifestyle",
-		image: "https://picsum.photos/seed/lifestyle-drop/800/400",
-		color: "#523068",
+		name: "Community",
+		image: "https://picsum.photos/seed/community-drop/800/400",
+		color: "#A04A2C",
 	},
 	{
-		name: "Healthy",
-		image: "https://picsum.photos/seed/healthy-drop/800/400",
+		name: "Clubs",
+		image: "https://picsum.photos/seed/clubs-drop/800/400",
 		color: "#1F5C5C",
 	},
 	{

@@ -1,4 +1,9 @@
-import { AppCreateRsvpDto, DropOutput, DropRsvpOutput } from "../types/drop";
+import {
+	AppCreateRsvpDto,
+	DropOutput,
+	DropRsvpOutput,
+	DropRsvpPaymentIntentOutput,
+} from "../types/drop";
 import {
 	IGiftCard,
 	IGiftCardCreate,
@@ -150,6 +155,11 @@ export const useDropsApi = () => {
 			api.get(withUser(`api/app/drops/${id}`, userId)),
 		rsvp: async (id: string, body: AppCreateRsvpDto): Promise<DropRsvpOutput> =>
 			api.post(`api/app/drops/${id}/rsvp`, body),
+		rsvpPaymentIntent: async (
+			id: string,
+			body: AppCreateRsvpDto,
+		): Promise<DropRsvpPaymentIntentOutput> =>
+			api.post(`api/app/drops/${id}/rsvp/payment-intent`, body),
 		cancelRsvp: async (
 			id: string,
 			rsvpId: string,

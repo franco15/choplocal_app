@@ -10,6 +10,14 @@ export enum DropStatus {
 	Past = 3,
 }
 
+export enum DropPaymentStatus {
+	None = 0,
+	Pending = 1,
+	Paid = 2,
+	Failed = 3,
+	Refunded = 4,
+}
+
 export interface DropOutput {
 	id: string;
 	title: string;
@@ -27,6 +35,8 @@ export interface DropOutput {
 	accentColor: string | null;
 	titleFont: string | null;
 	type: DropType;
+	price?: number | null;
+	paymentStatus?: DropPaymentStatus;
 	status: DropStatus;
 	hasCapacityLimit: boolean;
 	capacity: number | null;
@@ -62,4 +72,9 @@ export interface DropRsvpOutput {
 export interface AppCreateRsvpDto {
 	userId: string;
 	password?: string;
+}
+
+export interface DropRsvpPaymentIntentOutput {
+	clientSecret: string;
+	rsvpId?: string;
 }

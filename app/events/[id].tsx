@@ -14,7 +14,9 @@ import { queryClient, queryKeys } from "@/lib/api/queryClient";
 import { useNotificationsApi } from "@/lib/api/useApi";
 import { useEventFavorites } from "@/lib/hooks/useEventFavorites";
 import { verticalScale } from "@/lib/metrics";
+import { DropPaymentStatus } from "@/lib/types/drop";
 import { INotification } from "@/lib/types/notification";
+import { formatPrice } from "@/lib/utils";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { router, useLocalSearchParams } from "expo-router";
@@ -65,11 +67,6 @@ const formatFullDate = (startStr: string, endStr: string): string => {
 	};
 
 	return `${dayName}, ${month} ${num} at ${fmtTime(start)} - ${fmtTime(end)}`;
-};
-
-const formatPrice = (price: number | null): string => {
-	if (price === null || price === 0) return "Free";
-	return `$${price.toFixed(2)}`;
 };
 
 const stripHtml = (html: string): string =>
@@ -204,7 +201,117 @@ export default function EventDetailScreen() {
 
 	const isSoldOut =
 		event.capacity !== null && event.rsvpCount >= event.capacity;
+	const isPaid = (event.price ?? 0) > 0;
 	const showRsvpBtn = event.userRsvp === null && !isSoldOut;
+
+	const ticketView = (
+		<View>
+			<TouchableOpacity
+				activeOpacity={0.85}
+				onPress={() =>
+					router.push({
+						pathname: "/events/ticket",
+						params: { id: event.id },
+					})
+				}
+				style={[styles.rsvpBtn, styles.rsvpBtnConfirmed]}
+			>
+				<Ionicons
+					name="ticket-outline"
+					size={18}
+					color="#065F46"
+					style={{ marginRight: 8 }}
+				/>
+				<TextBold style={styles.rsvpBtnTextConfirmed}>View ticket</TextBold>
+			</TouchableOpacity>
+			<TouchableOpacity
+				activeOpacity={0.7}
+				onPress={handleCancelRsvp}
+				disabled={cancelMutation.isPending}
+				style={styles.cancelLink}
+			>
+				{cancelMutation.isPending ? (
+					<ActivityIndicator size="small" color="#EF4444" />
+				) : (
+					<Text style={styles.cancelLinkText}>Cancel RSVP</Text>
+				)}
+			</TouchableOpacity>
+		</View>
+	);
+
+	const goToPayment = () =>
+		router.push({ pathname: "/events/payment", params: { id: event.id } });
+
+	let footerContent: React.ReactNode = null;
+	if (isPaid) {
+		if (event.paymentStatus === DropPaymentStatus.Paid) {
+			footerContent = ticketView;
+		} else if (event.paymentStatus === DropPaymentStatus.Pending) {
+			footerContent = (
+				<View style={[styles.rsvpBtn, styles.rsvpBtnPending]}>
+					<TextBold style={styles.rsvpBtnTextPending}>
+						{"Payment processing…"}
+					</TextBold>
+				</View>
+			);
+		} else if (event.paymentStatus === DropPaymentStatus.Failed) {
+			footerContent = (
+				<TouchableOpacity
+					activeOpacity={0.85}
+					onPress={goToPayment}
+					style={[styles.rsvpBtn, styles.rsvpBtnFailed]}
+				>
+					<TextBold style={styles.rsvpBtnTextFailed}>
+						Payment failed — Retry
+					</TextBold>
+				</TouchableOpacity>
+			);
+		} else if (isSoldOut) {
+			footerContent = (
+				<View style={[styles.rsvpBtn, styles.rsvpBtnDisabled]}>
+					<TextBold style={styles.rsvpBtnTextDisabled}>Sold out</TextBold>
+				</View>
+			);
+		} else {
+			footerContent = (
+				<TouchableOpacity
+					activeOpacity={0.85}
+					onPress={goToPayment}
+					style={styles.rsvpBtn}
+				>
+					<TextBold style={styles.rsvpBtnText}>
+						Get ticket — {formatPrice(event.price)}
+					</TextBold>
+				</TouchableOpacity>
+			);
+		}
+	} else if (showRsvpBtn) {
+		footerContent = (
+			<TouchableOpacity
+				activeOpacity={0.85}
+				onPress={() => setRsvpSheetOpen(true)}
+				style={styles.rsvpBtn}
+			>
+				<TextBold style={styles.rsvpBtnText}>RSVP</TextBold>
+			</TouchableOpacity>
+		);
+	} else if (event.userRsvp === null && isSoldOut) {
+		footerContent = (
+			<View style={[styles.rsvpBtn, styles.rsvpBtnDisabled]}>
+				<TextBold style={styles.rsvpBtnTextDisabled}>Sold out</TextBold>
+			</View>
+		);
+	} else if (event.userRsvp === "pending") {
+		footerContent = (
+			<View style={[styles.rsvpBtn, styles.rsvpBtnPending]}>
+				<TextBold style={styles.rsvpBtnTextPending}>
+					{"Request sent ⏳"}
+				</TextBold>
+			</View>
+		);
+	} else if (event.userRsvp === "confirmed") {
+		footerContent = ticketView;
+	}
 
 	return (
 		<View style={styles.container}>
@@ -416,66 +523,7 @@ export default function EventDetailScreen() {
 					{ paddingBottom: insets.bottom + verticalScale(12) },
 				]}
 			>
-				{showRsvpBtn && (
-					<TouchableOpacity
-						activeOpacity={0.85}
-						onPress={() => setRsvpSheetOpen(true)}
-						style={styles.rsvpBtn}
-					>
-						<TextBold style={styles.rsvpBtnText}>RSVP</TextBold>
-					</TouchableOpacity>
-				)}
-
-				{event.userRsvp === null && isSoldOut && (
-					<View style={[styles.rsvpBtn, styles.rsvpBtnDisabled]}>
-						<TextBold style={styles.rsvpBtnTextDisabled}>Sold out</TextBold>
-					</View>
-				)}
-
-				{event.userRsvp === "pending" && (
-					<View style={[styles.rsvpBtn, styles.rsvpBtnPending]}>
-						<TextBold style={styles.rsvpBtnTextPending}>
-							{"Request sent ⏳"}
-						</TextBold>
-					</View>
-				)}
-
-				{event.userRsvp === "confirmed" && (
-					<View>
-						<TouchableOpacity
-							activeOpacity={0.85}
-							onPress={() =>
-								router.push({
-									pathname: "/events/ticket",
-									params: { id: event.id },
-								})
-							}
-							style={[styles.rsvpBtn, styles.rsvpBtnConfirmed]}
-						>
-							<Ionicons
-								name="ticket-outline"
-								size={18}
-								color="#065F46"
-								style={{ marginRight: 8 }}
-							/>
-							<TextBold style={styles.rsvpBtnTextConfirmed}>
-								View ticket
-							</TextBold>
-						</TouchableOpacity>
-						<TouchableOpacity
-							activeOpacity={0.7}
-							onPress={handleCancelRsvp}
-							disabled={cancelMutation.isPending}
-							style={styles.cancelLink}
-						>
-							{cancelMutation.isPending ? (
-								<ActivityIndicator size="small" color="#EF4444" />
-							) : (
-								<Text style={styles.cancelLinkText}>Cancel RSVP</Text>
-							)}
-						</TouchableOpacity>
-					</View>
-				)}
+				{footerContent}
 			</View>
 
 			{/* RSVP sheet */}
@@ -718,6 +766,13 @@ const styles = StyleSheet.create({
 	},
 	rsvpBtnTextConfirmed: {
 		color: "#065F46",
+		fontSize: 16,
+	},
+	rsvpBtnFailed: {
+		backgroundColor: "#FEE2E2",
+	},
+	rsvpBtnTextFailed: {
+		color: "#B91C1C",
 		fontSize: 16,
 	},
 	cancelLink: {
