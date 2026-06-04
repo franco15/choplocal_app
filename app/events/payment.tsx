@@ -81,6 +81,9 @@ export default function EventPayment() {
 
 			if (paymentIntent?.status === "Succeeded") {
 				queryClient.invalidateQueries({ queryKey: queryKeys.drops.all });
+				queryClient.invalidateQueries({
+					queryKey: queryKeys.drops.byId(event.id, user.id),
+				});
 				router.replace({
 					pathname: "/events/rsvp-success",
 					params: { id: event.id },
@@ -248,6 +251,7 @@ export default function EventPayment() {
 						disabled={processing || !cardComplete}
 						style={[
 							styles.payButton,
+							{ backgroundColor: event.accentColor },
 							(processing || !cardComplete) && { opacity: 0.6 },
 						]}
 					>

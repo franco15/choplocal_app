@@ -36,7 +36,7 @@ export interface DropOutput {
 	titleFont: string | null;
 	type: DropType;
 	price?: number | null;
-	paymentStatus?: DropPaymentStatus;
+	userRsvpPaymentStatus?: DropPaymentStatus | string | null;
 	status: DropStatus;
 	hasCapacityLimit: boolean;
 	capacity: number | null;

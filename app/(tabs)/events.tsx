@@ -1,4 +1,7 @@
-import { CustomText as Text, CustomTextBold as TextBold } from "@/components/Texts";
+import {
+	CustomText as Text,
+	CustomTextBold as TextBold,
+} from "@/components/Texts";
 import EventCardLarge from "@/components/events/EventCardLarge";
 import EventListRow from "@/components/events/EventListRow";
 import { useAuthContext } from "@/contexts/AuthContext";
@@ -53,8 +56,7 @@ export default function DropsScreen() {
 				.filter((e) => e.status === "published")
 				.sort(
 					(a, b) =>
-						new Date(a.startDate).getTime() -
-						new Date(b.startDate).getTime(),
+						new Date(a.startDate).getTime() - new Date(b.startDate).getTime(),
 				),
 		[data],
 	);
@@ -67,9 +69,7 @@ export default function DropsScreen() {
 	const eventCounts = useMemo(() => {
 		const counts: Record<string, number> = {};
 		for (const cat of ALL_CATEGORIES) {
-			counts[cat.name] = events.filter((e) =>
-				e.tags.includes(cat.name),
-			).length;
+			counts[cat.name] = events.filter((e) => e.tags.includes(cat.name)).length;
 		}
 		return counts;
 	}, [events]);
@@ -141,11 +141,7 @@ export default function DropsScreen() {
 					hitSlop={10}
 					style={styles.searchBtn}
 				>
-					<Ionicons
-						name="search"
-						size={moderateScale(22)}
-						color="#1A1A1A"
-					/>
+					<Ionicons name="search" size={moderateScale(22)} color="#1A1A1A" />
 				</TouchableOpacity>
 			</View>
 
@@ -168,10 +164,7 @@ export default function DropsScreen() {
 						returnKeyType="search"
 					/>
 					{searchQuery.length > 0 && (
-						<TouchableOpacity
-							onPress={() => setSearchQuery("")}
-							hitSlop={8}
-						>
+						<TouchableOpacity onPress={() => setSearchQuery("")} hitSlop={8}>
 							<Ionicons
 								name="close-circle"
 								size={moderateScale(18)}
@@ -192,9 +185,7 @@ export default function DropsScreen() {
 						<FlatList
 							data={searchResults}
 							keyExtractor={(item) => item.id}
-							renderItem={({ item }) => (
-								<EventListRow event={item} />
-							)}
+							renderItem={({ item }) => <EventListRow event={item} />}
 							showsVerticalScrollIndicator={false}
 							contentContainerStyle={{
 								paddingBottom: verticalScale(120),
@@ -207,9 +198,7 @@ export default function DropsScreen() {
 								size={moderateScale(48)}
 								color="#DDD"
 							/>
-							<Text style={styles.emptyText}>
-								No drops found
-							</Text>
+							<Text style={styles.emptyText}>No drops found</Text>
 						</View>
 					)}
 				</View>
@@ -234,17 +223,13 @@ export default function DropsScreen() {
 						<View style={styles.section}>
 							<View style={styles.sectionHeader}>
 								<View>
-									<TextBold style={styles.sectionTitle}>
-										trending
-									</TextBold>
+									<TextBold style={styles.sectionTitle}>trending</TextBold>
 									<Text style={styles.sectionSubtitle}>
 										what people are loving
 									</Text>
 								</View>
 								<TouchableOpacity
-									onPress={() =>
-										navigateToCategory("trending")
-									}
+									onPress={() => navigateToCategory("trending")}
 									hitSlop={10}
 								>
 									<Text style={styles.seeAll}>all →</Text>
@@ -257,10 +242,7 @@ export default function DropsScreen() {
 								keyExtractor={(item) => `trend_${item.id}`}
 								contentContainerStyle={styles.carouselContent}
 								renderItem={({ item }) => (
-									<EventCardLarge
-										event={item}
-										showAttendees
-									/>
+									<EventCardLarge event={item} showAttendees />
 								)}
 							/>
 						</View>
@@ -268,43 +250,29 @@ export default function DropsScreen() {
 
 					{/* ── First 2 category carousels ── */}
 					{firstCategoryCarousels.map((cat) => {
-						const tagEvents = events.filter((e) =>
-							e.tags.includes(cat.name),
-						);
+						const tagEvents = events.filter((e) => e.tags.includes(cat.name));
 						return (
 							<View key={cat.name} style={styles.section}>
 								<View style={styles.sectionHeader}>
 									<View>
-										<TextBold
-											style={styles.sectionTitle}
-										>
+										<TextBold style={styles.sectionTitle}>
 											{cat.name.toLowerCase()}
 										</TextBold>
 									</View>
 									<TouchableOpacity
-										onPress={() =>
-											navigateToCategory(cat.name)
-										}
+										onPress={() => navigateToCategory(cat.name)}
 										hitSlop={10}
 									>
-										<Text style={styles.seeAll}>
-											all →
-										</Text>
+										<Text style={styles.seeAll}>all →</Text>
 									</TouchableOpacity>
 								</View>
 								<FlatList
 									data={tagEvents.slice(0, 5)}
 									horizontal
 									showsHorizontalScrollIndicator={false}
-									keyExtractor={(item) =>
-										`${cat.name}_${item.id}`
-									}
-									contentContainerStyle={
-										styles.carouselContent
-									}
-									renderItem={({ item }) => (
-										<EventCardLarge event={item} />
-									)}
+									keyExtractor={(item) => `${cat.name}_${item.id}`}
+									contentContainerStyle={styles.carouselContent}
+									renderItem={({ item }) => <EventCardLarge event={item} />}
 								/>
 							</View>
 						);
@@ -344,9 +312,7 @@ export default function DropsScreen() {
 											{
 												transform: [
 													{
-														scale: pressed
-															? 0.97
-															: 1,
+														scale: pressed ? 0.97 : 1,
 													},
 												],
 											},
@@ -366,33 +332,25 @@ export default function DropsScreen() {
 													style={[
 														styles.spotImage,
 														{
-															backgroundColor:
-																"#F0F0F0",
+															backgroundColor: "#F0F0F0",
 														},
 													]}
 												>
 													<Ionicons
 														name="restaurant-outline"
-														size={
-															moderateScale(28)
-														}
+														size={moderateScale(28)}
 														color="#CCC"
 													/>
 												</View>
 											)}
 										</View>
 										<View style={styles.spotInfo}>
-											<TextBold
-												numberOfLines={1}
-												style={styles.spotName}
-											>
+											<TextBold numberOfLines={1} style={styles.spotName}>
 												{item.name}
 											</TextBold>
 											<Text style={styles.spotCount}>
 												{item.eventCount}{" "}
-												{item.eventCount === 1
-													? "drop"
-													: "drops"}
+												{item.eventCount === 1 ? "drop" : "drops"}
 											</Text>
 										</View>
 									</Pressable>
@@ -404,9 +362,7 @@ export default function DropsScreen() {
 					{/* ── Discover more (category cards) ── */}
 					<View style={styles.section}>
 						<View style={styles.sectionHeaderNoPad}>
-							<TextBold style={styles.sectionTitle}>
-								discover more
-							</TextBold>
+							<TextBold style={styles.sectionTitle}>discover more</TextBold>
 							<Text style={styles.sectionSubtitle}>
 								explore categories to find your vibe
 							</Text>
@@ -417,25 +373,17 @@ export default function DropsScreen() {
 							{visibleCategories.map((cat) => (
 								<Pressable
 									key={cat.name}
-									onPress={() =>
-										navigateToCategory(cat.name)
-									}
+									onPress={() => navigateToCategory(cat.name)}
 									style={({ pressed }) => [
 										styles.categoryCard,
 										{
 											opacity: pressed ? 0.85 : 1,
-											transform: [
-												{ scale: pressed ? 0.98 : 1 },
-											],
+											transform: [{ scale: pressed ? 0.98 : 1 }],
 										},
 									]}
 								>
 									<LinearGradient
-										colors={[
-											cat.color,
-											`${cat.color}BB`,
-											`${cat.color}77`,
-										]}
+										colors={[cat.color, `${cat.color}BB`, `${cat.color}77`]}
 										start={{ x: 0, y: 0 }}
 										end={{ x: 1, y: 1 }}
 										style={styles.categoryGradient}
@@ -462,14 +410,10 @@ export default function DropsScreen() {
 						{/* See all categories button */}
 						<TouchableOpacity
 							activeOpacity={0.7}
-							onPress={() =>
-								router.push("/events/all-categories")
-							}
+							onPress={() => router.push("/events/all-categories")}
 							style={styles.seeAllBtn}
 						>
-							<Text style={styles.seeAllBtnText}>
-								See all categories
-							</Text>
+							<Text style={styles.seeAllBtnText}>See all categories</Text>
 							<Ionicons
 								name="chevron-forward"
 								size={moderateScale(16)}
@@ -480,43 +424,29 @@ export default function DropsScreen() {
 
 					{/* ── Remaining category carousels ── */}
 					{remainingCategoryCarousels.map((cat) => {
-						const tagEvents = events.filter((e) =>
-							e.tags.includes(cat.name),
-						);
+						const tagEvents = events.filter((e) => e.tags.includes(cat.name));
 						return (
 							<View key={cat.name} style={styles.section}>
 								<View style={styles.sectionHeader}>
 									<View>
-										<TextBold
-											style={styles.sectionTitle}
-										>
+										<TextBold style={styles.sectionTitle}>
 											{cat.name.toLowerCase()}
 										</TextBold>
 									</View>
 									<TouchableOpacity
-										onPress={() =>
-											navigateToCategory(cat.name)
-										}
+										onPress={() => navigateToCategory(cat.name)}
 										hitSlop={10}
 									>
-										<Text style={styles.seeAll}>
-											all →
-										</Text>
+										<Text style={styles.seeAll}>all →</Text>
 									</TouchableOpacity>
 								</View>
 								<FlatList
 									data={tagEvents.slice(0, 5)}
 									horizontal
 									showsHorizontalScrollIndicator={false}
-									keyExtractor={(item) =>
-										`${cat.name}_${item.id}`
-									}
-									contentContainerStyle={
-										styles.carouselContent
-									}
-									renderItem={({ item }) => (
-										<EventCardLarge event={item} />
-									)}
+									keyExtractor={(item) => `${cat.name}_${item.id}`}
+									contentContainerStyle={styles.carouselContent}
+									renderItem={({ item }) => <EventCardLarge event={item} />}
 								/>
 							</View>
 						);

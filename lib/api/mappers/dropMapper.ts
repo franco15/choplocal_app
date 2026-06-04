@@ -8,6 +8,22 @@ const combineDateAndTime = (dateIso: string, time: string | null): string => {
 	return `${datePart}T${timePart}`;
 };
 
+const PAYMENT_STATUS_BY_NAME: Record<string, DropPaymentStatus> = {
+	None: DropPaymentStatus.None,
+	Pending: DropPaymentStatus.Pending,
+	Paid: DropPaymentStatus.Paid,
+	Failed: DropPaymentStatus.Failed,
+	Refunded: DropPaymentStatus.Refunded,
+};
+
+const normalizePaymentStatus = (
+	raw: number | string | null | undefined,
+): DropPaymentStatus => {
+	if (raw == null) return DropPaymentStatus.None;
+	if (typeof raw === "number") return raw as DropPaymentStatus;
+	return PAYMENT_STATUS_BY_NAME[raw] ?? DropPaymentStatus.None;
+};
+
 const mapStatus = (status: DropStatus): EventStatus => {
 	switch (status) {
 		case DropStatus.Published:
@@ -54,7 +70,7 @@ export const mapDropToEvent = (drop: DropOutput): IEvent => {
 		userRsvpId: drop.userRsvpId,
 		attendees: [],
 		price: drop.price ?? null,
-		paymentStatus: drop.paymentStatus ?? DropPaymentStatus.None,
+		paymentStatus: normalizePaymentStatus(drop.userRsvpPaymentStatus),
 		organizer: drop.restaurantName ?? "",
 		passwordProtected: drop.passwordProtected,
 	};
